@@ -1,0 +1,50 @@
+LOG: Parsing Complete 
+LOG: MetaTyping Complete 
+LOG : Typing Complete 
+LOG : Showing ModuleIR
+LOG : Normalising ChannelIR
+LOG : Convert to MicroSV IR
+LOG : Convert to MicroSV
+LOG : Pretty Printing
+typedef struct{logic x} X; 
+
+typedef union{logic x;X y} Y; 
+
+typedef union{logic x;X y} IJ; 
+
+module clk (output logic c);
+endmodule 
+
+module init (input logic c,output logic[2] ctrl,output Y chan1,output Y chan2,input logic err);
+endmodule 
+
+module trgt (input logic c,input IJ xy,output logic err);
+endmodule 
+
+module mux_trgt_xy_init_ctrl_init_chan1_init_chan2 (input logic[2] ctrl,output IJ xy,input Y chan1,input Y chan2);
+endmodule 
+
+begin Top ();
+    logic fan_out_from_clk_c_to_init_c_trgt_c;
+    logic[2] mux_trgt_xy_init_ctrl_init_chan1_init_chan2_control;
+    logic trgt_err_init_err;
+    IJ mux_trgt_xy_init_ctrl_init_chan1_init_chan2_output;
+    IJ mux_trgt_xy_init_ctrl_init_chan1_init_chan2_input;
+    IJ mux_trgt_xy_init_ctrl_init_chan1_init_chan2_fanin_init_chan1_chan1;
+    IJ mux_trgt_xy_init_ctrl_init_chan1_init_chan2_fanin_init_chan2_chan2;
+    init lightclick_module_0(.c(fan_out_from_clk_c_to_init_c_trgt_c)
+                            ,.ctrl(mux_trgt_xy_init_ctrl_init_chan1_init_chan2_control)
+                            ,.chan1(mux_trgt_xy_init_ctrl_init_chan1_init_chan2_fanin_init_chan1_chan1)
+                            ,.chan2(mux_trgt_xy_init_ctrl_init_chan1_init_chan2_fanin_init_chan2_chan2)
+                            ,.err(trgt_err_init_err));
+    trgt lightclick_module_1(.c(fan_out_from_clk_c_to_init_c_trgt_c)
+                            ,.xy(mux_trgt_xy_init_ctrl_init_chan1_init_chan2_input)
+                            ,.err(trgt_err_init_err));
+    mux_trgt_xy_init_ctrl_init_chan1_init_chan2 lightclick_module_2(.ctrl(mux_trgt_xy_init_ctrl_init_chan1_init_chan2_control)
+                                                                   ,.xy(mux_trgt_xy_init_ctrl_init_chan1_init_chan2_input)
+                                                                   ,.chan1(mux_trgt_xy_init_ctrl_init_chan1_init_chan2_fanin_init_chan1_chan1)
+                                                                   ,.chan2(mux_trgt_xy_init_ctrl_init_chan1_init_chan2_fanin_init_chan2_chan2));
+    clk lightclick_module_3(.c(fan_out_from_clk_c_to_init_c_trgt_c));
+    
+endmodule
+LOG : Bye

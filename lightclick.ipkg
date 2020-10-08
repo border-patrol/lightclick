@@ -1,0 +1,91 @@
+package lightclick
+
+depends = contrib
+
+sourcedir = "src"
+
+main = LightClick.Main
+executable = lightclick
+
+modules =
+
+  -- [ Vendored Utilities ]
+          Decidable.Equality.Indexed
+
+        , Data.Vect.Extra
+
+        , Data.DList
+        , Data.DList.Elem
+        , Data.DList.DeBruijn
+
+        , Data.DVect
+        , Data.DVect.Elem
+
+        , Commons.Data.Nat
+
+        , Commons.Data.Location
+        , Commons.Data.Rig
+
+        , Commons.Decidable.Informative
+
+        , Commons.Text.Parser.Support
+        , Commons.Text.Parser.Location
+        , Commons.Text.Parser.Run
+
+        , Commons.Text.Lexer.Run
+
+        , Commons.System
+
+  -- [ A SystemVerilog EDSL ]
+
+        , Language.SystemVerilog.Utilities
+        , Language.SystemVerilog.Direction
+        , Language.SystemVerilog.MetaTypes
+        , Language.SystemVerilog.Micro
+
+  -- [ LightClick Itself]
+
+        , LightClick.Error
+
+        , LightClick.Types.Meta
+        , LightClick.Types.Sensitivity
+        , LightClick.Types.WireType
+        , LightClick.Types.Direction
+
+        , LightClick.Types
+        , LightClick.Types.Equality
+        , LightClick.Types.Compatibility
+        , LightClick.Types.Usage
+
+        , LightClick.Terms
+        , LightClick.Values
+
+        , LightClick.Connection
+
+        , LightClick.Env
+        , LightClick.Check
+
+  -- [ IRs ]
+        , LightClick.IR.ModuleCentric
+        , LightClick.IR.ChannelCentric
+
+        , LightClick.IR.Channel.Normalise.Error
+        , LightClick.IR.Channel.Normalise.LetFloat
+        , LightClick.IR.Channel.Normalise.Merge
+        , LightClick.IR.Channel.Normalise.FreshBinders
+        , LightClick.IR.Channel.Normalise
+--
+        , LightClick.IR.Channel.MicroSV.Error
+        , LightClick.IR.Channel.MicroSV.Update
+        , LightClick.IR.Channel.MicroSV.Intermediate
+        , LightClick.IR.Channel.MicroSV.InterpTy
+        , LightClick.IR.Channel.MicroSV
+--
+  -- [ High Level EDSL ]
+
+        , LightClick.DSL.AST
+        , LightClick.DSL.Lexer
+        , LightClick.DSL.Parser
+        , LightClick.DSL.Convert
+--
+        , LightClick.Main

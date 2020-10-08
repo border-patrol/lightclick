@@ -1,0 +1,7 @@
+#+TITLE: Light-Click
+
+Click is a DSL for describing routing in networks.
+
+This project presents a click inspired language for the SoC Domain in which we use connection and quantitative typing to reason about connections between nodes.
+
+Partially, based on work by Paul McKechnie.

@@ -1,0 +1,7 @@
+package runtests
+
+depends = contrib
+
+executable = runtests
+
+main = Main

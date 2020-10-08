@@ -1,0 +1,6 @@
+LOG: Parsing Complete 
+LOG: MetaTyping Complete 
+Error Happened
+global:33:0-7:
+The port "c" is already in use.
+LOG: Typing Complete 
