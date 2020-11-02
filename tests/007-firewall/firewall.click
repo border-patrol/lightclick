@@ -1,4 +1,6 @@
-data
+model lightclick
+
+types
 
 eightBit = logic[8];
 ttBit = logic[32];

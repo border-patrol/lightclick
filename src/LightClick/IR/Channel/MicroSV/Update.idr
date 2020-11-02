@@ -12,7 +12,7 @@ import Language.SystemVerilog.MetaTypes
 import Language.SystemVerilog.Micro
 
 
-%default covering -- hangs totality checker
+%default covering -- this file has caused the totality checker to hang.
 
 export
 update : (newGlobal : Context)

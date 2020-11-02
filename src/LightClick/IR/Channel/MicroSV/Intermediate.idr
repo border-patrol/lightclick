@@ -9,7 +9,6 @@ import Data.DList.DeBruijn
 
 import Data.DVect
 
-
 import LightClick.Error
 
 import LightClick.Types.Direction
@@ -224,12 +223,13 @@ convert e (CRef x type) with (e)
         Left $ General (unwords ["Attempting to construct Local", show x])
 
     convert e (CRef x type) | (MkTEnv decls local) | (No contra) with (lookup x decls)
-      convert e (CRef x type) | (MkTEnv decls local) | (No contra) | Nothing = Left $ General (unwords ["Attempting to construct global, identifier not found", show x])
+      convert e (CRef x type) | (MkTEnv decls local) | (No contra) | Nothing
+        = Left $ General (unwords ["Attempting to construct global, identifier not found", show x])
       convert e (CRef x type) | (MkTEnv decls local) | (No contra) | Just ty with (interpTy type ty)
-        convert e (CRef x type) | (MkTEnv decls local) | (No contra) | Just ty | (Yes prf) =
-          pure (MkTRes decls (Global x ty) prf)
-        convert e (CRef x type) | (MkTEnv decls local) | (No contra) | Just ty | (No contra') =
-           Left $ General (unwords ["Attempting to construct Global type issue", show x])
+        convert e (CRef x type) | (MkTEnv decls local) | (No contra) | Just ty | (Yes prf)
+          = pure (MkTRes decls (Global x ty) prf)
+        convert e (CRef x type) | (MkTEnv decls local) | (No contra) | Just ty | (No contra')
+          = Left $ General (unwords ["Attempting to construct Global type issue", show x])
 
 -- [ NOTE ] traverse decls and extra ty to do proof. will formalise later.
 
@@ -249,8 +249,10 @@ convert e (CLet bind this {term} inThis) with (isBindable term)
 
   convert e (CLet bind this {term = term} inThis) | (IsDecl prfDecl) with (e)
     convert e (CLet bind this {term = term} inThis) | (IsDecl prfDecl) | (MkTEnv decls local) with (convert (MkTEnv decls Nil) this)
-      convert e (CLet bind this {term = term} inThis) | (IsDecl prfDecl) | (MkTEnv decls local) | (Left l) = Left $ Nested "Attempting to construct global declaration" l
-      convert e (CLet bind this {term = term} inThis) | (IsDecl prfDecl) | (MkTEnv decls local) | (Right (MkTRes rest expr prf)) = convert (MkTEnv (MkDecl bind expr::rest) local) inThis
+      convert e (CLet bind this {term = term} inThis) | (IsDecl prfDecl) | (MkTEnv decls local) | (Left l)
+        = Left $ Nested "Attempting to construct global declaration" l
+      convert e (CLet bind this {term = term} inThis) | (IsDecl prfDecl) | (MkTEnv decls local) | (Right (MkTRes rest expr prf))
+        = convert (MkTEnv (MkDecl bind expr::rest) local) inThis
 
 
   {- [ Translate the local bindings ]
@@ -296,7 +298,8 @@ convert e (CLet bind this {term} inThis) with (isBindable term)
               convert e (CLet bind this {term = CHAN} inThis) | (IsLet x) | (MkTEnv decls local) | (Right (MkTRes rest expr prf)) | (Right (MkTRes y z w)) | IsInstC | (CChan dtype) | (Right (MkTRes _ newDType prfType))
                 = pure (MkTRes y (Let bind expr newDType z) w)
 
-            convert e (CLet bind this {term = CHAN} inThis) | (IsLet x) | (MkTEnv decls local) | (Right (MkTRes rest expr prf)) | (Right (MkTRes y z w)) | IsInstC | _ = Left $ General "Expected local let `this` to be CChan, it wasn't"
+            convert e (CLet bind this {term = CHAN} inThis) | (IsLet x) | (MkTEnv decls local) | (Right (MkTRes rest expr prf)) | (Right (MkTRes y z w)) | IsInstC | _
+              = Left $ General "Expected local let `this` to be CChan, it wasn't"
 
   -- Any other pattern here is unexpected.
   convert e (CLet bind this {term = term} inThis) | Unbindable = Left $ General "We were given something unbindable"
@@ -306,7 +309,8 @@ convert e (CLet bind this {term} inThis) with (isBindable term)
 convert (MkTEnv decls local) (CSeq x y) with (convert (MkTEnv decls local) x)
   convert (MkTEnv decls local) (CSeq x y) | Left err = Left $ Nested "Left Sequent failed" err
   convert (MkTEnv decls local) (CSeq x y) | Right (MkTRes declsX x' prfX) with (convert (MkTEnv declsX local) y)
-    convert (MkTEnv decls local) (CSeq x y) | Right (MkTRes declsX x' prfX) | Left err = Left $ Nested "Right  sequant failed" err
+    convert (MkTEnv decls local) (CSeq x y) | Right (MkTRes declsX x' prfX) | Left err
+      = Left $ Nested "Right  sequant failed" err
     convert (MkTEnv decls local) (CSeq x y) | Right (MkTRes declsX x' prfX) | Right (MkTRes declsY y' prfY) =
       pure (MkTRes declsY (Seq x' y') prfY)
 
@@ -317,15 +321,17 @@ convert e CEnd with (e)
 -- [ Module Declarations ]
 
 convert e (CPort l d type) with (convert e type)
-  convert e (CPort l d type) | Left err = Left $ Nested "Attempting to construct type for Port" err
-  convert e (CPort l d type) | (Right (MkTRes decls t' DD)) =
-    pure (MkTRes decls (Port l (interpDir d) t') (PP l))
+  convert e (CPort l d type) | Left err
+    = Left $ Nested "Attempting to construct type for Port" err
+  convert e (CPort l d type) | (Right (MkTRes decls t' DD))
+    = pure (MkTRes decls (Port l (interpDir d) t') (PP l))
 
 convert e (CModule xs) with (ports convert e xs)
-  convert e (CModule xs) | (Left l) = Left $ Nested "Attempting to construct ports for Module Declaration" l
+  convert e (CModule xs) | (Left l)
+    = Left $ Nested "Attempting to construct ports for Module Declaration" l
   convert e (CModule xs) | (Right (ns ** ps)) with (e)
-    convert e (CModule xs) | (Right (ns ** ps)) | (MkTEnv decls local) =
-      pure (MkTRes decls (MDecl ps) (MM ns))
+    convert e (CModule xs) | (Right (ns ** ps)) | (MkTEnv decls local)
+      = pure (MkTRes decls (MDecl ps) (MM ns))
 
 
 -- [ Data Declarations ]
@@ -333,42 +339,49 @@ convert e (CModule xs) with (ports convert e xs)
 convert (MkTEnv decls local) CDataLogic = pure (MkTRes decls DataLogic DD)
 
 convert e (CDataArray type k) with (convert e type)
-  convert e (CDataArray type k) | Left l = Left $ Nested "Attempting to construct Data Type for array" l
+  convert e (CDataArray type k) | Left l
+    = Left $ Nested "Attempting to construct Data Type for array" l
   convert e (CDataArray type k) | Right res with (res)
-    convert e (CDataArray type k) | Right res | (MkTRes decls type' DD) =
-      pure (MkTRes decls (DataArray type' k) DD)
+    convert e (CDataArray type k) | Right res | (MkTRes decls type' DD)
+      = pure (MkTRes decls (DataArray type' k) DD)
 
 convert e (CDataStruct xs) with (e)
-  convert e (CDataStruct xs) | (MkTEnv decls local) =
-    do xs' <- kvpairs convert e xs
-       pure (MkTRes decls (DataStruct xs') DD)
+  convert e (CDataStruct xs) | (MkTEnv decls local)
+    = do xs' <- kvpairs convert e xs
+         pure (MkTRes decls (DataStruct xs') DD)
 
 convert e (CDataUnion xs) with (e)
-  convert e (CDataUnion xs) | (MkTEnv decls local) =
-    do xs' <- kvpairs convert e xs
-       pure (MkTRes decls (DataUnion xs') DD)
+  convert e (CDataUnion xs) | (MkTEnv decls local)
+    = do xs' <- kvpairs convert e xs
+         pure (MkTRes decls (DataUnion xs') DD)
 
 
 -- [ A Thing that should not exist in 'Our Normal Form' ]
 
-convert e (CIDX label x y) = Left $ Nested "IDX Not expected" MalformedExpr
+convert e (CIDX label x y)
+  = Left $ Nested "IDX Not expected" MalformedExpr
 
 -- [ Constructors for Channels and Modules ]
 convert e (CChan _) with (e)
-  convert e (CChan _) | (MkTEnv decls local) = pure $ MkTRes decls NewChan CC
+  convert e (CChan _) | (MkTEnv decls local)
+    = pure $ MkTRes decls NewChan CC
 
 convert e (CModuleInst _ kvs) with (e)
-  convert e (CModuleInst _ kvs) | (MkTEnv decls local) =
-    do xs' <- chans convert e kvs
-       let ns = map fst xs'
-       pure (MkTRes decls (NewModule xs') (CM ns))
+  convert e (CModuleInst _ kvs) | (MkTEnv decls local)
+    = do xs' <- chans convert e kvs
+         let ns = map fst xs'
+         pure (MkTRes decls (NewModule xs') (CM ns))
 
 
-covering
 export
+covering
 runConvert : (c : ChannelIR UNIT)
-          -> Either TError MicroSvIrSpec
+               -> Either TError MicroSvIrSpec
 runConvert expr with (convert (MkTEnv Nil Nil) expr)
-  runConvert expr | Left l = Left $ Nested "Cannot consruct spec" l
-  runConvert expr | Right (MkTRes decls expr' UU) = Right (MkMSVIRSpec decls expr')
+  runConvert expr | Left l
+    = Left $ Nested "Cannot consruct spec" l
+  runConvert expr | Right (MkTRes decls expr' UU)
+    = Right (MkMSVIRSpec decls expr')
+
+
 -- --------------------------------------------------------------------- [ EOF ]

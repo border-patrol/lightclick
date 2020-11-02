@@ -2,6 +2,8 @@ module LightClick.DSL.Parser
 
 import        Data.Vect
 import        Data.List
+import        Data.Strings
+import        Data.Maybe
 
 import public Text.Lexer
 import public Text.Parser
@@ -22,6 +24,8 @@ import        LightClick.DSL.AST
 import public LightClick.DSL.Lexer
 
 %default total
+
+data TypeStyle = HASKELL | SYSV
 
 eoi : RuleEmpty Token ()
 eoi = eoi isEOI
@@ -68,6 +72,14 @@ identifier
                                 ID str => Just str
                                 _ => Nothing)
 
+doc : Rule Token (List String)
+doc = some docString
+  where
+    docString : Rule Token String
+    docString = terminal "Documentation String"
+                         (\x => case tok x of
+                                     Documentation doc => Just doc
+                                     _ => Nothing)
 
 name : Rule Token String
 name = identifier
@@ -162,6 +174,7 @@ mutual
 
 typeDef : Rule Token (FileContext, String, AST)
 typeDef = do
+  optional doc
   s <- location
   n <- name
   symbol "="
@@ -191,28 +204,47 @@ wireType = do {keyword "general";  pure General}
        <|> do {keyword "interrupt"; pure Interrupt}
        <|> do {keyword "info"; pure Info}
 
-port : Rule Token AST
-port = do
-    st <- location
-    label <- name
-    symbol ":"
-    t <- type_
-    c <- wireType
-    d <- direction
-    s <- sensitivity
-    e <- location
-    pure (Port (newFC st e) label d s c t)
 
-moduleDef : Rule Token (FileContext, String, AST)
-moduleDef = do
-  d <- location
-  n <- name
-  symbol "="
-  s <- location
-  keyword "module"
-  res <- brackets $ commaSepBy1V port
-  e <- location
-  pure (newFC d e, n, ModuleDef (newFC s e) (snd res))
+portHaskellStyle : Rule Token AST
+portHaskellStyle
+  = do st <- location
+       optional doc
+       label <- name
+       symbol ":"
+       t <- type_
+       c <- wireType
+       d <- direction
+       s <- sensitivity
+       e <- location
+       pure (Port (newFC st e) label d s c t)
+
+portSystemVerilogStyle : Rule Token AST
+portSystemVerilogStyle
+  = do st <- location
+       optional doc
+       d <- direction
+       s <- sensitivity
+       c <- wireType
+       t <- type_
+       label <- name
+       e <- location
+       pure (Port (newFC st e) label d s c t)
+
+port : TypeStyle -> Rule Token AST
+port HASKELL = portHaskellStyle
+port SYSV    = portSystemVerilogStyle
+
+moduleDef : TypeStyle -> Rule Token (FileContext, String, AST)
+moduleDef style
+  = do optional doc
+       d <- location
+       n <- name
+       symbol "="
+       s <- location
+       keyword "module"
+       res <- brackets $ commaSepBy1V (port style)
+       e <- location
+       pure (newFC d e, n, ModuleDef (newFC s e) (snd res))
 
 idx : Rule Token AST
 idx = do
@@ -257,17 +289,22 @@ mux = do
 conn : Rule Token AST
 conn = mux <|> fanout <|> connect
 
-data_ : Rule Token (xs : List (FileContext, String, AST) ** NonEmpty xs)
-data_ = do
-  keyword "data"
+types : Rule Token (xs : List (FileContext, String, AST) ** NonEmpty xs)
+types = do
+  keyword "types"
   some' (typeDef <* symbol ";")
 
 export
 design : Rule Token AST
 design = do
-   ts <- optional data_
+   optional (many doc)
+   keyword "model"
+   keyword "lightclick"
+   tyStyleDecl <- optional (do {keyword "verilog"; pure SYSV})
+   let typeStyle = fromMaybe HASKELL tyStyleDecl
+   ts <- optional types
    (keyword "modules")
-   ms <- some'  (moduleDef <* symbol ";")
+   ms <- some'  (moduleDef typeStyle <* symbol ";")
    (keyword "connections")
    cs <- some' (conn <* symbol ";")
    Parser.eoi

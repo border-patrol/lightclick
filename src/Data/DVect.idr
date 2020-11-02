@@ -44,6 +44,10 @@ data DVect : (aTy : Type)
       -> (rest : DVect aTy elemTy n xs)
       -> DVect aTy elemTy (S n) (x::xs)
 
+public export
+size : DVect a e l as -> Nat
+size Nil = Z
+size (x::xs) = 1 + size xs
 
 public export
 mapToVect : (forall x . e x -> b)

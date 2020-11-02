@@ -1,3 +1,5 @@
+model lightclick
+
 modules
 
 s = module {ctrl : logic control output high};

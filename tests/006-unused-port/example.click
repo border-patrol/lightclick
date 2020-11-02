@@ -1,4 +1,6 @@
-data
+model lightclick
+
+types
 
 x = struct { x : logic} ;
 y = union { x : logic, y : x} ;

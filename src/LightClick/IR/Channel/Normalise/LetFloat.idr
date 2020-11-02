@@ -15,7 +15,6 @@ import LightClick.IR.ChannelCentric
 %default total
 
 
-export
 isNF : ChannelIR type -> Bool
 
 isNF (CSeq (CSeq this thenThis) andThis) = False
@@ -30,7 +29,6 @@ isNF (CSeq this thenThis) = isNF this && isNF thenThis
 isNF (CLet this beThis inThis) = isNF beThis && isNF inThis
 isNF expr = True
 
-covering
 letFloat : ChannelIR type -> ChannelIR type
 letFloat (CSeq (CSeq this thenThis) rest) =
     CSeq (letFloat this)
@@ -61,10 +59,13 @@ letFloat (CLet x y z) = CLet x (letFloat y) (letFloat z)
 letFloat (CSeq x y) = CSeq (letFloat x) (letFloat y)
 letFloat expr = expr
 
-covering
 export
+covering -- due to totality checker not liking recursive calls.
 runLetFloat : ChannelIR type -> Either LightClick.Error (ChannelIR type)
 runLetFloat expr =
   if isNF expr
   then Right expr
   else runLetFloat (letFloat expr)
+
+
+-- [ EOF ]

@@ -1,4 +1,6 @@
-data
+model lightclick
+
+types
 
 X  = struct { x : logic} ;
 
@@ -28,7 +30,11 @@ trgt = module
 
 connections
 
-// Fanouts
-clk[c] -> {init[c], trgt[c]};
+// Multiplexers
+{ init[chan1], init[chan2] } -( init[ctrl] )-> trgt[xy];
 
-clk[c] -> init[c]; // linearity error
+
+clk[c] -> {init[c]}; // this should fail at parsing
+
+// Direct connection
+trgt[err] -> init[err];

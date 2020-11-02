@@ -314,17 +314,15 @@ mutual
              Right (VLet mName
                            (VModule (dualC::dualO::dualFS))
                            (VLet (newName [mName, "control"])
-                                   (VChan dC)
-                                   (VLet (newName [mName, "output"])
-                                           (VChan dO)
-                                           (VLet (newName [mName, "input"])
-                                                 (VChan dO)
-                                                 (VSeq (Direct.newConn (newName [mName, "control"]) vC (newIDX mRef vC))
-                                                       (VSeq (Direct.newConn (newName [mName,"input"]) vO (newIDX mRef vO))
-                                                              fi
-                                                       )
-                                                 )
-                                           )
+                                 (VChan dC)
+                                 (VLet (newName [mName, "output"])
+                                       (VChan dO)
+                                       (VSeq (Direct.newConn (newName [mName, "control"]) vC (newIDX mRef vC))
+                                             (VSeq (Direct.newConn (newName [mName,"output"]) vO (newIDX mRef vO))
+                                                   fi
+                                             )
+                                       )
+
                                    )
                            )
                    , TyConn, envo)

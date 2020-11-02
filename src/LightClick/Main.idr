@@ -27,6 +27,7 @@ import LightClick.DSL.Parser
 import LightClick.DSL.Convert
 
 import Language.SystemVerilog.Micro
+import Language.SystemVerilog.Micro.Pretty
 
 
 processArgs : List String -> IO $ Maybe (Bool, String)

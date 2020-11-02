@@ -8,14 +8,14 @@ import Commons.Text.Lexer.Run
 
 
 symbols : List String
-symbols = ["->", "-", "[", "]", ";", "{", "}", ":", ",", "=", "?", "(", ")"]
+symbols = ["->", "-", "[", "]", ";", "{", "}", ":", ",", "=", "?", "(", ")", ".", "#"]
 
 keywords : List String
 keywords = [ "input", "output", "inout"
            , "high", "low", "rising", "falling", "insensitive"
            , "control", "clock", "data", "address", "reset", "info", "interrupt", "general"
-           , "types", "modules", "connections","module"
-           , "logic", "typedef", "struct", "union"
+           , "types", "modules", "connections", "module"
+           , "logic", "typedef", "struct", "union", "lightclick", "model", "verilog"
            ]
 
 public export
@@ -31,6 +31,7 @@ namespace LightClick
                | Keyword String
                | LineComment String
                | BlockComment String
+               | Documentation String
                | LitNat Nat
                | LitStr String
                | Symbol String
@@ -72,10 +73,12 @@ namespace LightClick
       (space, WS)
     , (lineComment (exact "//"), LineComment)
     , (blockComment (exact "/*") (exact "*/"), BlockComment)
+    , (lineComment (exact "\\\\"), Documentation)
     , (digits, \x => LitNat (integerToNat $ cast {to=Integer} x))
     , (stringLit, LitStr)
     ]
-    ++ map (\x => (exact x, Symbol)) symbols
+    ++
+       map (\x => (exact x, Symbol)) symbols
     ++
     [
       (identifier, (\x => if elem x keywords then Keyword x else ID x))

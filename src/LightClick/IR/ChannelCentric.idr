@@ -16,8 +16,17 @@ import LightClick.IR.ModuleCentric
 public export
 data ChannelIR : TyIR -> Type where
   CRef  : String -> (type : TyIR) -> ChannelIR type
-  CLet  : {term : TyIR} -> (bind : String) -> (this : ChannelIR term) -> (inThis : ChannelIR expr) -> ChannelIR expr
-  CSeq  : {a,b : TyIR} -> ChannelIR a -> ChannelIR b -> ChannelIR b
+  CLet  : {term : TyIR}
+       -> (bind : String)
+       -> (this : ChannelIR term)
+       -> (inThis : ChannelIR expr)
+                 -> ChannelIR expr
+
+  CSeq  : {a,b : TyIR}
+       -> ChannelIR a
+       -> ChannelIR b
+       -> ChannelIR b
+
   CEnd : ChannelIR UNIT
 
   CPort : String

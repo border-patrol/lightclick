@@ -4,7 +4,9 @@ An example of LocalLink orchestration.
 
 */
 
-data
+model lightclick
+
+types
 
 point = struct { x : logic, y : logic };
 

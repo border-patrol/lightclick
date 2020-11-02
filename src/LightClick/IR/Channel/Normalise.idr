@@ -18,12 +18,12 @@ import LightClick.IR.Channel.Normalise.FreshBinders
 
 %default total
 
-covering
 export
+covering -- comes from Merge runMerge not being total.
 normalise : ChannelIR UNIT -> Either LightClick.Error (ChannelIR UNIT)
 normalise expr =
-  do e' <- runLetFloat expr
-     em' <- runMerge e'
+  do e'   <- runLetFloat expr
+     em'  <- runMerge e'
      emb' <- freshBinders em'
      pure emb'
 

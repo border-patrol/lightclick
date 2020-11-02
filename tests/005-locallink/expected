@@ -1,0 +1,99 @@
+LOG: Parsing Complete 
+LOG: MetaTyping Complete 
+LOG: Typing Complete 
+LOG : Showing ModuleIR
+LOG : Normalising ChannelIR
+LOG : Convert to MicroSV IR
+LOG : Convert to MicroSV
+LOG : Pretty Printing
+typedef struct packed
+{
+  logic x;
+  logic y;
+} point; 
+
+module system  
+(
+  output logic clck,
+  output logic rset
+);
+// TO ADD
+endmodule; 
+
+module producer  
+(
+  input logic clck,
+  input logic rset,
+  output point buffer,
+  output logic ready_src,
+  input logic ready_dst,
+  output logic frame_start,
+  output logic frame_end,
+  output logic payload_start,
+  output logic payload_end,
+  input logic error
+);
+// TO ADD
+endmodule; 
+
+module receiver  
+(
+  input logic clck,
+  input logic rset,
+  input point buffer,
+  input logic ready_src,
+  output logic ready_dst,
+  input logic frame_start,
+  input logic frame_end,
+  input logic payload_start,
+  input logic payload_end,
+  output logic error
+);
+// TO ADD
+endmodule; 
+
+module Top ();
+  logic fan_out_from_system_clck_to_producer_clck_receiver_clck;
+  logic fan_out_from_system_rset_to_producer_rset_receiver_rset;
+  point producer_buffer_receiver_buffer;
+  logic producer_ready_src_receiver_ready_src;
+  logic receiver_ready_dst_producer_ready_dst;
+  logic producer_frame_start_receiver_frame_start;
+  logic producer_frame_end_receiver_frame_end;
+  logic producer_payload_start_receiver_payload_start;
+  logic producer_payload_end_receiver_payload_end;
+  logic receiver_error_producer_error;
+  producer lightclick_module_0
+     (
+       .clck(fan_out_from_system_clck_to_producer_clck_receiver_clck),
+       .rset(fan_out_from_system_rset_to_producer_rset_receiver_rset),
+       .buffer(producer_buffer_receiver_buffer),
+       .ready_src(producer_ready_src_receiver_ready_src),
+       .ready_dst(receiver_ready_dst_producer_ready_dst),
+       .frame_start(producer_frame_start_receiver_frame_start),
+       .frame_end(producer_frame_end_receiver_frame_end),
+       .payload_start(producer_payload_start_receiver_payload_start),
+       .payload_end(producer_payload_end_receiver_payload_end),
+       .error(receiver_error_producer_error)
+     );
+  receiver lightclick_module_1
+     (
+       .clck(fan_out_from_system_clck_to_producer_clck_receiver_clck),
+       .rset(fan_out_from_system_rset_to_producer_rset_receiver_rset),
+       .buffer(producer_buffer_receiver_buffer),
+       .ready_src(producer_ready_src_receiver_ready_src),
+       .ready_dst(receiver_ready_dst_producer_ready_dst),
+       .frame_start(producer_frame_start_receiver_frame_start),
+       .frame_end(producer_frame_end_receiver_frame_end),
+       .payload_start(producer_payload_start_receiver_payload_start),
+       .payload_end(producer_payload_end_receiver_payload_end),
+       .error(receiver_error_producer_error)
+     );
+  system lightclick_module_2
+     (
+       .clck(fan_out_from_system_clck_to_producer_clck_receiver_clck),
+       .rset(fan_out_from_system_rset_to_producer_rset_receiver_rset)
+     );
+
+endmodule;
+LOG : Bye

@@ -42,6 +42,7 @@ modules =
         , Language.SystemVerilog.Direction
         , Language.SystemVerilog.MetaTypes
         , Language.SystemVerilog.Micro
+        , Language.SystemVerilog.Micro.Pretty
 
   -- [ LightClick Itself]
 

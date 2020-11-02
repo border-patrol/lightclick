@@ -21,7 +21,7 @@ PortList = DVect String (Ty . PORT)
 namespace PortList
 
   public export
-  data Division : (pred : (label : String) -> Ty (PORT label) -> Type)
+  data Division : (0 pred : (label : String) -> Ty (PORT label) -> Type)
 
                -> {ps    : Vect p String}
                -> {ns    : Vect n String}
@@ -34,7 +34,7 @@ namespace PortList
     where
       Empty : Division pred Nil Nil Nil
 
-      Pos : {pred : (label : String) -> Ty (PORT label) -> Type}
+      Pos : {0 pred : (label : String) -> Ty (PORT label) -> Type}
          -> {pos  : PortList p ps}
          -> {neg  : PortList n ns}
          -> {orig : PortList o os}
@@ -46,7 +46,7 @@ namespace PortList
          -> (rest : Division pred        pos  neg        orig)
                  -> Division pred (port::pos) neg (port::orig)
 
-      Neg : {pred : (label : String) -> Ty (PORT label) -> Type}
+      Neg : {0 pred : (label : String) -> Ty (PORT label) -> Type}
          -> {pos  : PortList p ps}
          -> {neg  : PortList n ns}
          -> {orig : PortList o os}
@@ -65,7 +65,7 @@ namespace PortList
                      -> Type
     where
 
-      MkState : {pred : (label : String) -> Ty (PORT label) -> Type}
+      MkState : {0 pred : (label : String) -> Ty (PORT label) -> Type}
 
              -> {os       : Vect     o String}
              -> {orig     : PortList o os}
@@ -81,7 +81,7 @@ namespace PortList
                          -> State pred orig
 
   export
-  state : (pred  : (label : String) -> (port : Ty (PORT label)) -> Type)
+  state : (0 pred  : (label : String) -> (port : Ty (PORT label)) -> Type)
 
        -> (dec   : (label : String) -> (port : Ty (PORT label)) -> Dec (pred label port))
        -> (ports : PortList p ps)
@@ -133,7 +133,7 @@ namespace Free
         = [label]
       free (TyPort label dir sense wty type usage) | No contra
         = Nil
-    free (TyModule ports) with (state Free Port.free ports)
+    free (TyModule ports) with (state Port.Free Port.free ports)
       free (TyModule ports) | (MkState ps pos ns neg division) = toList ps
 
 -- --------------------------------------------------------------------- [ EOF ]
