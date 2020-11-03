@@ -2,7 +2,7 @@ module LightClick.DSL.Lexer
 
 import Text.Lexer
 
-import Commons.Text.Lexer.Run
+import Toolkit.Text.Lexer.Run
 
 %default total
 

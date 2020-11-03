@@ -1,7 +1,8 @@
 module LightClick.Types.Meta
 
 import Data.Vect
-import Data.Vect.Extra
+
+import Toolkit.Data.Vect.Extra
 
 %default total
 

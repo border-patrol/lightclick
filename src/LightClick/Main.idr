@@ -4,8 +4,7 @@ import System
 import System.File
 import System.Clock
 
-import Commons.System
-
+import Toolkit.System
 
 import LightClick.Error
 import LightClick.Types

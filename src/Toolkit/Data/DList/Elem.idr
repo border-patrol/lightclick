@@ -1,8 +1,8 @@
-module Data.DList.Elem
+module Toolkit.Data.DList.Elem
 
-import Data.DList
+import Toolkit.Data.DList
 
-import public Decidable.Equality.Indexed
+import public Toolkit.Decidable.Equality.Indexed
 
 %default total
 

@@ -5,7 +5,7 @@ import Data.Vect
 import Data.Fin
 import Data.Strings
 
-import Commons.Data.Location
+import Toolkit.Data.Location
 
 import LightClick.Types.Meta
 import LightClick.IR.Channel.Normalise.Error

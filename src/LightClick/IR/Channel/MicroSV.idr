@@ -3,9 +3,10 @@ module LightClick.IR.Channel.MicroSV
 import Data.List
 import Data.Vect
 import Data.Strings
-import Data.DList
-import Data.DVect
-import Data.DList.DeBruijn
+
+import Toolkit.Data.DList
+import Toolkit.Data.DVect
+import Toolkit.Data.DList.DeBruijn
 
 import LightClick.Error
 

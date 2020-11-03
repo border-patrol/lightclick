@@ -7,13 +7,13 @@
 |||
 ||| Thanks to christiansen's Galois tutorials for the accessor and
 ||| mutator functions for environments/object store.
-module Data.DList.DeBruijn
+module Toolkit.Data.DList.DeBruijn
 
 import public Decidable.Equality
 
 import public Data.List.Elem
 
-import public Data.DList
+import public Toolkit.Data.DList
 
 %default total
 

@@ -2,7 +2,7 @@ module LightClick.Types.Direction
 
 import Decidable.Equality
 
-import Commons.Decidable.Informative
+import Toolkit.Decidable.Informative
 
 import LightClick.Error
 

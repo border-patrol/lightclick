@@ -2,11 +2,10 @@ module LightClick.Types.Compatibility
 
 import public Decidable.Equality.Indexed
 
-import public Commons.Decidable.Informative
+import public Toolkit.Decidable.Informative
 
-import Commons.Data.Rig
-
-import Data.Vect.Extra
+import Toolkit.Data.Rig
+import Toolkit.Data.Vect.Extra
 
 import LightClick.Error
 

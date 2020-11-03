@@ -3,14 +3,14 @@ module LightClick.Check
 import Decidable.Equality
 
 import Data.List
-import Data.DList
-import Data.DList.DeBruijn
-
 import Data.Vect
-import Data.DVect
 
-import Commons.Data.Location
-import Commons.Data.Rig
+import Toolkit.Data.DList
+import Toolkit.Data.DList.DeBruijn
+import Toolkit.Data.DVect
+
+import Toolkit.Data.Location
+import Toolkit.Data.Rig
 
 import Language.SystemVerilog.Utilities
 

@@ -2,8 +2,8 @@ module Language.SystemVerilog.MetaTypes
 
 import        Data.Strings
 
-import public Data.DList.DeBruijn
-import public Decidable.Equality.Indexed
+import public Toolkit.Data.DList.DeBruijn
+import public Toolkit.Decidable.Equality.Indexed
 
 %default total
 

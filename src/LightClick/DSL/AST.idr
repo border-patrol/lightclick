@@ -2,7 +2,7 @@ module LightClick.DSL.AST
 
 import Data.Vect
 
-import Commons.Data.Location
+import Toolkit.Data.Location
 
 import LightClick.Types.Direction
 import LightClick.Types.Sensitivity

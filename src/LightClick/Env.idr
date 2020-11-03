@@ -2,15 +2,13 @@ module LightClick.Env
 
 import Data.List
 import Data.Vect
-import Data.DList
-import Data.DVect
 
-import Data.DList.DeBruijn
-
-import Commons.Data.Location
-import Commons.Data.Rig
-
-import Decidable.Equality.Indexed
+import Toolkit.Data.DList
+import Toolkit.Data.DVect
+import Toolkit.Data.DList.DeBruijn
+import Toolkit.Data.Location
+import Toolkit.Data.Rig
+import Toolkit.Decidable.Equality.Indexed
 
 import Language.SystemVerilog.Utilities
 

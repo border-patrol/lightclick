@@ -2,7 +2,7 @@ module LightClick.Types.Sensitivity
 
 import Decidable.Equality
 
-import Commons.Decidable.Informative
+import Toolkit.Decidable.Informative
 
 import LightClick.Error
 

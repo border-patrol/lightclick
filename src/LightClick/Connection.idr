@@ -2,8 +2,8 @@ module LightClick.Connection
 
 import Data.Vect
 
-import Commons.Decidable.Informative
-import Commons.Data.Rig
+import Toolkit.Decidable.Informative
+import Toolkit.Data.Rig
 
 import LightClick.Types
 import LightClick.Types.Equality

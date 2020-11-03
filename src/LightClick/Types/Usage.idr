@@ -2,8 +2,9 @@ module LightClick.Types.Usage
 
 import Data.List
 import Data.Vect
-import Data.DList
-import Data.DVect
+
+import Toolkit.Data.DList
+import Toolkit.Data.DVect
 
 import LightClick.Error
 

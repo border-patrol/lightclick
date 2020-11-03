@@ -1,15 +1,15 @@
-module Commons.Text.Parser.Run
+module Toolkit.Text.Parser.Run
 
 import System.File
 
 import Text.Parser
 import Text.Lexer
 
-import Commons.Data.Nat
-import Commons.Data.Location
-import Commons.Text.Lexer.Run
+import Toolkit.Data.Nat
+import Toolkit.Data.Location
+import Toolkit.Text.Lexer.Run
 
-import Commons.Text.Parser.Support
+import Toolkit.Text.Parser.Support
 
 
 %default total

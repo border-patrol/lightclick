@@ -2,12 +2,14 @@ module Language.SystemVerilog.Micro.Pretty
 
 import Data.Vect
 
-import Data.DList
-import Data.DVect
-
-import Data.Vect.Extra
-
 import public Text.PrettyPrint.Prettyprinter
+
+import Toolkit.Data.DList
+import Toolkit.Data.DVect
+
+import Toolkit.Data.Vect.Extra
+
+
 
 import Language.SystemVerilog.Micro
 

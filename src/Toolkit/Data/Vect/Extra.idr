@@ -1,4 +1,4 @@
-module Data.Vect.Extra
+module Toolkit.Data.Vect.Extra
 
 import public Decidable.Equality
 import        Data.Vect

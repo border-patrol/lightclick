@@ -1,4 +1,4 @@
-module Commons.Data.Nat
+module Toolkit.Data.Nat
 
 %default total
 

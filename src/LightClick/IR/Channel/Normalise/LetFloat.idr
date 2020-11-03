@@ -2,8 +2,9 @@ module LightClick.IR.Channel.Normalise.LetFloat
 
 import Data.List
 import Data.Vect
-import Data.DList
-import Data.DVect
+
+import Toolkit.Data.DList
+import Toolkit.Data.DVect
 
 import LightClick.Types
 import LightClick.Terms

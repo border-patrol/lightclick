@@ -1,4 +1,4 @@
-module Commons.Text.Lexer.Run
+module Toolkit.Text.Lexer.Run
 
 import System.File
 
@@ -7,8 +7,8 @@ import Data.Strings
 
 import Text.Lexer
 
-import Commons.Data.Nat
-import Commons.Data.Location
+import Toolkit.Data.Nat
+import Toolkit.Data.Location
 
 %default total
 

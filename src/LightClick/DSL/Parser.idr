@@ -8,11 +8,11 @@ import        Data.Maybe
 import public Text.Lexer
 import public Text.Parser
 
-import public Commons.Data.Location
-import public Commons.Text.Lexer.Run
-import public Commons.Text.Parser.Support
-import        Commons.Text.Parser.Location
-import public Commons.Text.Parser.Run
+import public Toolkit.Data.Location
+import public Toolkit.Text.Lexer.Run
+import public Toolkit.Text.Parser.Support
+import        Toolkit.Text.Parser.Location
+import public Toolkit.Text.Parser.Run
 
 
 import        LightClick.Types.Direction

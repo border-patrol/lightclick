@@ -3,12 +3,10 @@ module LightClick.Terms
 import Data.Vect
 import Data.Vect.Elem
 
-import Data.DList
-import Data.DList.DeBruijn
-import Data.DVect
-
-
-import Commons.Data.Location
+import Toolkit.Data.DList
+import Toolkit.Data.DList.DeBruijn
+import Toolkit.Data.DVect
+import Toolkit.Data.Location
 
 import LightClick.Types
 import LightClick.Error

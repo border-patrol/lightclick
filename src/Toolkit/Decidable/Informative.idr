@@ -7,7 +7,7 @@
 ||| property itself but that is not necessarily a advantageous.
 |||
 ||| `DecInfo` provides a data structure to capture decidable properties together with an informative error message for when the property does not hold.
-module Commons.Decidable.Informative
+module Toolkit.Decidable.Informative
 
 %default total
 

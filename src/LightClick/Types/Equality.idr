@@ -1,12 +1,12 @@
 module LightClick.Types.Equality
 
-import public Decidable.Equality.Indexed
+import public Toolkit.Decidable.Equality.Indexed
 
-import public Commons.Decidable.Informative
+import public Toolkit.Decidable.Informative
 
-import Commons.Data.Rig
+import Toolkit.Data.Rig
 
-import Data.Vect.Extra
+import Toolkit.Data.Vect.Extra
 
 import LightClick.Error
 

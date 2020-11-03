@@ -1,8 +1,9 @@
 module LightClick.IR.ModuleCentric
 
 import Data.Vect
-import Data.DList
-import Data.DVect
+
+import Toolkit.Data.DList
+import Toolkit.Data.DVect
 
 import LightClick.Error
 import LightClick.Types

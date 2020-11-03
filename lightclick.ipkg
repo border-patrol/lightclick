@@ -10,31 +10,31 @@ executable = lightclick
 modules =
 
   -- [ Vendored Utilities ]
-          Decidable.Equality.Indexed
+          Toolkit.Decidable.Equality.Indexed
 
-        , Data.Vect.Extra
+        , Toolkit.Data.Vect.Extra
 
-        , Data.DList
-        , Data.DList.Elem
-        , Data.DList.DeBruijn
+        , Toolkit.Data.DList
+        , Toolkit.Data.DList.Elem
+        , Toolkit.Data.DList.DeBruijn
 
-        , Data.DVect
-        , Data.DVect.Elem
+        , Toolkit.Data.DVect
+        , Toolkit.Data.DVect.Elem
 
-        , Commons.Data.Nat
+        , Toolkit.Data.Nat
 
-        , Commons.Data.Location
-        , Commons.Data.Rig
+        , Toolkit.Data.Location
+        , Toolkit.Data.Rig
 
-        , Commons.Decidable.Informative
+        , Toolkit.Decidable.Informative
 
-        , Commons.Text.Parser.Support
-        , Commons.Text.Parser.Location
-        , Commons.Text.Parser.Run
+        , Toolkit.Text.Parser.Support
+        , Toolkit.Text.Parser.Location
+        , Toolkit.Text.Parser.Run
 
-        , Commons.Text.Lexer.Run
+        , Toolkit.Text.Lexer.Run
 
-        , Commons.System
+        , Toolkit.System
 
   -- [ A SystemVerilog EDSL ]
 

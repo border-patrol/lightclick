@@ -1,9 +1,10 @@
-module Data.DVect.Elem
+module Toolkit.Data.DVect.Elem
 
 import Data.Vect
-import Data.DVect
 
-import public Decidable.Equality.Indexed
+import Toolkit.Data.DVect
+
+import public Toolkit.Decidable.Equality.Indexed
 
 %default total
 

@@ -1,9 +1,9 @@
 module LightClick.DSL.Convert
 
-import Data.DList
-import Data.DList.DeBruijn
+import Toolkit.Data.DList
+import Toolkit.Data.DList.DeBruijn
 
-import Commons.Data.Location
+import Toolkit.Data.Location
 
 import LightClick.Types
 import LightClick.Terms

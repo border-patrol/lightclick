@@ -10,7 +10,7 @@
 ||| depend on values. This affects the ability to construct lists of
 ||| values that have a dependent type. The existing `List` type cannot
 ||| be used as it requires all elements to have the same type.
-module Data.DList
+module Toolkit.Data.DList
 
 import        Data.Strings
 import public Data.List

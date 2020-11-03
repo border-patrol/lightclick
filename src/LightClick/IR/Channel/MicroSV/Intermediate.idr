@@ -4,10 +4,9 @@ import Data.List
 import Data.Vect
 import Data.Strings
 
-import Data.DList
-import Data.DList.DeBruijn
-
-import Data.DVect
+import Toolkit.Data.DList
+import Toolkit.Data.DList.DeBruijn
+import Toolkit.Data.DVect
 
 import LightClick.Error
 

@@ -1,4 +1,4 @@
-module Commons.Data.Location
+module Toolkit.Data.Location
 
 %default total
 

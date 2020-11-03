@@ -1,8 +1,9 @@
 module LightClick.Types
 
 import public Data.Vect
-import public Data.DVect
-import public Commons.Data.Rig
+
+import public Toolkit.Data.DVect
+import public Toolkit.Data.Rig
 
 import LightClick.Error
 

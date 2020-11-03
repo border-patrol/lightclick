@@ -13,33 +13,22 @@ make lightclick
 The output should look something like:
 
 #+begin_src bash
-1/52: Building Data.DList (src/Data/DList.idr)
-2/52: Building Data.DList.DeBruijn (src/Data/DList/DeBruijn.idr)
-3/52: Building Decidable.Equality.Indexed (src/Decidable/Equality/Indexed.idr)
-4/52: Building Data.DVect (src/Data/DVect.idr)
-5/52: Building Commons.Data.Location (src/Commons/Data/Location.idr)
-6/52: Building Data.Vect.Extra (src/Data/Vect/Extra.idr)
+1/52: Building Toolkit.Data.DList (src/Toolkit/Data/DList.idr)
+2/52: Building Toolkit.Data.DList.DeBruijn (src/Toolkit/Data/DList/DeBruijn.idr)
+3/52: Building Toolkit.Decidable.Equality.Indexed (src/Toolkit/Decidable/Equality/Indexed.idr)
+4/52: Building Toolkit.Data.DVect (src/Toolkit/Data/DVect.idr)
+6/52: Building Toolkit.Data.Vect.Extra (src/Toolkit/Data/Vect/Extra.idr)
 7/52: Building LightClick.Types.Meta (src/LightClick/Types/Meta.idr)
-8/52: Building LightClick.IR.Channel.Normalise.Error (src/LightClick/IR/Channel/Normalise/Error.idr)
-9/52: Building LightClick.Error (src/LightClick/Error.idr)
-10/52: Building Commons.Data.Rig (src/Commons/Data/Rig.idr)
-11/52: Building Commons.Decidable.Informative (src/Commons/Decidable/Informative.idr)
-12/52: Building LightClick.Types.Direction (src/LightClick/Types/Direction.idr)
-13/52: Building LightClick.Types.Sensitivity (src/LightClick/Types/Sensitivity.idr)
-14/52: Building LightClick.Types.WireType (src/LightClick/Types/WireType.idr)
 15/52: Building LightClick.Types (src/LightClick/Types.idr)
-16/52: Building Language.SystemVerilog.Utilities (src/Language/SystemVerilog/Utilities.idr)
 17/52: Building LightClick.Terms (src/LightClick/Terms.idr)
 18/52: Building LightClick.Values (src/LightClick/Values.idr)
 19/52: Building LightClick.IR.ModuleCentric (src/LightClick/IR/ModuleCentric.idr)
 20/52: Building Language.SystemVerilog.MetaTypes (src/Language/SystemVerilog/MetaTypes.idr)
 21/52: Building LightClick.IR.Channel.MicroSV.Error (src/LightClick/IR/Channel/MicroSV/Error.idr)
-22/52: Building Language.SystemVerilog.Direction (src/Language/SystemVerilog/Direction.idr)
 23/52: Building Language.SystemVerilog.Micro (src/Language/SystemVerilog/Micro.idr)
 24/52: Building LightClick.IR.Channel.MicroSV.Update (src/LightClick/IR/Channel/MicroSV/Update.idr)
-25/52: Building Data.DVect.Elem (src/Data/DVect/Elem.idr)
-26/52: Building Data.DList.Elem (src/Data/DList/Elem.idr)
-27/52: Building Commons.System (src/Commons/System.idr)
+25/52: Building Toolkit.Data.DVect.Elem (src/Toolkit/Data/DVect/Elem.idr)
+26/52: Building Toolkit.Data.DList.Elem (src/Toolkit/Data/DList/Elem.idr)
 28/52: Building LightClick.Types.Equality (src/LightClick/Types/Equality.idr)
 29/52: Building LightClick.Types.Compatibility (src/LightClick/Types/Compatibility.idr)
 30/52: Building LightClick.Connection (src/LightClick/Connection.idr)
@@ -54,24 +43,16 @@ The output should look something like:
 39/52: Building LightClick.IR.Channel.MicroSV.InterpTy (src/LightClick/IR/Channel/MicroSV/InterpTy.idr)
 40/52: Building LightClick.IR.Channel.MicroSV.Intermediate (src/LightClick/IR/Channel/MicroSV/Intermediate.idr)
 41/52: Building LightClick.IR.Channel.MicroSV (src/LightClick/IR/Channel/MicroSV.idr)
-42/52: Building LightClick.DSL.AST (src/LightClick/DSL/AST.idr)
-43/52: Building Commons.Data.Nat (src/Commons/Data/Nat.idr)
-44/52: Building Commons.Text.Lexer.Run (src/Commons/Text/Lexer/Run.idr)
-45/52: Building LightClick.DSL.Lexer (src/LightClick/DSL/Lexer.idr)
-46/52: Building Commons.Text.Parser.Support (src/Commons/Text/Parser/Support.idr)
-47/52: Building Commons.Text.Parser.Location (src/Commons/Text/Parser/Location.idr)
-48/52: Building Commons.Text.Parser.Run (src/Commons/Text/Parser/Run.idr)
-49/52: Building LightClick.DSL.Parser (src/LightClick/DSL/Parser.idr)
 50/52: Building LightClick.DSL.Convert (src/LightClick/DSL/Convert.idr)
 51/52: Building Language.SystemVerilog.Micro.Pretty (src/Language/SystemVerilog/Micro/Pretty.idr)
 52/52: Building LightClick.Main (src/LightClick/Main.idr)
 #+end_src
 
-and take around 14 seconds to check:
+and take around 10-15 seconds to check:
 
 #+begin_src bash
-13.84user 0.43system 0:14.47elapsed 98%CPU (0avgtext+0avgdata 241008maxresident)k
-23256inputs+34048outputs (0major+263621minor)pagefaults 0swaps
+10.57user 0.45system 0:11.06elapsed 99%CPU (0avgtext+0avgdata 267244maxresident)k
+0inputs+28088outputs (0major+235691minor)pagefaults 0swaps
 #+end_src
 
 * Installing

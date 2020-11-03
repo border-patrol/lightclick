@@ -1,11 +1,11 @@
-module Commons.Text.Parser.Location
+module Toolkit.Text.Parser.Location
 
 import Text.Lexer
 import Text.Parser
 
-import Commons.Data.Nat
-import Commons.Data.Location
-import Commons.Text.Parser.Support
+import Toolkit.Data.Nat
+import Toolkit.Data.Location
+import Toolkit.Text.Parser.Support
 
 %default total
 

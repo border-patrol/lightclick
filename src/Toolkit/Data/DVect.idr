@@ -9,14 +9,14 @@
 ||| depend on values. This affects the ability to construct lists of
 ||| values that have a dependent type. The existing `List` type cannot
 ||| be used as it requires all elements to have the same type.
-module Data.DVect
+module Toolkit.Data.DVect
 
 import Data.Strings
 
 import public Data.Vect
 import public Data.Vect.Elem
 
-import public Decidable.Equality.Indexed
+import public Toolkit.Decidable.Equality.Indexed
 
 %default total
 

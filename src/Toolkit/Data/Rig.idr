@@ -1,4 +1,4 @@
-module Commons.Data.Rig
+module Toolkit.Data.Rig
 
 import public Decidable.Equality
 import public Data.Vect

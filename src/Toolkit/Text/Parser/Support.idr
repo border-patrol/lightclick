@@ -1,4 +1,4 @@
-module Commons.Text.Parser.Support
+module Toolkit.Text.Parser.Support
 
 import Text.Lexer
 import Text.Parser

@@ -1,4 +1,4 @@
-module Decidable.Equality.Indexed
+module Toolkit.Decidable.Equality.Indexed
 
 import public Decidable.Equality
 

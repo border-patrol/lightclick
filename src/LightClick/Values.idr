@@ -6,8 +6,8 @@ import Data.List.Elem
 import Data.Vect
 import Data.Vect.Elem
 
-import Data.DList
-import Data.DVect
+import Toolkit.Data.DList
+import Toolkit.Data.DVect
 
 import Language.SystemVerilog.Utilities
 

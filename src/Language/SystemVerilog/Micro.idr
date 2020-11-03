@@ -5,10 +5,9 @@ module Language.SystemVerilog.Micro
 
 import Data.Vect
 
-import Data.DList
-import Data.DVect
-
-import Data.Vect.Extra
+import Toolkit.Data.DList
+import Toolkit.Data.DVect
+import Toolkit.Data.Vect.Extra
 
 import public Language.SystemVerilog.MetaTypes
 import public Language.SystemVerilog.Direction

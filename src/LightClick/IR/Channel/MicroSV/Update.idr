@@ -1,11 +1,11 @@
 module LightClick.IR.Channel.MicroSV.Update
 
 import Data.Vect
-import Data.DList
-import Data.DList.DeBruijn
+
+import Toolkit.Data.DList
+import Toolkit.Data.DList.DeBruijn
 
 import LightClick.IR.ModuleCentric
-
 import LightClick.IR.Channel.MicroSV.Error
 
 import Language.SystemVerilog.MetaTypes
