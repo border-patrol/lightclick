@@ -1,7 +1,66 @@
-#+TITLE: Light-Click
+#+TITLE: About LightClick
+
 
 Click is a DSL for describing routing in networks.
 
 This project presents a click inspired language for the SoC Domain in which we use connection and quantitative typing to reason about connections between nodes.
 
 Partially, based on work by Paul McKechnie.
+
+LightClick is a linearly typed orchestration language for Systems-on-a-Chip Designs that supports lightweight dependent types in the form of domain-specific indexed-types.
+
+Designs represent the specification of modules at the same level of design and we capture:
+
++ various port attributes at the type level:
+  + port direction (input/output/inout)
+  + wire sensitivity (high/low, rising/falling, or insensitive)
+  + signal usage intent (clocking, reset, interrupt, control, information, general)
+  + data type (logic, simply ranged bitvector arrays, structures, untagged unions)
++ module interface formation, just modules
++ module wiring:
+  + direct connections
+  + fan-outs
+  + controlled fan-in's using a multiplexer
+
+Within LightClick, linearity controls how many times a port can be connected to: A port can only be connected once.
+Thus a direct connection will use the source and destination ports.
+We use primitives for fan-outs and fan-ins to weaken the linearity constraints in known expected ways.
+That is, you can only fanout from a port once, and fan-ins must have an explicit control wire.
+
+Further, we use the type-level attributes to denote safe connections by reasoning about their use as signal endpoints.
+For example it is okay to connect:
+
++ to an inputing port from an outputing port but not vice-versa;
++ two ports if their:
+  + sensistivities are the same;
+  + intended usage is the same;
+  + data types are the same.
+
+Here we denote the /same data type/ as being the same memory footprint.
+
+Within LightClick we are only concerned with the structure of SoC designs and do not:
+
++ model heirarchies;
++ capture all possible data types as found in SystemVerilog; and
++ deal with endianness or advanced range specifications.
+
+There is more to LightClick than meets the eye here, and we are working to publish the source and theory behind it.
+
+If a model type-checks then we can generate SystemVerilog stubbs by way of well-typed interpretation.
+The interesting case with this transformation is that our multiplexers are transformed into explicitly well-typed modules, and we do not produce code to realise the beahviour.
+This is because we leave *how* a multiplexer is controlled to the design, there are many different ways to denote this.
+For instance: one signal per input using a bit vector, a bitvector that is $\ceil{log_2 n}$ where $n$ is the number of inputs, or an enumerated typed.
+
+The examples here demonstrates:
+
+1. how we can model a 'real world' SoC Design at the top-level and detect dangling ports; and
+1. how we can model multiplexing, and show the generate SystemVerilog code.
+
+Here are some syntax hints:
+
++ =//= :: Comments
++ =\\= :: Documentation
++ =<x> -> <y>;= :: Direct connections
++ =<x> -> { <y_0>, ..., y_<n>}= :: Fan outs
++ ={ <x_0>, ..., x_<n>} -(<ctrl>)-> <y>= :: Controlled fan-ins i.e. multiplexers
++ =<x>[<y>]= :: Indexing module declarations by name

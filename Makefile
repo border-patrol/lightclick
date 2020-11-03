@@ -2,7 +2,7 @@
 
 all: lightclick test
 
-lightclick: src/
+lightclick:
 	idris2 --build lightclick.ipkg
 
 

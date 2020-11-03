@@ -1,0 +1,89 @@
+#+TITLE: Building, Installing, and Playing
+
+* Building
+
+To build and use LightClick we advise that you use the [[https://github.com/idris-lang/Idris2][latest development version]] of Idris2 due to issues with Idris2 totality checker.
+
+One Idris2 has been installed you can build the project with:
+
+#+begin_src bash
+make lightclick
+#+end_src
+
+The output should look something like:
+
+#+begin_src bash
+1/52: Building Data.DList (src/Data/DList.idr)
+2/52: Building Data.DList.DeBruijn (src/Data/DList/DeBruijn.idr)
+3/52: Building Decidable.Equality.Indexed (src/Decidable/Equality/Indexed.idr)
+4/52: Building Data.DVect (src/Data/DVect.idr)
+5/52: Building Commons.Data.Location (src/Commons/Data/Location.idr)
+6/52: Building Data.Vect.Extra (src/Data/Vect/Extra.idr)
+7/52: Building LightClick.Types.Meta (src/LightClick/Types/Meta.idr)
+8/52: Building LightClick.IR.Channel.Normalise.Error (src/LightClick/IR/Channel/Normalise/Error.idr)
+9/52: Building LightClick.Error (src/LightClick/Error.idr)
+10/52: Building Commons.Data.Rig (src/Commons/Data/Rig.idr)
+11/52: Building Commons.Decidable.Informative (src/Commons/Decidable/Informative.idr)
+12/52: Building LightClick.Types.Direction (src/LightClick/Types/Direction.idr)
+13/52: Building LightClick.Types.Sensitivity (src/LightClick/Types/Sensitivity.idr)
+14/52: Building LightClick.Types.WireType (src/LightClick/Types/WireType.idr)
+15/52: Building LightClick.Types (src/LightClick/Types.idr)
+16/52: Building Language.SystemVerilog.Utilities (src/Language/SystemVerilog/Utilities.idr)
+17/52: Building LightClick.Terms (src/LightClick/Terms.idr)
+18/52: Building LightClick.Values (src/LightClick/Values.idr)
+19/52: Building LightClick.IR.ModuleCentric (src/LightClick/IR/ModuleCentric.idr)
+20/52: Building Language.SystemVerilog.MetaTypes (src/Language/SystemVerilog/MetaTypes.idr)
+21/52: Building LightClick.IR.Channel.MicroSV.Error (src/LightClick/IR/Channel/MicroSV/Error.idr)
+22/52: Building Language.SystemVerilog.Direction (src/Language/SystemVerilog/Direction.idr)
+23/52: Building Language.SystemVerilog.Micro (src/Language/SystemVerilog/Micro.idr)
+24/52: Building LightClick.IR.Channel.MicroSV.Update (src/LightClick/IR/Channel/MicroSV/Update.idr)
+25/52: Building Data.DVect.Elem (src/Data/DVect/Elem.idr)
+26/52: Building Data.DList.Elem (src/Data/DList/Elem.idr)
+27/52: Building Commons.System (src/Commons/System.idr)
+28/52: Building LightClick.Types.Equality (src/LightClick/Types/Equality.idr)
+29/52: Building LightClick.Types.Compatibility (src/LightClick/Types/Compatibility.idr)
+30/52: Building LightClick.Connection (src/LightClick/Connection.idr)
+31/52: Building LightClick.Types.Usage (src/LightClick/Types/Usage.idr)
+32/52: Building LightClick.Env (src/LightClick/Env.idr)
+33/52: Building LightClick.Check (src/LightClick/Check.idr)
+34/52: Building LightClick.IR.ChannelCentric (src/LightClick/IR/ChannelCentric.idr)
+35/52: Building LightClick.IR.Channel.Normalise.LetFloat (src/LightClick/IR/Channel/Normalise/LetFloat.idr)
+36/52: Building LightClick.IR.Channel.Normalise.Merge (src/LightClick/IR/Channel/Normalise/Merge.idr)
+37/52: Building LightClick.IR.Channel.Normalise.FreshBinders (src/LightClick/IR/Channel/Normalise/FreshBinders.idr)
+38/52: Building LightClick.IR.Channel.Normalise (src/LightClick/IR/Channel/Normalise.idr)
+39/52: Building LightClick.IR.Channel.MicroSV.InterpTy (src/LightClick/IR/Channel/MicroSV/InterpTy.idr)
+40/52: Building LightClick.IR.Channel.MicroSV.Intermediate (src/LightClick/IR/Channel/MicroSV/Intermediate.idr)
+41/52: Building LightClick.IR.Channel.MicroSV (src/LightClick/IR/Channel/MicroSV.idr)
+42/52: Building LightClick.DSL.AST (src/LightClick/DSL/AST.idr)
+43/52: Building Commons.Data.Nat (src/Commons/Data/Nat.idr)
+44/52: Building Commons.Text.Lexer.Run (src/Commons/Text/Lexer/Run.idr)
+45/52: Building LightClick.DSL.Lexer (src/LightClick/DSL/Lexer.idr)
+46/52: Building Commons.Text.Parser.Support (src/Commons/Text/Parser/Support.idr)
+47/52: Building Commons.Text.Parser.Location (src/Commons/Text/Parser/Location.idr)
+48/52: Building Commons.Text.Parser.Run (src/Commons/Text/Parser/Run.idr)
+49/52: Building LightClick.DSL.Parser (src/LightClick/DSL/Parser.idr)
+50/52: Building LightClick.DSL.Convert (src/LightClick/DSL/Convert.idr)
+51/52: Building Language.SystemVerilog.Micro.Pretty (src/Language/SystemVerilog/Micro/Pretty.idr)
+52/52: Building LightClick.Main (src/LightClick/Main.idr)
+#+end_src
+
+and take around 14 seconds to check:
+
+#+begin_src bash
+13.84user 0.43system 0:14.47elapsed 98%CPU (0avgtext+0avgdata 241008maxresident)k
+23256inputs+34048outputs (0major+263621minor)pagefaults 0swaps
+#+end_src
+
+* Installing
+
+We have yet to add installation scripts or turn this into a serious tool to play with.
+This might come later.
+
+That being said, you can copy the binary from =build/exec= to a well known location under =PATH= and you should be able to use it from there.
+
+* Playing
+
+LightClick is a very simple language with a simple UX.
+We do not provide anything fancy as our interest at the moment is in the tool itself and not necessarily its use by others.
+
+There are examples in the directory called =tests=.
