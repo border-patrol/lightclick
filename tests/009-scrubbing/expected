@@ -1,0 +1,57 @@
+LOG: Parsing Complete 
+LOG: MetaTyping Complete 
+Error Happened
+global:22:0-26:
+Unsafe connection :
+	Types are not compatible
+LOG: Typing Complete 
+LOG: Parsing Complete 
+LOG: MetaTyping Complete 
+LOG: Typing Complete 
+LOG : Showing ModuleIR
+LOG : Normalising ChannelIR
+LOG : Convert to MicroSV IR
+LOG : Convert to MicroSV
+LOG : Pretty Printing
+module scrub  
+(
+  input logic clk,
+  input logic[31:0] data_i,
+  output logic[31:0] data_o,
+  input logic ready
+);
+// TO ADD
+endmodule; 
+
+module world  
+(
+  output logic clk,
+  output logic[31:0] data_i,
+  input logic[31:0] data_o,
+  output logic ready
+);
+// TO ADD
+endmodule; 
+
+module Top ();
+  logic[31:0] scrub_data_o_world_data_o;
+  logic[31:0] world_data_i_scrub_data_i;
+  logic world_clk_scrub_clk;
+  logic world_ready_scrub_ready;
+  scrub lightclick_module_0
+     (
+       .data_o(scrub_data_o_world_data_o),
+       .data_i(world_data_i_scrub_data_i),
+       .clk(world_clk_scrub_clk),
+       .ready(world_ready_scrub_ready)
+     );
+  world lightclick_module_1
+     (
+       .data_o(scrub_data_o_world_data_o),
+       .data_i(world_data_i_scrub_data_i),
+       .clk(world_clk_scrub_clk),
+       .ready(world_ready_scrub_ready)
+     );
+
+endmodule;
+LOG : Bye

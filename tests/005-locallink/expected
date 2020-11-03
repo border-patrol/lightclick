@@ -22,32 +22,32 @@ endmodule;
 
 module producer  
 (
-  input logic clck,
-  input logic rset,
   output point buffer,
-  output logic ready_src,
-  input logic ready_dst,
-  output logic frame_start,
+  input logic clck,
+  input logic error,
   output logic frame_end,
-  output logic payload_start,
+  output logic frame_start,
   output logic payload_end,
-  input logic error
+  output logic payload_start,
+  input logic ready_dst,
+  output logic ready_src,
+  input logic rset
 );
 // TO ADD
 endmodule; 
 
 module receiver  
 (
-  input logic clck,
-  input logic rset,
   input point buffer,
-  input logic ready_src,
-  output logic ready_dst,
-  input logic frame_start,
+  input logic clck,
+  output logic error,
   input logic frame_end,
-  input logic payload_start,
+  input logic frame_start,
   input logic payload_end,
-  output logic error
+  input logic payload_start,
+  output logic ready_dst,
+  input logic ready_src,
+  input logic rset
 );
 // TO ADD
 endmodule; 

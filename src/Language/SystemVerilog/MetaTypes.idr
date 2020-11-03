@@ -18,13 +18,13 @@ data Ty = MODULE (List String)
 
 export
 Show Ty where
-  show (MODULE xs) = unwords ["MODULE", show xs]
-  show DATA = "DATA"
-  show CHAN = "CHAN"
-  show (PORT x) = unwords ["PORT", show x]
-  show (MINST xs) = unwords ["MINST", show xs]
-  show UNIT = "UNIT"
-  show TYPE = "TYPE"
+  show (MODULE xs) = unwords ["(MODULE", show xs, ")"]
+  show DATA = "(DATA)"
+  show CHAN = "(CHAN)"
+  show (PORT x) = unwords ["(PORT", show x, ")"]
+  show (MINST xs) = unwords ["(MINST", show xs, ")"]
+  show UNIT = "(UNIT)"
+  show TYPE = "(TYPE)"
 
 public export
 Context : Type

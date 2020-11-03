@@ -3,6 +3,7 @@ module LightClick.IR.Channel.Normalise.FreshBinders
 import Data.List
 import Data.Vect
 
+import Toolkit.Data.Vect.Extra
 import Toolkit.Data.DList
 import Toolkit.Data.DVect
 

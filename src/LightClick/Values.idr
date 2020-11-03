@@ -69,7 +69,9 @@ data Value : TyValue -> Type where
         -> Value (PORT o)
         -> Value CONN
 
-  VConnFO : Value CHAN
+  VConnFO : {m : Nat}
+         -> {outs : Vect (S m) String}
+         -> Value CHAN
          -> Value (PORT i)
          -> DVect String (Value . PORT) (S m) outs
          -> Value CONN
@@ -280,7 +282,9 @@ namespace ConnBuilder
     newConn name x y = (VConnD (VRef name CHAN) x y)
   namespace FanOut
     export
-    newConn : (name : String)
+    newConn : {n : Nat}
+           -> {outs : Vect (S n) String}
+           -> (name : String)
            -> (is   : Value (PORT i))
            -> (os   : DVect String (Value . PORT) (S n) outs)
            -> Value CONN

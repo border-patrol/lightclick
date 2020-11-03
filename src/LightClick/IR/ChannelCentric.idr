@@ -35,7 +35,7 @@ data ChannelIR : TyIR -> Type where
        -> ChannelIR DATA
        -> ChannelIR PORT
 
-  CModule : Vect (S n) (ChannelIR PORT) -> ChannelIR MODULE
+  CModule : {n : Nat} -> Vect (S n) (ChannelIR PORT) -> ChannelIR MODULE
 
   CDataLogic : ChannelIR DATA
   CDataArray : ChannelIR DATA -> Nat -> ChannelIR DATA
@@ -49,11 +49,11 @@ data ChannelIR : TyIR -> Type where
 
   CChan : ChannelIR DATA -> ChannelIR CHAN
 
-  CModuleInst : (mname : ChannelIR MODULE)
+  CModuleInst : {n : Nat}
+              -> (mname : ChannelIR MODULE)
               -> Vect (S n)
                       (Pair String (ChannelIR CHAN))
               -> ChannelIR CONN
-
 
 covering
 showC : ChannelIR type -> String

@@ -44,7 +44,7 @@ data ModuleIR : TyIR -> Type where
        -> (dir   : Direction)
        -> (type  : ModuleIR DATA) -> ModuleIR PORT
 
-  MModule : Vect (S n) (ModuleIR PORT) -> ModuleIR MODULE
+  MModule : {n : Nat} -> Vect (S n) (ModuleIR PORT) -> ModuleIR MODULE
 
   MDataLogic : ModuleIR DATA
   MDataArray : ModuleIR DATA -> Nat -> ModuleIR DATA
@@ -58,7 +58,7 @@ data ModuleIR : TyIR -> Type where
       -> ModuleIR PORT
       -> ModuleIR PORT
 
-  MConn : (cname  : ModuleIR CHAN)
+  MConn : {n : Nat} -> (cname  : ModuleIR CHAN)
        -> (input  : ModuleIR PORT)
        -> (output : Vect (S n) $ ModuleIR PORT)
        -> ModuleIR CONN

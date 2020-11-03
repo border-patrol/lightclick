@@ -83,7 +83,9 @@ namespace Term
              -> (right : Term ctxt (PORT b))
              -> Term ctxt CONN
 
-      FanOut : (fc     : FileContext)
+      FanOut : {n : Nat}
+            -> {names : Vect (S (S n)) String}
+            -> (fc     : FileContext)
             -> (input  : Term ctxt (PORT s))
             -> (fan : DVect String
                             (\s => Term ctxt (PORT s))

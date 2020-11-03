@@ -4,6 +4,8 @@ import Data.List
 import Data.Vect
 import Data.Strings
 
+import Data.Vect.Sort
+
 import Toolkit.Data.DList
 import Toolkit.Data.DList.DeBruijn
 import Toolkit.Data.DVect
@@ -206,6 +208,16 @@ kvpairs f e (x :: xs) =
          xs' <- kvpairs' f e xs
          pure (x'::xs')
 
+
+Eq (ChannelIR PORT) where
+  (==) (CPort x f d) (CPort y g e) = x == y
+  (==) _ _ = False
+
+Ord (ChannelIR PORT) where
+  compare (CPort x f d) (CPort y g e) = compare x y
+  compare _ _ = LT
+
+
 covering
 convert : {type : TyIR}
        -> {local : Context}
@@ -325,11 +337,11 @@ convert e (CPort l d type) with (convert e type)
   convert e (CPort l d type) | (Right (MkTRes decls t' DD))
     = pure (MkTRes decls (Port l (interpDir d) t') (PP l))
 
-convert e (CModule xs) with (ports convert e xs)
-  convert e (CModule xs) | (Left l)
+convert e (CModule {n} xs) with (ports convert e (sort xs))
+  convert e (CModule {n} xs) | (Left l)
     = Left $ Nested "Attempting to construct ports for Module Declaration" l
-  convert e (CModule xs) | (Right (ns ** ps)) with (e)
-    convert e (CModule xs) | (Right (ns ** ps)) | (MkTEnv decls local)
+  convert e (CModule {n} xs) | (Right (ns ** ps)) with (e)
+    convert e (CModule {n} xs) | (Right (ns ** ps)) | (MkTEnv decls local)
       = pure (MkTRes decls (MDecl ps) (MM ns))
 
 
@@ -369,7 +381,7 @@ convert e (CModuleInst _ kvs) with (e)
   convert e (CModuleInst _ kvs) | (MkTEnv decls local)
     = do xs' <- chans convert e kvs
          let ns = map fst xs'
-         pure (MkTRes decls (NewModule xs') (CM ns))
+         pure (MkTRes decls (NewModule xs') (CM (sort ns)))
 
 
 export

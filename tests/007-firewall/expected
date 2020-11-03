@@ -36,17 +36,17 @@ endmodule;
 module mac  
 (
   input logic clk,
-  input logic rst,
-  output eightBit data_out,
-  output logic src_rdy_out,
-  input logic dst_rdy_out,
-  output logic sof_out,
-  output logic eof_out,
   input eightBit data_in,
-  input logic src_rdy_in,
+  output eightBit data_out,
   output logic dst_rdy_in,
+  input logic dst_rdy_out,
+  input logic eof_in,
+  output logic eof_out,
+  input logic rst,
   input logic sof_in,
-  input logic eof_in
+  output logic sof_out,
+  input logic src_rdy_in,
+  output logic src_rdy_out
 );
 // TO ADD
 endmodule; 
@@ -54,17 +54,17 @@ endmodule;
 module iconv  
 (
   input logic clk,
-  input logic rst,
   input eightBit data_in,
-  input logic src_rdy_in,
-  output logic dst_rdy_in,
-  input logic sof_in,
-  input logic eof_in,
   output ttBit data_out,
-  output logic src_rdy_out,
+  output logic dst_rdy_in,
   input logic dst_rdy_out,
+  input logic eof_in,
+  output logic eof_out,
+  input logic rst,
+  input logic sof_in,
   output logic sof_out,
-  output logic eof_out
+  input logic src_rdy_in,
+  output logic src_rdy_out
 );
 // TO ADD
 endmodule; 
@@ -72,19 +72,19 @@ endmodule;
 module pparser  
 (
   input logic clk,
-  input logic rst,
   input ttBit data_in,
-  input logic src_rdy_in,
-  output logic dst_rdy_in,
-  input logic sof_in,
-  input logic eof_in,
-  output logic update_out,
-  output ipheader five_tuple_out,
   output ttBit data_out,
-  output logic src_rdy_out,
+  output logic dst_rdy_in,
   input logic dst_rdy_out,
+  input logic eof_in,
+  output logic eof_out,
+  output ipheader five_tuple_out,
+  input logic rst,
+  input logic sof_in,
   output logic sof_out,
-  output logic eof_out
+  input logic src_rdy_in,
+  output logic src_rdy_out,
+  output logic update_out
 );
 // TO ADD
 endmodule; 
@@ -92,17 +92,17 @@ endmodule;
 module pbuffer  
 (
   input logic clk,
-  input logic rst,
   input ttBit data_in,
-  input logic src_rdy_in,
-  output logic dst_rdy_in,
-  input logic sof_in,
-  input logic eof_in,
   output ttBit data_out,
-  output logic src_rdy_out,
+  output logic dst_rdy_in,
   input logic dst_rdy_out,
+  input logic eof_in,
+  output logic eof_out,
+  input logic rst,
+  input logic sof_in,
   output logic sof_out,
-  output logic eof_out
+  input logic src_rdy_in,
+  output logic src_rdy_out
 );
 // TO ADD
 endmodule; 
@@ -110,18 +110,18 @@ endmodule;
 module decider  
 (
   input logic clk,
-  input logic rst,
   input ttBit data_in,
-  input logic src_rdy_in,
-  output logic dst_rdy_in,
-  input logic sof_in,
-  input logic eof_in,
-  input logic result_in,
   output ttBit data_out,
-  output logic src_rdy_out,
+  output logic dst_rdy_in,
   input logic dst_rdy_out,
+  input logic eof_in,
+  output logic eof_out,
+  input logic result_in,
+  input logic rst,
+  input logic sof_in,
   output logic sof_out,
-  output logic eof_out
+  input logic src_rdy_in,
+  output logic src_rdy_out
 );
 // TO ADD
 endmodule; 
@@ -129,10 +129,10 @@ endmodule;
 module rulebase  
 (
   input logic clk,
-  input logic rst,
-  input logic update_in,
   input ipheader five_tuple_in,
-  output logic result_out
+  output logic result_out,
+  input logic rst,
+  input logic update_in
 );
 // TO ADD
 endmodule; 
@@ -140,17 +140,17 @@ endmodule;
 module oconv  
 (
   input logic clk,
-  input logic rst,
   input ttBit data_in,
-  input logic src_rdy_in,
-  output logic dst_rdy_in,
-  input logic sof_in,
-  input logic eof_in,
   output eightBit data_out,
-  output logic src_rdy_out,
+  output logic dst_rdy_in,
   input logic dst_rdy_out,
+  input logic eof_in,
+  output logic eof_out,
+  input logic rst,
+  input logic sof_in,
   output logic sof_out,
-  output logic eof_out
+  input logic src_rdy_in,
+  output logic src_rdy_out
 );
 // TO ADD
 endmodule; 

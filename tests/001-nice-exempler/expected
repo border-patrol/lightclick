@@ -33,9 +33,9 @@ endmodule;
 module init  
 (
   input logic c,
-  output logic[1:0] ctrl,
   output Y chan1,
   output Y chan2,
+  output logic[1:0] ctrl,
   input logic err
 );
 // TO ADD
@@ -44,18 +44,18 @@ endmodule;
 module trgt  
 (
   input logic c,
-  input IJ xy,
-  output logic err
+  output logic err,
+  input IJ xy
 );
 // TO ADD
 endmodule; 
 
 module mux_trgt_xy_init_ctrl_init_chan1_init_chan2  
 (
-  input logic[1:0] ctrl,
-  output IJ xy,
   input Y chan1,
-  input Y chan2
+  input Y chan2,
+  input logic[1:0] ctrl,
+  output IJ xy
 );
 // TO ADD
 endmodule; 
