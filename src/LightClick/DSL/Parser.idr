@@ -14,6 +14,7 @@ import public Toolkit.Text.Parser.Support
 import        Toolkit.Text.Parser.Location
 import public Toolkit.Text.Parser.Run
 
+import        Language.SystemVerilog.Gates
 
 import        LightClick.Types.Direction
 import        LightClick.Types.Sensitivity
@@ -286,8 +287,29 @@ mux = do
   e <- location
   pure (Mux (newFC s e) (snd fs) ctrl o)
 
+not : Rule Token AST
+not = do s <- location
+         i <- ref
+         symbol "!"
+         o <- ref
+         e <- location
+         pure (NOT (newFC s e) i o)
+
+gateType : Rule Token TyGateComb
+gateType = do {symbol "&"; pure AND}
+       <|> do {symbol "|"; pure IOR}
+       <|> do {symbol "+"; pure XOR}
+
+gate : Rule Token AST
+gate = do s <- location
+          fs <- brackets $ commaSepBy2V ref
+          ty <- gateType
+          o <- ref
+          e <- location
+          pure (GATE (newFC s e) ty (snd fs) o)
+
 conn : Rule Token AST
-conn = mux <|> fanout <|> connect
+conn = not <|> mux <|> fanout <|> connect <|> gate
 
 types : Rule Token (xs : List (FileContext, String, AST) ** NonEmpty xs)
 types = do

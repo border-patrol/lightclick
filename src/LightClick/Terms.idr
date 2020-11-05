@@ -8,6 +8,8 @@ import Toolkit.Data.DList.DeBruijn
 import Toolkit.Data.DVect
 import Toolkit.Data.Location
 
+import Language.SystemVerilog.Gates
+
 import LightClick.Types
 import LightClick.Error
 
@@ -81,17 +83,17 @@ namespace Term
       Connect : (fc    : FileContext)
              -> (left  : Term ctxt (PORT a))
              -> (right : Term ctxt (PORT b))
-             -> Term ctxt CONN
+                      -> Term ctxt CONN
 
-      FanOut : {n : Nat}
-            -> {names : Vect (S (S n)) String}
+      FanOut : {n      : Nat}
+            -> {names  : Vect (S (S n)) String}
             -> (fc     : FileContext)
             -> (input  : Term ctxt (PORT s))
-            -> (fan : DVect String
-                            (\s => Term ctxt (PORT s))
-                            (S (S n))
-                            names)
-            -> Term ctxt CONN
+            -> (fan    : DVect String
+                               (\s => Term ctxt (PORT s))
+                               (S (S n))
+                               names)
+                      -> Term ctxt CONN
 
       Mux : {n : Nat}
          -> {c,o : String}
@@ -103,7 +105,25 @@ namespace Term
                          names)
          -> (ctrl   : Term ctxt (PORT c))
          -> (output : Term ctxt (PORT o))
-         -> Term ctxt CONN
+                   -> Term ctxt CONN
+
+      NOT : {a,b : String}
+         -> (fc    : FileContext)
+         -> (left  : Term ctxt (PORT a))
+         -> (right : Term ctxt (PORT b))
+                  -> Term ctxt CONN
+
+      GATE : {n : Nat}
+          -> {o : String}
+          -> {names : Vect (S (S n)) String}
+          -> (fc    : FileContext)
+          -> (ty    : TyGateComb)
+          -> (fan   : DVect String
+                            (\s => Term ctxt (PORT s))
+                            (S (S n))
+                            names)
+          -> (output : Term ctxt (PORT o))
+                    -> Term ctxt CONN
 
       End : Term ctxt UNIT
 
@@ -122,6 +142,8 @@ getFC (Index fc mod x) = Just fc
 getFC (Connect fc left right) = Just fc
 getFC (FanOut fc input fanOut) = Just fc
 getFC (Mux fc fanIn ctrl output) = Just fc
+getFC (NOT fc _ _ ) = Just fc
+getFC (GATE fc _ _ _) = Just fc
 getFC End = Nothing
 
 

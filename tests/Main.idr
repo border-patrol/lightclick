@@ -22,6 +22,7 @@ tests = [ "000-mux-check"
         , "007-firewall"
         , "008-core-alliance-swerv-eh1"
         , "009-scrubbing"
+        , "010-gates"
         ]
 
 covering

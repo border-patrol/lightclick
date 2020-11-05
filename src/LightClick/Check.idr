@@ -12,6 +12,7 @@ import Toolkit.Data.DVect
 import Toolkit.Data.Location
 import Toolkit.Data.Rig
 
+import Language.SystemVerilog.Gates
 import Language.SystemVerilog.Utilities
 
 import LightClick.Error
@@ -327,6 +328,73 @@ mutual
                            )
                    , TyConn, envo)
 
+  -- [ Checking NOT ]
+  check env (NOT fc i o)
+    = do (vX, tyX, envx) <- Port.check env  i
+         (vY, tyY, envy) <- Port.check envx o
+
+         case compatible tyX tyY of
+           No msg contra => Left (UnSafeDirectConnection fc msg)
+           Yes prf => do
+             ty <- getData vX
+
+             nX <- genNameConn vX
+             nY <- genNameConn vY
+
+             dualX  <- mkDual vX
+             dualY  <- mkDual vY
+
+             let mName = newName ["not", nX, nY]
+             let mRef = VRef mName (MODULE [nX,nY])
+             Right (VLet mName
+                         (VModule [dualX,dualY])
+                         (VLet (newName [mName, "in"])
+                               (VChan ty)
+                               (VLet (newName [mName, "out"])
+                                     (VChan ty)
+                                     (VSeq (Direct.newConn (newName [mName, "in"])  vX (newIDX mRef vX))
+                                           (Direct.newConn (newName [mName, "out"]) vY (newIDX mRef vY))
+                                     )
+                               )
+                         )
+                   , TyConn, envy)
+             --(VLet n (VChan ty) (newConn n vX vY), TyConn, envy)
+
+  -- [ Checking the GATE ]
+  check env (GATE fc ty is o)
+    = do (fs, tf, envf) <- Fan.check  env  is
+         (vO, to, envo) <- Port.check envf o
+
+         case Fanin.compatible tf to of
+           No (PListError pos reason) contra => do
+             Left (UnSafeFan fc FANIN pos reason)
+
+           Yes prf => do
+             nO <- genNameConn vO
+             nF <- genNameFan  fs
+
+             nFS <- getNameFan fs
+             dO <- getData vO
+
+             let mName = newName [Gates.toString ty, nO, nF]
+
+             dualFS <- dualFan fs
+             dualO  <- mkDual vO
+
+             let mRef = (VRef mName (MODULE (nO::nFS)))
+             fi <- newConn (newName [mName, Gates.toString ty]) dO mRef fs dualFS
+             Right (VLet mName
+                         (VModule (dualO::dualFS))
+                         (VLet (newName [mName, "output"])
+                               (VChan dO)
+                               (VSeq (Direct.newConn (newName [mName,"output"]) vO (newIDX mRef vO))
+                                     fi
+                               )
+                         )
+                   , TyConn, envo)
+
+
+  -- [ Checking the End ]
   check env End with (free env)
     check env End | Nil = Right (VEnd, TyUnit, env)
     check env End | (x::xs) = Left (UnusedPorts (x::xs))

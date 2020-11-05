@@ -8,7 +8,7 @@ import Toolkit.Text.Lexer.Run
 
 
 symbols : List String
-symbols = ["->", "-", "[", "]", ";", "{", "}", ":", ",", "=", "?", "(", ")", ".", "#"]
+symbols = ["->", "-", "[", "]", ";", "{", "}", ":", ",", "=", "?", "(", ")", ".", "#", "!", "&", "|", "+"]
 
 keywords : List String
 keywords = [ "input", "output", "inout"

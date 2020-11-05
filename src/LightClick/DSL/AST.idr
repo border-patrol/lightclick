@@ -4,6 +4,8 @@ import Data.Vect
 
 import Toolkit.Data.Location
 
+import Language.SystemVerilog.Gates
+
 import LightClick.Types.Direction
 import LightClick.Types.Sensitivity
 import LightClick.Types.WireType
@@ -36,6 +38,8 @@ data AST : Type where
   FanOut : {n : Nat} -> FileContext -> AST -> (ps : Vect (S (S n)) AST) -> AST
   Mux    : {n : Nat} -> FileContext -> (ps : Vect (S (S n)) AST) -> AST -> AST -> AST
 
+  NOT  : FileContext -> AST -> AST -> AST
+  GATE : {n : Nat} -> FileContext -> (ty : TyGateComb) -> (ps : Vect (S (S n)) AST) -> AST -> AST
 
   End : AST
 
