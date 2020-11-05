@@ -1,3 +1,4 @@
+Swap Bad
 LOG: Parsing Complete 
 LOG: MetaTyping Complete 
 Error Happened
@@ -5,6 +6,7 @@ global:22:0-26:
 Unsafe connection :
 	Types are not compatible
 LOG: Typing Complete 
+Swap Good
 LOG: Parsing Complete 
 LOG: MetaTyping Complete 
 LOG: Typing Complete 
@@ -51,6 +53,88 @@ module Top ();
        .data_i(world_data_i_scrub_data_i),
        .clk(world_clk_scrub_clk),
        .ready(world_ready_scrub_ready)
+     );
+
+endmodule;
+LOG : Bye
+Fanout Bad
+LOG: Parsing Complete 
+LOG: MetaTyping Complete 
+Error Happened
+global:21:0-11:
+The port "clk" is already in use.
+LOG: Typing Complete 
+Fanin Good
+LOG: Parsing Complete 
+LOG: MetaTyping Complete 
+LOG: Typing Complete 
+LOG : Showing ModuleIR
+LOG : Normalising ChannelIR
+LOG : Convert to MicroSV IR
+LOG : Convert to MicroSV
+LOG : Pretty Printing
+module world  
+(
+  output logic clk,
+  output logic[31:0] data_ia,
+  output logic[31:0] data_ib,
+  input logic[31:0] data_o,
+  output logic ready,
+  output logic[1:0] select
+);
+// TO ADD
+endmodule; 
+
+module scrub  
+(
+  input logic clk,
+  input logic[31:0] data_i,
+  output logic[31:0] data_o,
+  input logic ready
+);
+// TO ADD
+endmodule; 
+
+module mux_scrub_data_i_world_select_world_data_ia_world_data_ib  
+(
+  output logic[31:0] data_i,
+  input logic[31:0] data_ia,
+  input logic[31:0] data_ib,
+  input logic[1:0] select
+);
+// TO ADD
+endmodule; 
+
+module Top ();
+  logic world_clk_scrub_clk;
+  logic world_ready_scrub_ready;
+  logic[1:0] mux_scrub_data_i_world_select_world_data_ia_world_data_ib_control;
+  logic[31:0] scrub_data_o_world_data_o;
+  logic[31:0] mux_scrub_data_i_world_select_world_data_ia_world_data_ib_output;
+  logic[31:0] mux_scrub_data_i_world_select_world_data_ia_world_data_ib_fanin_world_data_ia_data_ia;
+  logic[31:0] mux_scrub_data_i_world_select_world_data_ia_world_data_ib_fanin_world_data_ib_data_ib;
+  world lightclick_module_0
+     (
+       .clk(world_clk_scrub_clk),
+       .ready(world_ready_scrub_ready),
+       .select(mux_scrub_data_i_world_select_world_data_ia_world_data_ib_control),
+       .data_ia(mux_scrub_data_i_world_select_world_data_ia_world_data_ib_fanin_world_data_ia_data_ia),
+       .data_ib(mux_scrub_data_i_world_select_world_data_ia_world_data_ib_fanin_world_data_ib_data_ib),
+       .data_o(scrub_data_o_world_data_o)
+     );
+  scrub lightclick_module_1
+     (
+       .clk(world_clk_scrub_clk),
+       .ready(world_ready_scrub_ready),
+       .data_i(mux_scrub_data_i_world_select_world_data_ia_world_data_ib_output),
+       .data_o(scrub_data_o_world_data_o)
+     );
+  mux_scrub_data_i_world_select_world_data_ia_world_data_ib lightclick_module_2
+     (
+       .select(mux_scrub_data_i_world_select_world_data_ia_world_data_ib_control),
+       .data_i(mux_scrub_data_i_world_select_world_data_ia_world_data_ib_output),
+       .data_ia(mux_scrub_data_i_world_select_world_data_ia_world_data_ib_fanin_world_data_ia_data_ia),
+       .data_ib(mux_scrub_data_i_world_select_world_data_ia_world_data_ib_fanin_world_data_ib_data_ib)
      );
 
 endmodule;

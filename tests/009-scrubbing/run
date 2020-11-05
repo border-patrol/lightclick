@@ -1,2 +1,11 @@
+echo "Swap Bad"
 $1 swap-bad.click
+
+echo "Swap Good"
 $1 swap-good.click
+
+echo "Fanout Bad"
+$1 fanout-bad.click
+
+echo "Fanin Good"
+$1 fanin-good.click
