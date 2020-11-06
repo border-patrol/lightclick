@@ -9,6 +9,7 @@ import Data.Vect.Elem
 import Toolkit.Data.DList
 import Toolkit.Data.DVect
 
+import Language.SystemVerilog.Gates
 import Language.SystemVerilog.Utilities
 
 import LightClick.Types
