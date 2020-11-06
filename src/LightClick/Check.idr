@@ -306,9 +306,9 @@ mutual
 
              let mName = newName ["mux", nO, nC, nF]
 
-             dualFS <- dualFan fs
-             dualC  <- mkDual vC
-             dualO  <- mkDual vO
+             dualFS <- dualFan' ("input_") fs
+             dualC  <- mkDual "control_" vC
+             dualO  <- mkDual "output_" vO
 
              let mRef = (VRef mName (MODULE (nC::nO::nFS)))
              fi <- newConn (newName [mName, "fanin"]) dO mRef fs dualFS
@@ -318,8 +318,8 @@ mutual
                                  (VChan dC)
                                  (VLet (newName [mName, "output"])
                                        (VChan dO)
-                                       (VSeq (Direct.newConn (newName [mName, "control"]) vC (newIDX mRef vC))
-                                             (VSeq (Direct.newConn (newName [mName,"output"]) vO (newIDX mRef vO))
+                                       (VSeq (Direct.newConn (newName [mName, "control"]) vC (newIDX mRef dualC))
+                                             (VSeq (Direct.newConn (newName [mName,"output"]) vO (newIDX mRef dualO))
                                                    fi
                                              )
                                        )
@@ -341,8 +341,8 @@ mutual
              nX <- genNameConn vX
              nY <- genNameConn vY
 
-             dualX  <- mkDual vX
-             dualY  <- mkDual vY
+             dualX  <- mkDual "input_"  vX
+             dualY  <- mkDual "output_" vY
 
              let mName = newName ["not", nX, nY]
              let mRef = VRef mName (MODULE [nX,nY])
@@ -352,8 +352,8 @@ mutual
                                (VChan ty)
                                (VLet (newName [mName, "out"])
                                      (VChan ty)
-                                     (VSeq (Direct.newConn (newName [mName, "in"])  vX (newIDX mRef vX))
-                                           (Direct.newConn (newName [mName, "out"]) vY (newIDX mRef vY))
+                                     (VSeq (Direct.newConn (newName [mName, "in"])  vX (newIDX mRef dualX))
+                                           (Direct.newConn (newName [mName, "out"]) vY (newIDX mRef dualY))
                                      )
                                )
                          )
@@ -378,8 +378,8 @@ mutual
 
              let mName = newName [Gates.toString ty, nO, nF]
 
-             dualFS <- dualFan fs
-             dualO  <- mkDual vO
+             dualFS <- dualFan' "input_" fs
+             dualO  <- mkDual "output_" vO
 
              let mRef = (VRef mName (MODULE (nO::nFS)))
              fi <- newConn (newName [mName, Gates.toString ty]) dO mRef fs dualFS
@@ -387,7 +387,7 @@ mutual
                          (VModule (dualO::dualFS))
                          (VLet (newName [mName, "output"])
                                (VChan dO)
-                               (VSeq (Direct.newConn (newName [mName,"output"]) vO (newIDX mRef vO))
+                               (VSeq (Direct.newConn (newName [mName,"output"]) vO (newIDX mRef dualO))
                                      fi
                                )
                          )

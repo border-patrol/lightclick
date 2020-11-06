@@ -52,10 +52,10 @@ endmodule;
 
 module mux_trgt_xy_init_ctrl_init_chan1_init_chan2  
 (
-  input Y chan1,
-  input Y chan2,
-  input logic[1:0] ctrl,
-  output IJ xy
+  input logic[1:0] control_ctrl,
+  input Y input_fan_1_chan2,
+  input Y input_fan_2_chan1,
+  output IJ output_xy
 );
 // TO ADD
 endmodule; 
@@ -65,14 +65,14 @@ module Top ();
   logic[1:0] mux_trgt_xy_init_ctrl_init_chan1_init_chan2_control;
   logic trgt_err_init_err;
   IJ mux_trgt_xy_init_ctrl_init_chan1_init_chan2_output;
-  IJ mux_trgt_xy_init_ctrl_init_chan1_init_chan2_fanin_init_chan1_chan1;
-  IJ mux_trgt_xy_init_ctrl_init_chan1_init_chan2_fanin_init_chan2_chan2;
+  IJ mux_trgt_xy_init_ctrl_init_chan1_init_chan2_fanin_init_chan1_input_fan_2_chan1;
+  IJ mux_trgt_xy_init_ctrl_init_chan1_init_chan2_fanin_init_chan2_input_fan_1_chan2;
   init lightclick_module_0
      (
        .c(fan_out_from_clk_c_to_init_c_trgt_c),
        .ctrl(mux_trgt_xy_init_ctrl_init_chan1_init_chan2_control),
-       .chan1(mux_trgt_xy_init_ctrl_init_chan1_init_chan2_fanin_init_chan1_chan1),
-       .chan2(mux_trgt_xy_init_ctrl_init_chan1_init_chan2_fanin_init_chan2_chan2),
+       .chan1(mux_trgt_xy_init_ctrl_init_chan1_init_chan2_fanin_init_chan1_input_fan_2_chan1),
+       .chan2(mux_trgt_xy_init_ctrl_init_chan1_init_chan2_fanin_init_chan2_input_fan_1_chan2),
        .err(trgt_err_init_err)
      );
   trgt lightclick_module_1
@@ -83,10 +83,10 @@ module Top ();
      );
   mux_trgt_xy_init_ctrl_init_chan1_init_chan2 lightclick_module_2
      (
-       .ctrl(mux_trgt_xy_init_ctrl_init_chan1_init_chan2_control),
-       .xy(mux_trgt_xy_init_ctrl_init_chan1_init_chan2_output),
-       .chan1(mux_trgt_xy_init_ctrl_init_chan1_init_chan2_fanin_init_chan1_chan1),
-       .chan2(mux_trgt_xy_init_ctrl_init_chan1_init_chan2_fanin_init_chan2_chan2)
+       .control_ctrl(mux_trgt_xy_init_ctrl_init_chan1_init_chan2_control),
+       .output_xy(mux_trgt_xy_init_ctrl_init_chan1_init_chan2_output),
+       .input_fan_2_chan1(mux_trgt_xy_init_ctrl_init_chan1_init_chan2_fanin_init_chan1_input_fan_2_chan1),
+       .input_fan_1_chan2(mux_trgt_xy_init_ctrl_init_chan1_init_chan2_fanin_init_chan2_input_fan_1_chan2)
      );
   clk lightclick_module_3
      (

@@ -187,15 +187,16 @@ genNameConn (VPort x y z) = Right x
 genNameConn (VIDX x (VRef m (MODULE names)) z) = Right (newName [m,x])
 genNameConn (VIDX x y z) = Left $ NotSupposedToHappen (Just $ "genNameConn idx non-ref" <+> show y)
 
+
 export
-mkDual : Value (PORT s) -> Either LightClick.Error (Value (PORT s))
-mkDual (VLet _ _ _)  = Left $ NotSupposedToHappen (Just "mkDual")
-mkDual (VSeq  _ _)   = Left $ NotSupposedToHappen (Just "mkDual")
-mkDual (VRef _ _)    = Left $ NotSupposedToHappen (Just "mkDual")
-mkDual (VIDX x y z)  = mkDual z
-mkDual (VPort x IN    t) = Right (VPort x OUT t)
-mkDual (VPort x OUT   t) = Right (VPort x IN t)
-mkDual (VPort x INOUT t) = Right (VPort x INOUT t)
+mkDual : (n : String) -> Value (PORT s) -> Either LightClick.Error (Value (PORT (n <+> s)))
+mkDual n (VLet _ _ _)  = Left $ NotSupposedToHappen (Just "mkDual")
+mkDual n (VSeq  _ _)   = Left $ NotSupposedToHappen (Just "mkDual")
+mkDual n (VRef _ _)    = Left $ NotSupposedToHappen (Just "mkDual")
+mkDual n (VIDX x y z)  = mkDual n z
+mkDual n (VPort x IN    t) = Right (VPort (n <+> x) OUT t)
+mkDual n (VPort x OUT   t) = Right (VPort (n <+> x) IN t)
+mkDual n (VPort x INOUT t) = Right (VPort (n <+> x) INOUT t)
 
 export
 genNameFan : DVect String (Value . PORT) k names -> Either LightClick.Error String
@@ -217,22 +218,47 @@ getNameFan (x::xs) =
      rest <- getNameFan xs
      pure $ n :: rest
 
-dualFan' : DVect String (Value . PORT) k names -> Either LightClick.Error (DVect String (Value . PORT) k names)
-dualFan' Nil = Right Nil
-dualFan' (x::xs) = do
-   rest <- dualFan' xs
-   d <- mkDual x
+public export
+fanPortNames : (p : String)
+            -> (n : Nat)
+            -> Vect n String
+fanPortNames p Z = Nil
+fanPortNames p (S k) = (p <+> "fan_" <+> show (S k) <+> "_") :: fanPortNames p k
+
+
+dualFanG : {k : Nat}
+        -> (ps : Vect k String)
+        -> {names : Vect k String}
+        -> DVect String (Value . PORT) k names
+        -> Either LightClick.Error (DVect String (Value . PORT) k (zipWith (<+>) ps names))
+dualFanG Nil     Nil     = Right Nil
+dualFanG (p::ps) (x::xs) = do
+   rest <- dualFanG ps xs
+   d <- mkDual p x
    pure (d :: rest)
 
 export
-dualFan : DVect String (Value . PORT) (S (S n)) names
+dualFan : {n : Nat}
+       -> (ps : Vect (S (S n)) String)
+        -> {names : Vect (S (S n)) String}
+       -> DVect String (Value . PORT) (S (S n)) names
        -> Either LightClick.Error
-                 (DVect String (Value . PORT) (S (S n)) names)
-dualFan (x::y::xs) = do
-  x' <- mkDual x
-  y' <- mkDual y
-  xs' <- dualFan' xs
+                 (DVect String (Value . PORT) (S (S n)) (zipWith (<+>) ps names))
+dualFan (p::q::ps) (x::y::xs) = do
+  xs' <- dualFanG ps xs
+  x' <- mkDual p x
+  y' <- mkDual q y
+
   pure (x'::y'::xs')
+
+export
+dualFan' : {n     : Nat}
+        -> (p     : String)
+        -> {names : Vect (S (S n)) String}
+        -> (ports : DVect String (Value . PORT) (S (S n)) names)
+        -> Either LightClick.Error
+                 (DVect String (Value . PORT) (S (S n)) (zipWith (<+>) (fanPortNames p (S (S n))) names))
+dualFan' p (x::y::xs) {n} = dualFan (fanPortNames p (S (S n))) (x::y::xs)
 
 getPort' : DVect String (Value . PORT) n names
         -> Elem nam names
