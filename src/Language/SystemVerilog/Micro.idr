@@ -11,6 +11,7 @@ import Toolkit.Data.Vect.Extra
 
 import public Language.SystemVerilog.MetaTypes
 import public Language.SystemVerilog.Direction
+import public Language.SystemVerilog.Gates
 
 %default total
 
@@ -45,6 +46,8 @@ data Expr : (lctxt : Context)
 
     TYPE : Expr lctxt gctxt TYPE
 
+    GATE : Expr lctxt gctxt GATE
+
     -- Decls
     DataLogic : Expr lctxt gctxt DATA
 
@@ -70,6 +73,18 @@ data Expr : (lctxt : Context)
     NewChan : Expr ctxt gctxt CHAN
     NewModule : List (Pair String (Expr ctxt gctxt CHAN))
              -> Expr ctxt gctxt (MINST names)
+
+    -- Gates
+    Not : (out : Expr ctxt gctxt CHAN)
+       -> (ins : Expr ctxt gctxt CHAN)
+       -> Expr ctxt gctxt GINST
+
+    Gate : {n : Nat}
+        -> (type : TyGateComb)
+        -> (out  : Expr ctxt gctxt CHAN)
+        -> (ins  : Vect (S (S n)) (Expr ctxt gctxt CHAN))
+                -> Expr ctxt gctxt GINST
+
 
 public export
 data Decls : (global : Context) -> Type where

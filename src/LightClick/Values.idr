@@ -6,6 +6,8 @@ import Data.List.Elem
 import Data.Vect
 import Data.Vect.Elem
 
+import Data.Strings
+
 import Toolkit.Data.DList
 import Toolkit.Data.DVect
 
@@ -26,24 +28,31 @@ data TyValue : Type where
   CONN : TyValue
   DATA : TyValue
   CHAN : TyValue
+  GATE : TyValue
 
 public export
 data Value : TyValue -> Type where
-  VRef  : (name : String) -> (type : TyValue) -> Value type
+  VRef  : (name : String)
+       -> (type : TyValue)
+               -> Value type
 
-  VLet  : {term : TyValue} -> (name : String)
+  VLet  : {term : TyValue}
+       -> (name : String)
        -> (beThis : Value term)
-       -> (inThis : Value expr) -> Value expr
+       -> (inThis : Value expr)
+                 -> Value expr
 
-  VSeq  : {a,b : TyValue} -> (this     : Value a)
-       -> (thenThis : Value b) -> Value b
+  VSeq  : {a,b : TyValue}
+       -> (this     : Value a)
+       -> (thenThis : Value b)
+                   -> Value b
 
   VEnd : Value UNIT
 
   VPort : (label : String)
        -> (dir   : Direction)
        -> (type  : Value DATA)
-       -> Value (PORT label)
+                -> Value (PORT label)
 
   VModule : {n : Nat}
          -> {names : Vect (S n) String}
@@ -54,9 +63,18 @@ data Value : TyValue -> Type where
          -> Value (MODULE names)
 
   VDataLogic : Value DATA
-  VDataArray : Value DATA -> Nat -> Value DATA
-  VDataStruct : {n : Nat} -> Vect (S n) (Pair String (Value DATA)) -> Value DATA
-  VDataUnion  : {n : Nat} -> Vect (S n) (Pair String (Value DATA)) -> Value DATA
+
+  VDataArray : Value DATA
+            -> Nat
+            -> Value DATA
+
+  VDataStruct : {n : Nat}
+             -> Vect (S n) (Pair String (Value DATA))
+             -> Value DATA
+
+  VDataUnion  : {n : Nat}
+             -> Vect (S n) (Pair String (Value DATA))
+             -> Value DATA
 
   VChan : Value DATA -> Value CHAN
 
@@ -77,6 +95,21 @@ data Value : TyValue -> Type where
          -> DVect String (Value . PORT) (S m) outs
          -> Value CONN
 
+  VNot : Value CHAN
+      -> Value CHAN
+      -> Value GATE
+
+  VGate : {n : Nat}
+       -> TyGateComb
+       -> Value CHAN
+       -> Vect (S (S n)) (Value CHAN)
+       -> Value GATE
+
+  VConnG : Value CHAN
+        -> Value (PORT p)
+        -> Value CONN
+
+
 export
 getType : {type : TyValue} -> Value type -> TyValue
 getType {type} _ = type
@@ -84,9 +117,8 @@ getType {type} _ = type
 
 covering
 showV : Value type -> String
-showV (VRef name type) =
-  "(VRef " <+> show name
-    <+> ")"
+showV (VRef name type)
+  = "(VRef " <+> show name  <+> ")"
 
 showV (VLet x y z) =
    "(VLet "
@@ -122,11 +154,12 @@ showV (VDataArray x k) =
     <+> show k
     <+> ")"
 
-showV (VDataStruct {n} xs) = "(VTyStruct " <+> show ps <+> ")"
-  where
-    covering
-    ps : Vect (S n) String
-    ps = map (\(l,c) => "(" <+> show l <+> " " <+> showV c <+> ")") xs
+showV (VDataStruct {n} xs)
+  = "(VTyStruct " <+> show ps <+> ")"
+    where
+      covering
+      ps : Vect (S n) String
+      ps = map (\(l,c) => "(" <+> show l <+> " " <+> showV c <+> ")") xs
 
 showV (VDataUnion {n} xs) = "(TyUnion " <+> show ps <+> ")"
   where
@@ -158,6 +191,21 @@ showV (VConnFO x y z) =
       <+> showDVect showV z <+> " "
       <+> ")"
 
+showV (VNot o i)
+  = unwords ["(VNot", showV o, showV i, ")"]
+
+showV (VGate ty o ins)
+    = unwords ["(VGate", show ty, showV o, ins', ")"]
+
+  where
+    covering
+    ins' : String
+    ins' = unwords $ toList $ map (\c => "(" <+> showV c <+> ")") ins
+
+showV (VConnG c idx)
+  = unwords ["(VConnG", showV c, showV idx, ")"]
+
+
 export
 Show (Value type) where
   show = assert_total showV -- TODO
@@ -170,6 +218,7 @@ interp UNIT = UNIT
 interp (MODULE xs) = MODULE xs
 interp CONN = CONN
 interp DATA = DATA
+interp GATE = GATE
 
 export
 getData : Value (PORT s) -> Either LightClick.Error (Value DATA)
@@ -299,6 +348,54 @@ namespace IndexBuilder
    recoverRef {names} _ label = VRef label (MODULE names)
 
 namespace ConnBuilder
+
+  namespace Gate
+    export
+    newConn : (name : String)
+           -> Value (PORT i)
+           -> Value CONN
+    newConn name i = (VConnG (VRef name CHAN) i)
+
+    namespace FanIn
+      helper : (cname : String)
+            -> (n     : Nat)
+            -> (dTy   : Value DATA)
+            -> (iport : Value (PORT i))
+                     -> Either LightClick.Error (Value CHAN, Value CONN)
+      helper cname n type src
+        = let cname' = newName [cname, show n]
+          in Right ( VRef cname' CHAN
+                   , VLet cname'
+                          (VChan type)
+                          (Gate.newConn cname' src)
+                   )
+
+      newConn' : (c     : Nat)
+              -> (cname : String)
+              -> (type  : Value DATA)
+              -> (is    : DVect String (Value . PORT) (S (S n)) ins)
+                       -> Either LightClick.Error
+                                 ( Vect (S (S n)) (Value CHAN)
+                                 , Value CONN)
+      newConn' c name type (i::j::Nil)
+        = do (i'', i') <- helper name c     type i
+             (j'', j') <- helper name (S c) type j
+             pure ([i'', j''], VSeq i' j')
+
+      newConn' c name type (i::j::k::is)
+        = do (rest', rest) <- newConn' (S (S c)) name type (j::k::is)
+             (i'',   i')   <- helper name c type i
+             pure (i''::rest', VSeq i' rest)
+
+      export
+      newConn : (cname : String)
+             -> (type  : Value DATA)
+             -> (is    : DVect String (Value . PORT) (S (S n)) ins)
+                      -> Either LightClick.Error
+                                ( Vect (S (S n)) (Value CHAN)
+                                , Value CONN
+                                )
+      newConn = newConn' Z
 
   namespace Direct
     export

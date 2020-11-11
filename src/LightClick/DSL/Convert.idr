@@ -189,12 +189,12 @@ convert ctxt (Mux fc fan ctrl out) = do
 convert ctxt (NOT fc i o)
   = do x' <- expectPort ctxt i
        y' <- expectPort ctxt o
-       Right (CONN ** NOT fc (snd x') (snd y'))
+       Right (GATE ** NOT fc (snd x') (snd y'))
 
 convert ctxt (GATE fc ty is o)
   = do is' <- convertListPortF ctxt is
        o'  <- expectPort ctxt o
-       Right (CONN ** GATE fc ty (snd is') (snd o'))
+       Right (GATE ** GATE fc ty (snd is') (snd o'))
 
 convert ctxt End = Right (UNIT ** End)
 

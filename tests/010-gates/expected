@@ -125,162 +125,105 @@ module e__
 // TO ADD
 endmodule; 
 
-module not_alpha_s_omega_s  
-(
-  input logic input_s,
-  output logic output_s
-);
-// TO ADD
-endmodule; 
-
-module and_e_s_a_s_b_s_c_s_d_s  
-(
-  input logic input_fan_1_s,
-  input logic input_fan_2_s,
-  input logic input_fan_3_s,
-  input logic input_fan_4_s,
-  output logic output_s
-);
-// TO ADD
-endmodule; 
-
-module ior_e__s_a__s_b__s_c__s_d__s  
-(
-  input logic input_fan_1_s,
-  input logic input_fan_2_s,
-  input logic input_fan_3_s,
-  input logic input_fan_4_s,
-  output logic output_s
-);
-// TO ADD
-endmodule; 
-
-module xor_e___s_a___s_b___s_c___s_d___s  
-(
-  input logic input_fan_1_s,
-  input logic input_fan_2_s,
-  input logic input_fan_3_s,
-  input logic input_fan_4_s,
-  output logic output_s
-);
-// TO ADD
-endmodule; 
-
 module Top ();
-  logic not_alpha_s_omega_s_in;
-  logic not_alpha_s_omega_s_out;
-  logic and_e_s_a_s_b_s_c_s_d_s_output;
-  logic and_e_s_a_s_b_s_c_s_d_s_and_a_s_input_fan_4_s;
-  logic ior_e__s_a__s_b__s_c__s_d__s_output;
-  logic and_e_s_a_s_b_s_c_s_d_s_and_b_s_input_fan_3_s;
-  logic and_e_s_a_s_b_s_c_s_d_s_and_c_s_input_fan_2_s;
-  logic ior_e__s_a__s_b__s_c__s_d__s_ior_a__s_input_fan_4_s;
-  logic and_e_s_a_s_b_s_c_s_d_s_and_d_s_input_fan_1_s;
-  logic xor_e___s_a___s_b___s_c___s_d___s_output;
-  logic ior_e__s_a__s_b__s_c__s_d__s_ior_b__s_input_fan_3_s;
-  logic xor_e___s_a___s_b___s_c___s_d___s_xor_a___s_input_fan_4_s;
-  logic ior_e__s_a__s_b__s_c__s_d__s_ior_c__s_input_fan_2_s;
-  logic ior_e__s_a__s_b__s_c__s_d__s_ior_d__s_input_fan_1_s;
-  logic xor_e___s_a___s_b___s_c___s_d___s_xor_b___s_input_fan_3_s;
-  logic xor_e___s_a___s_b___s_c___s_d___s_xor_c___s_input_fan_2_s;
-  logic xor_e___s_a___s_b___s_c___s_d___s_xor_d___s_input_fan_1_s;
-  xor_e___s_a___s_b___s_c___s_d___s lightclick_module_0
+  wire logic not_in_alpha_s_omega_s;
+  wire logic not_out_alpha_s_omega_s;
+  wire logic and_e_s_a_s_b_s_c_s_d_s_out;
+  wire logic and_e_s_a_s_b_s_c_s_d_s_in_0;
+  wire logic and_e_s_a_s_b_s_c_s_d_s_in_2;
+  wire logic ior_e__s_a__s_b__s_c__s_d__s_out;
+  wire logic and_e_s_a_s_b_s_c_s_d_s_in_4;
+  wire logic ior_e__s_a__s_b__s_c__s_d__s_in_0;
+  wire logic and_e_s_a_s_b_s_c_s_d_s_in_5;
+  wire logic ior_e__s_a__s_b__s_c__s_d__s_in_2;
+  wire logic xor_e___s_a___s_b___s_c___s_d___s_out;
+  wire logic ior_e__s_a__s_b__s_c__s_d__s_in_4;
+  wire logic xor_e___s_a___s_b___s_c___s_d___s_in_0;
+  wire logic ior_e__s_a__s_b__s_c__s_d__s_in_5;
+  wire logic xor_e___s_a___s_b___s_c___s_d___s_in_2;
+  wire logic xor_e___s_a___s_b___s_c___s_d___s_in_4;
+  wire logic xor_e___s_a___s_b___s_c___s_d___s_in_5;
+  alpha lightclick_module_0
      (
-       .output_s(xor_e___s_a___s_b___s_c___s_d___s_output),
-       .input_fan_4_s(xor_e___s_a___s_b___s_c___s_d___s_xor_a___s_input_fan_4_s),
-       .input_fan_3_s(xor_e___s_a___s_b___s_c___s_d___s_xor_b___s_input_fan_3_s),
-       .input_fan_2_s(xor_e___s_a___s_b___s_c___s_d___s_xor_c___s_input_fan_2_s),
-       .input_fan_1_s(xor_e___s_a___s_b___s_c___s_d___s_xor_d___s_input_fan_1_s)
+       .s(not_in_alpha_s_omega_s)
      );
-  d__ lightclick_module_1
+  omega lightclick_module_1
      (
-       .s(xor_e___s_a___s_b___s_c___s_d___s_xor_d___s_input_fan_1_s)
+       .s(not_out_alpha_s_omega_s)
      );
-  c__ lightclick_module_2
+  not lightclick_module_2(
+    not_out_alpha_s_omega_s,
+    not_in_alpha_s_omega_s
+  );
+  a lightclick_module_3
      (
-       .s(xor_e___s_a___s_b___s_c___s_d___s_xor_c___s_input_fan_2_s)
+       .s(and_e_s_a_s_b_s_c_s_d_s_in_0)
      );
-  b__ lightclick_module_3
+  b lightclick_module_4
      (
-       .s(xor_e___s_a___s_b___s_c___s_d___s_xor_b___s_input_fan_3_s)
+       .s(and_e_s_a_s_b_s_c_s_d_s_in_2)
      );
-  a__ lightclick_module_4
+  c lightclick_module_5
      (
-       .s(xor_e___s_a___s_b___s_c___s_d___s_xor_a___s_input_fan_4_s)
+       .s(and_e_s_a_s_b_s_c_s_d_s_in_4)
      );
-  e__ lightclick_module_5
+  d lightclick_module_6
      (
-       .s(xor_e___s_a___s_b___s_c___s_d___s_output)
+       .s(and_e_s_a_s_b_s_c_s_d_s_in_5)
      );
-  ior_e__s_a__s_b__s_c__s_d__s lightclick_module_6
+  and lightclick_module_7(
+    and_e_s_a_s_b_s_c_s_d_s_out,
+    and_e_s_a_s_b_s_c_s_d_s_in_0,
+    and_e_s_a_s_b_s_c_s_d_s_in_2,
+    and_e_s_a_s_b_s_c_s_d_s_in_4,
+    and_e_s_a_s_b_s_c_s_d_s_in_5
+  );
+  a_ lightclick_module_8
      (
-       .output_s(ior_e__s_a__s_b__s_c__s_d__s_output),
-       .input_fan_4_s(ior_e__s_a__s_b__s_c__s_d__s_ior_a__s_input_fan_4_s),
-       .input_fan_3_s(ior_e__s_a__s_b__s_c__s_d__s_ior_b__s_input_fan_3_s),
-       .input_fan_2_s(ior_e__s_a__s_b__s_c__s_d__s_ior_c__s_input_fan_2_s),
-       .input_fan_1_s(ior_e__s_a__s_b__s_c__s_d__s_ior_d__s_input_fan_1_s)
-     );
-  d_ lightclick_module_7
-     (
-       .s(ior_e__s_a__s_b__s_c__s_d__s_ior_d__s_input_fan_1_s)
-     );
-  c_ lightclick_module_8
-     (
-       .s(ior_e__s_a__s_b__s_c__s_d__s_ior_c__s_input_fan_2_s)
+       .s(ior_e__s_a__s_b__s_c__s_d__s_in_0)
      );
   b_ lightclick_module_9
      (
-       .s(ior_e__s_a__s_b__s_c__s_d__s_ior_b__s_input_fan_3_s)
+       .s(ior_e__s_a__s_b__s_c__s_d__s_in_2)
      );
-  a_ lightclick_module_10
+  c_ lightclick_module_10
      (
-       .s(ior_e__s_a__s_b__s_c__s_d__s_ior_a__s_input_fan_4_s)
+       .s(ior_e__s_a__s_b__s_c__s_d__s_in_4)
      );
-  e_ lightclick_module_11
+  d_ lightclick_module_11
      (
-       .s(ior_e__s_a__s_b__s_c__s_d__s_output)
+       .s(ior_e__s_a__s_b__s_c__s_d__s_in_5)
      );
-  and_e_s_a_s_b_s_c_s_d_s lightclick_module_12
+  or lightclick_module_12(
+    ior_e__s_a__s_b__s_c__s_d__s_out,
+    ior_e__s_a__s_b__s_c__s_d__s_in_0,
+    ior_e__s_a__s_b__s_c__s_d__s_in_2,
+    ior_e__s_a__s_b__s_c__s_d__s_in_4,
+    ior_e__s_a__s_b__s_c__s_d__s_in_5
+  );
+  a__ lightclick_module_13
      (
-       .output_s(and_e_s_a_s_b_s_c_s_d_s_output),
-       .input_fan_4_s(and_e_s_a_s_b_s_c_s_d_s_and_a_s_input_fan_4_s),
-       .input_fan_3_s(and_e_s_a_s_b_s_c_s_d_s_and_b_s_input_fan_3_s),
-       .input_fan_2_s(and_e_s_a_s_b_s_c_s_d_s_and_c_s_input_fan_2_s),
-       .input_fan_1_s(and_e_s_a_s_b_s_c_s_d_s_and_d_s_input_fan_1_s)
+       .s(xor_e___s_a___s_b___s_c___s_d___s_in_0)
      );
-  d lightclick_module_13
+  b__ lightclick_module_14
      (
-       .s(and_e_s_a_s_b_s_c_s_d_s_and_d_s_input_fan_1_s)
+       .s(xor_e___s_a___s_b___s_c___s_d___s_in_2)
      );
-  c lightclick_module_14
+  c__ lightclick_module_15
      (
-       .s(and_e_s_a_s_b_s_c_s_d_s_and_c_s_input_fan_2_s)
+       .s(xor_e___s_a___s_b___s_c___s_d___s_in_4)
      );
-  b lightclick_module_15
+  d__ lightclick_module_16
      (
-       .s(and_e_s_a_s_b_s_c_s_d_s_and_b_s_input_fan_3_s)
+       .s(xor_e___s_a___s_b___s_c___s_d___s_in_5)
      );
-  a lightclick_module_16
-     (
-       .s(and_e_s_a_s_b_s_c_s_d_s_and_a_s_input_fan_4_s)
-     );
-  e lightclick_module_17
-     (
-       .s(and_e_s_a_s_b_s_c_s_d_s_output)
-     );
-  not_alpha_s_omega_s lightclick_module_18
-     (
-       .input_s(not_alpha_s_omega_s_in),
-       .output_s(not_alpha_s_omega_s_out)
-     );
-  omega lightclick_module_19
-     (
-       .s(not_alpha_s_omega_s_out)
-     );
-  alpha lightclick_module_20
-     (
-       .s(not_alpha_s_omega_s_in)
-     );
+  xor lightclick_module_17(
+    xor_e___s_a___s_b___s_c___s_d___s_out,
+    xor_e___s_a___s_b___s_c___s_d___s_in_0,
+    xor_e___s_a___s_b___s_c___s_d___s_in_2,
+    xor_e___s_a___s_b___s_c___s_d___s_in_4,
+    xor_e___s_a___s_b___s_c___s_d___s_in_5
+  );
 
 endmodule;
 LOG : Bye

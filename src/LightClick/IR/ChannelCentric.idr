@@ -1,10 +1,13 @@
 module LightClick.IR.ChannelCentric
 
 import Data.List
+import Data.Strings
 import Data.Vect
 
 import Toolkit.Data.DList
 import Toolkit.Data.DVect
+
+import Language.SystemVerilog.Gates
 
 import LightClick.Types
 import LightClick.Terms
@@ -54,6 +57,16 @@ data ChannelIR : TyIR -> Type where
               -> Vect (S n)
                       (Pair String (ChannelIR CHAN))
               -> ChannelIR CONN
+
+  CNot : ChannelIR CHAN
+      -> ChannelIR CHAN
+      -> ChannelIR GATE
+
+  CGate : {n : Nat}
+       -> TyGateComb
+       -> ChannelIR CHAN
+       -> Vect (S (S n)) (ChannelIR CHAN)
+       -> ChannelIR GATE
 
 covering
 showC : ChannelIR type -> String
@@ -123,6 +136,17 @@ showC (CModuleInst m {n} params) =
     ps : Vect (S n) String
     ps = map (\(l,c) => show l <+> " " <+> showC c) params
 
+showC (CNot o i)
+  = unwords ["(CNot", showC o, showC i, ")"]
+
+showC (CGate ty o ins)
+    = unwords ["(CGate", show ty, showC o, ins', ")"]
+
+  where
+    covering
+    ins' : String
+    ins' = unwords $ toList $ map (\c => "(" <+> showC c <+> ")") ins
+
 export
 Show (ChannelIR type) where
   show expr = assert_total $ showC expr
@@ -131,8 +155,65 @@ public export
 Convert : Type -> Type
 Convert = Either LightClick.Error
 
+
 covering
 convert : ModuleIR type -> Convert (ChannelIR type)
+
+covering
+convPort : ModuleIR PORT -> Convert (ChannelIR MODULE, String)
+convPort (MRef name PORT) = Left (NotSupposedToHappen (Just "convPort CIR Ref"))
+convPort (MLet name beThis inThis) = Left (NotSupposedToHappen (Just "convPort CIR Let"))
+convPort (MSeq doThis thenThis) = Left (NotSupposedToHappen (Just "convPort CIR Seq"))
+convPort (MPort label dir type) = Left (NotSupposedToHappen (Just "convPort CIR Port"))
+convPort (MIDX label x z)
+    = do m' <- convert x
+         m'' <- convModule m'
+         pure (m'',label)
+
+  where
+
+    convModule : ChannelIR MODULE -> Convert (ChannelIR MODULE)
+    convModule m@(CRef x MODULE) = Right m
+    convModule (CLet x z w) = Left (NotSupposedToHappen (Just "convModule CIR let"))
+    convModule (CSeq x z)   = Left (NotSupposedToHappen (Just "convModule CIR CSeq"))
+    convModule (CModule xs) = Left (NotSupposedToHappen (Just "convModule CIR CMod"))
+
+covering
+mkConn : (p : ModuleIR PORT)
+      -> (c : ChannelIR CHAN)
+           -> Convert (ChannelIR CONN)
+mkConn p c =
+  do (m,l) <- convPort p
+     pure (CModuleInst m [(l,c)])
+
+covering
+convPorts : (c    : ChannelIR CHAN)
+         -> (outs : Vect (S n) (ModuleIR PORT))
+                 -> Convert (ChannelIR CONN)
+convPorts c (x :: []) = mkConn x c
+convPorts c (x :: (z :: xs)) =
+    do con <- mkConn x c
+       rest <- convPorts c (z::xs)
+       pure (CSeq con rest)
+
+covering
+convertKVs : Vect y (String, ModuleIR DATA) -> Convert (Vect y (String, ChannelIR DATA))
+convertKVs [] = Right Nil
+convertKVs ((l,x) :: xs) =
+ do x' <- convert x
+    rest <- convertKVs xs
+    pure ((l,x')::rest)
+
+covering
+convertChans : Vect n (ModuleIR CHAN)
+            -> Convert (Vect n (ChannelIR CHAN))
+convertChans Nil = Right Nil
+convertChans (c::cs)
+  = do c' <- convert c
+       rest <- convertChans cs
+       pure (c'::rest)
+
+-- [ Definition ]
 convert (MRef x t) = Right $ CRef x t
 convert (MLet x y z) =
   do y' <- convert y
@@ -167,25 +248,10 @@ convert (MDataArray x k) =
 convert (MDataStruct xs) =
     do xs' <- convertKVs xs
        pure $ CDataStruct xs' -- (map (\(k,v) => MkPair k (convert v)) xs)
-  where
-    convertKVs : Vect y (String, ModuleIR DATA) -> Convert (Vect y (String, ChannelIR DATA))
-    convertKVs [] = Right Nil
-    convertKVs ((l,x) :: xs) =
-     do x' <- convert x
-        rest <- convertKVs xs
-        pure ((l,x')::rest)
-
 
 convert (MDataUnion xs)  =
     do xs' <- convertKVs xs
        pure $ CDataUnion xs' -- (map (\(k,v) => MkPair k (convert v)) xs)
-  where
-    convertKVs : Vect y (String, ModuleIR DATA) -> Convert (Vect y (String, ChannelIR DATA))
-    convertKVs [] = Right Nil
-    convertKVs ((l,x) :: xs) =
-     do x' <- convert x
-        rest <- convertKVs xs
-        pure ((l,x')::rest)
 
 convert (MChan x) =
   do x' <- convert x
@@ -201,36 +267,26 @@ convert (MConn cname y ps) =
        i <- mkConn y c
        rest <- convPorts c ps
        pure (CSeq i rest)
-  where
-    convModule : ChannelIR MODULE -> Convert (ChannelIR MODULE)
-    convModule m@(CRef x MODULE) = Right m
-    convModule (CLet x z w) = Left (NotSupposedToHappen (Just "convModule CIR let"))
-    convModule (CSeq x z)   = Left (NotSupposedToHappen (Just "convModule CIR CSeq"))
-    convModule (CModule xs) = Left (NotSupposedToHappen (Just "convModule CIR CMod"))
 
-    convPort : ModuleIR PORT -> Convert (ChannelIR MODULE, String)
-    convPort (MRef name PORT) = Left (NotSupposedToHappen (Just "convPort CIR Ref"))
-    convPort (MLet name beThis inThis) = Left (NotSupposedToHappen (Just "convPort CIR Let"))
-    convPort (MSeq doThis thenThis) = Left (NotSupposedToHappen (Just "convPort CIR Seq"))
-    convPort (MPort label dir type) = Left (NotSupposedToHappen (Just "convPort CIR Port"))
-    convPort (MIDX label x z) =
-      do m' <- convert x
-         m'' <- convModule m'
-         pure (m'',label)
+convert (MNot o i)
+  = do o' <- convert o
+       i' <- convert i
+       pure (CNot o' i')
 
-    mkConn : (p : ModuleIR PORT) -> (c : ChannelIR CHAN) -> Convert (ChannelIR CONN)
-    mkConn p c =
-      do (m,l) <- convPort p
-         pure (CModuleInst m [(l,c)])
+convert (MGate ty o ins)
+  = do o' <- convert o
+       rest <- convertChans ins
+       pure (CGate ty o' rest)
 
-    convPorts : (c : ChannelIR CHAN) -> (outs : Vect (S n) (ModuleIR PORT)) -> Convert (ChannelIR CONN)
-    convPorts c (x :: []) = mkConn x c
-    convPorts c (x :: (z :: xs)) =
-      do con <- mkConn x c
-         rest <- convPorts c (z::xs)
-         pure (CSeq con rest)
+convert (MConnG c idx)
+  = do c' <- convert c
+       p  <- mkConn idx c'
+       pure p
 
 export
 covering
 runConvert : ModuleIR type -> Convert (ChannelIR type)
 runConvert = convert
+
+
+-- [ EOF ]

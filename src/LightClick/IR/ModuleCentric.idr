@@ -1,9 +1,12 @@
 module LightClick.IR.ModuleCentric
 
+import Data.Strings
 import Data.Vect
 
 import Toolkit.Data.DList
 import Toolkit.Data.DVect
+
+import Language.SystemVerilog.Gates
 
 import LightClick.Error
 import LightClick.Types
@@ -18,6 +21,7 @@ data TyIR = PORT
           | CONN
           | DATA
           | CHAN
+          | GATE
 
 export
 Show TyIR where
@@ -27,6 +31,7 @@ Show TyIR where
   show CONN   = "MTyCONN"
   show DATA   = "MTyDATA"
   show CHAN   = "MTyCHAN"
+  show GATE   = "MTyGATE"
 
 public export
 data ModuleIR : TyIR -> Type where
@@ -58,10 +63,25 @@ data ModuleIR : TyIR -> Type where
       -> ModuleIR PORT
       -> ModuleIR PORT
 
-  MConn : {n : Nat} -> (cname  : ModuleIR CHAN)
+  MConn : {n : Nat}
+       -> (cname  : ModuleIR CHAN)
        -> (input  : ModuleIR PORT)
        -> (output : Vect (S n) $ ModuleIR PORT)
        -> ModuleIR CONN
+
+  MNot : ModuleIR CHAN
+      -> ModuleIR CHAN
+      -> ModuleIR GATE
+
+  MGate : {n : Nat}
+       -> TyGateComb
+       -> ModuleIR CHAN
+       -> Vect (S (S n)) (ModuleIR CHAN)
+       -> ModuleIR GATE
+
+  MConnG : ModuleIR CHAN
+        -> ModuleIR PORT
+        -> ModuleIR CONN
 
 -- go from value (with proof of normal form) to moduleIR
 public export
@@ -72,6 +92,7 @@ interp (MODULE xs) = MODULE
 interp CONN = CONN
 interp DATA = DATA
 interp CHAN = CHAN
+interp GATE = GATE
 
 covering
 convert : Value type -> ModuleIR (interp type)
@@ -93,6 +114,10 @@ convert (VIDX name x y) = MIDX name (convert x) (convert y)
 
 convert (VConnD x y z) = MConn (convert x) (convert y) [convert z]
 convert (VConnFO x y z) = MConn (convert x) (convert y) (mapToVect (\p => convert p) z)
+convert (VNot o i) = MNot (convert o) (convert i)
+convert (VGate ty o ins) = MGate ty (convert o) (map convert ins)
+convert (VConnG c idx) = MConnG (convert c) (convert idx)
+
 
 covering
 export
@@ -167,6 +192,21 @@ showM (MConn x y ps) =
       <+> show (map showM ps)
       <+> ")"
 
+showM (MNot o i)
+  = unwords ["(MNot", showM o, showM i, ")"]
+
+showM (MGate ty o ins)
+    = unwords ["(MGate", show ty, showM o, ins', ")"]
+
+  where
+    covering
+    ins' : String
+    ins' = unwords $ toList $ map (\c => "(" <+> showM c <+> ")") ins
+
+showM (MConnG c idx)
+  = unwords ["(MConnG", showM c, showM idx, ")"]
+
+
 export
 Show (ModuleIR type) where
-  show = assert_total showM
+  show = assert_total showM -- TODO

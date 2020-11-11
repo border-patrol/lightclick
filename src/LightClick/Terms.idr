@@ -111,7 +111,7 @@ namespace Term
          -> (fc    : FileContext)
          -> (left  : Term ctxt (PORT a))
          -> (right : Term ctxt (PORT b))
-                  -> Term ctxt CONN
+                  -> Term ctxt GATE
 
       GATE : {n : Nat}
           -> {o : String}
@@ -123,7 +123,7 @@ namespace Term
                             (S (S n))
                             names)
           -> (output : Term ctxt (PORT o))
-                    -> Term ctxt CONN
+                    -> Term ctxt GATE
 
       End : Term ctxt UNIT
 

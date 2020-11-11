@@ -129,6 +129,7 @@ namespace Free
     free (TyUnion kvs) = Nil
     free TyUnit = Nil
     free TyConn = Nil
+    free TyGate = Nil
     free (TyPort label dir sense wty type usage) with (free label (TyPort label dir sense wty type usage))
       free (TyPort label dir sense wty type usage) | Yes (FreePort label usage contra)
         = [label]

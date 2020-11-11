@@ -36,10 +36,10 @@ module world
 endmodule; 
 
 module Top ();
-  logic[31:0] scrub_data_o_world_data_o;
-  logic[31:0] world_data_i_scrub_data_i;
-  logic world_clk_scrub_clk;
-  logic world_ready_scrub_ready;
+  wire logic[31:0] scrub_data_o_world_data_o;
+  wire logic[31:0] world_data_i_scrub_data_i;
+  wire logic world_clk_scrub_clk;
+  wire logic world_ready_scrub_ready;
   scrub lightclick_module_0
      (
        .data_o(scrub_data_o_world_data_o),
@@ -106,13 +106,13 @@ module mux_scrub_data_i_world_select_world_data_ia_world_data_ib
 endmodule; 
 
 module Top ();
-  logic world_clk_scrub_clk;
-  logic world_ready_scrub_ready;
-  logic[1:0] mux_scrub_data_i_world_select_world_data_ia_world_data_ib_control;
-  logic[31:0] scrub_data_o_world_data_o;
-  logic[31:0] mux_scrub_data_i_world_select_world_data_ia_world_data_ib_output;
-  logic[31:0] mux_scrub_data_i_world_select_world_data_ia_world_data_ib_fanin_world_data_ia_input_fan_2_data_ia;
-  logic[31:0] mux_scrub_data_i_world_select_world_data_ia_world_data_ib_fanin_world_data_ib_input_fan_1_data_ib;
+  wire logic world_clk_scrub_clk;
+  wire logic world_ready_scrub_ready;
+  wire logic[1:0] mux_scrub_data_i_world_select_world_data_ia_world_data_ib_control;
+  wire logic[31:0] scrub_data_o_world_data_o;
+  wire logic[31:0] mux_scrub_data_i_world_select_world_data_ia_world_data_ib_output;
+  wire logic[31:0] mux_scrub_data_i_world_select_world_data_ia_world_data_ib_fanin_world_data_ia_input_fan_2_data_ia;
+  wire logic[31:0] mux_scrub_data_i_world_select_world_data_ia_world_data_ib_fanin_world_data_ib_input_fan_1_data_ib;
   world lightclick_module_0
      (
        .clk(world_clk_scrub_clk),

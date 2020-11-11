@@ -11,3 +11,7 @@ toString : TyGateComb -> String
 toString AND = "and"
 toString IOR = "ior"
 toString XOR = "xor"
+
+export
+Show TyGateComb where
+  show = toString

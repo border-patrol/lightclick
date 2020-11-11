@@ -61,12 +61,12 @@ module mux_trgt_xy_init_ctrl_init_chan1_init_chan2
 endmodule; 
 
 module Top ();
-  logic fan_out_from_clk_c_to_init_c_trgt_c;
-  logic[1:0] mux_trgt_xy_init_ctrl_init_chan1_init_chan2_control;
-  logic trgt_err_init_err;
-  IJ mux_trgt_xy_init_ctrl_init_chan1_init_chan2_output;
-  IJ mux_trgt_xy_init_ctrl_init_chan1_init_chan2_fanin_init_chan1_input_fan_2_chan1;
-  IJ mux_trgt_xy_init_ctrl_init_chan1_init_chan2_fanin_init_chan2_input_fan_1_chan2;
+  wire logic fan_out_from_clk_c_to_init_c_trgt_c;
+  wire logic[1:0] mux_trgt_xy_init_ctrl_init_chan1_init_chan2_control;
+  wire logic trgt_err_init_err;
+  wire IJ mux_trgt_xy_init_ctrl_init_chan1_init_chan2_output;
+  wire IJ mux_trgt_xy_init_ctrl_init_chan1_init_chan2_fanin_init_chan1_input_fan_2_chan1;
+  wire IJ mux_trgt_xy_init_ctrl_init_chan1_init_chan2_fanin_init_chan2_input_fan_1_chan2;
   init lightclick_module_0
      (
        .c(fan_out_from_clk_c_to_init_c_trgt_c),

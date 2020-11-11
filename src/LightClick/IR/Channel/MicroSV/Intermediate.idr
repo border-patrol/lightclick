@@ -10,6 +10,10 @@ import Toolkit.Data.DList
 import Toolkit.Data.DList.DeBruijn
 import Toolkit.Data.DVect
 
+import public Language.SystemVerilog.MetaTypes
+import public Language.SystemVerilog.Gates
+import public Language.SystemVerilog.Direction
+
 import LightClick.Error
 
 import LightClick.Types.Direction
@@ -18,9 +22,6 @@ import LightClick.IR.ModuleCentric
 import LightClick.IR.ChannelCentric
 import LightClick.IR.Channel.MicroSV.InterpTy
 import LightClick.IR.Channel.MicroSV.Error
-
-import public Language.SystemVerilog.MetaTypes
-import public Language.SystemVerilog.Direction
 
 %default total
 
@@ -35,10 +36,10 @@ data MicroSvIR : (lctxt : Context)
     Global : (label : String) -> (ty : Ty) -> MicroSvIR ctxt ty
 
     Let : {typeE, ty : Ty}
-       -> (this : String)
-       -> (beThis : MicroSvIR ctxt typeE)
+       -> (this     : String)
+       -> (beThis   : MicroSvIR ctxt typeE)
        -> (withType : MicroSvIR ctxt ty)
-       -> (inThis : MicroSvIR ((this,typeE)::ctxt) typeB)
+       -> (inThis   : MicroSvIR ((this,typeE)::ctxt) typeB)
        -> MicroSvIR ctxt typeB
 
     Seq : {typeA, typeB : Ty}
@@ -47,6 +48,7 @@ data MicroSvIR : (lctxt : Context)
        -> MicroSvIR ctxt typeB
 
     TYPE : MicroSvIR ctxt TYPE
+    GATE : MicroSvIR ctxt GATE
 
     -- Decls
     DataLogic : MicroSvIR ctxt DATA
@@ -71,6 +73,18 @@ data MicroSvIR : (lctxt : Context)
     NewChan : MicroSvIR ctxt CHAN
     NewModule : List (Pair String (MicroSvIR ctxt CHAN))
              -> MicroSvIR ctxt (MINST names)
+
+    -- Gates
+    Not : (out : MicroSvIR ctxt CHAN)
+       -> (ins : MicroSvIR ctxt CHAN)
+              -> MicroSvIR ctxt GINST
+
+    Gate : {n    : Nat}
+        -> (type : TyGateComb)
+        -> (out  : MicroSvIR ctxt CHAN)
+        -> (ins  : Vect (S (S n)) (MicroSvIR ctxt CHAN))
+                -> MicroSvIR ctxt GINST
+
 
 export
 getType : {type : Ty} -> MicroSvIR ctxt type -> Ty
@@ -131,21 +145,21 @@ port f e p with (f e p)
   port f e p | (Right (MkTRes decls (Port l dir type) (PP l))) = Right (_ ** Port l dir type)
   port f e p | (Right (MkTRes decls _                 (PP l))) = Left (General $ "Port Expected")
 
-ports' : (f  : TFuncSig local PORT)
-      -> (e  : TEnv local)
-      -> (ps : Vect n (ChannelIR PORT))
-      -> Either TError (ns ** DList String (\s => MicroSvIR local (PORT s)) ns)
-ports' f e [] = pure (_ ** Nil)
-ports' f e (x :: xs) =
-  do x' <- port f e x
-     xs' <- ports' f e xs
-     pure (_ ** (snd x') :: (snd xs'))
-
 ports : (f  : TFuncSig local PORT)
      -> (e  : TEnv local)
      -> (ps : Vect (S n) (ChannelIR PORT))
      -> Either TError (ns ** DList String (\s => MicroSvIR local (PORT s)) ns)
-ports f e (x :: xs) =
+ports f e (x :: xs)
+    = do x' <- port f e x
+         xs' <- ports' f e xs
+         pure (_ ** (snd x') :: (snd xs'))
+  where
+    ports' : (f  : TFuncSig local PORT)
+        -> (e  : TEnv local)
+        -> (ps : Vect y (ChannelIR PORT))
+        -> Either TError (ns ** DList String (\s => MicroSvIR local (PORT s)) ns)
+    ports' f e [] = pure (_ ** Nil)
+    ports' f e (x :: xs) =
       do x' <- port f e x
          xs' <- ports' f e xs
          pure (_ ** (snd x') :: (snd xs'))
@@ -159,25 +173,58 @@ chan f e (l,c) with (f e c)
   chan f e (l,c) | (Left err) = Left $ Nested "Attempted to convert chan" err
   chan f e (l,c) | (Right (MkTRes decls expr CC)) = Right (l,expr)
 
-chans' : (f  : TFuncSig local CHAN)
-      -> (e  : TEnv local)
-      -> (cs : Vect n (String, ChannelIR CHAN))
-      -> Either TError (List (String, (MicroSvIR local CHAN)))
-chans' f e [] = pure Nil
-chans' f e (x :: xs) =
-  do x' <- chan f e x
-     xs' <- chans' f e xs
-     pure (x'::xs')
-
-
 chans : (f  : TFuncSig local CHAN)
      -> (e  : TEnv local)
      -> (cs : Vect (S n) (String, ChannelIR CHAN))
      -> Either TError (List (String, (MicroSvIR local CHAN)))
-chans f e (x :: xs) =
+chans f e (x :: xs)
+    = do x' <- chan f e x
+         xs' <- chans' f e xs
+         pure (x'::xs')
+  where
+
+    chans' : (f  : TFuncSig local CHAN)
+          -> (e  : TEnv local)
+          -> (cs : Vect y (String, ChannelIR CHAN))
+                -> Either TError (List (String, (MicroSvIR local CHAN)))
+    chans' f e [] = pure Nil
+    chans' f e (x :: xs) =
       do x' <- chan f e x
          xs' <- chans' f e xs
          pure (x'::xs')
+
+
+%inline
+chan' : (f : TFuncSig local CHAN)
+     -> (e : TEnv local)
+     -> (c : ChannelIR CHAN)
+          -> Either TError (MicroSvIR local CHAN)
+chan' f e c with (f e c)
+  chan' f e c | (Left err) = Left $ Nested "Attempted to convert chan" err
+  chan' f e c | (Right (MkTRes decls expr CC)) = Right expr
+
+chans' : (f  : TFuncSig local CHAN)
+      -> (e  : TEnv local)
+      -> (cs : Vect (S (S n)) (ChannelIR CHAN))
+            -> Either TError (Vect (S (S n)) (MicroSvIR local CHAN))
+chans' f e (x :: y :: xs)
+    = do x' <- chan' f e x
+         xs' <- chans'' f e (y::xs)
+         pure (x'::xs')
+  where
+
+    chans'' : (f  : TFuncSig local CHAN)
+           -> (e  : TEnv local)
+           -> (cs : Vect m (ChannelIR CHAN))
+                 -> Either TError (Vect m (MicroSvIR local CHAN))
+    chans'' f e [] = pure Nil
+    chans'' f e (x :: xs) =
+      do x' <- chan' f e x
+         xs' <- chans'' f e xs
+         pure (x'::xs')
+
+
+
 
 %inline
 kvpair : (f : TFuncSig local DATA)
@@ -188,25 +235,27 @@ kvpair f e (l,c) with (f e c)
   kvpair f e (l,c) | (Left err) = Left $ Nested "Attempted to convert KVPair" err
   kvpair f e (l,c) | (Right (MkTRes decls expr DD)) = Right (l,expr)
 
-kvpairs' : (f  : TFuncSig local DATA)
-        -> (e  : TEnv local)
-        -> (cs : Vect n (String, ChannelIR DATA))
-        -> Either TError (Vect n (String, (MicroSvIR local DATA)))
-kvpairs' f e [] = pure Nil
-kvpairs' f e (x :: xs) =
-  do x' <- kvpair f e x
-     xs' <- kvpairs' f e xs
-     pure (x'::xs')
-
 kvpairs : {n : Nat}
        -> (f  : TFuncSig local DATA)
        -> (e  : TEnv local)
        -> (cs : Vect (S n) (String, ChannelIR DATA))
        -> Either TError (Vect (S n) (String, (MicroSvIR local DATA)))
-kvpairs f e (x :: xs) =
+kvpairs f e (x :: xs)
+    = do x' <- kvpair f e x
+         xs' <- kvpairs' f e xs
+         pure (x'::xs')
+  where
+
+    kvpairs' : (f  : TFuncSig local DATA)
+            -> (e  : TEnv local)
+            -> (cs : Vect m (String, ChannelIR DATA))
+            -> Either TError (Vect m (String, (MicroSvIR local DATA)))
+    kvpairs' f e [] = pure Nil
+    kvpairs' f e (x :: xs) =
       do x' <- kvpair f e x
          xs' <- kvpairs' f e xs
          pure (x'::xs')
+
 
 
 Eq (ChannelIR PORT) where
@@ -312,6 +361,29 @@ convert e (CLet bind this {term} inThis) with (isBindable term)
             convert e (CLet bind this {term = CHAN} inThis) | (IsLet x) | (MkTEnv decls local) | (Right (MkTRes rest expr prf)) | (Right (MkTRes y z w)) | IsInstC | _
               = Left $ General "Expected local let `this` to be CChan, it wasn't"
 
+          {- [ Translating Gate terms ]
+
+            When GATE
+              - the type is var or inline data type
+              - the value is another gate.
+          -}
+          convert e (CLet bind this {term = GATE} inThis) | (IsLet x) | (MkTEnv decls local) | (Right (MkTRes rest expr prf)) | (Right (MkTRes y z w)) | IsInstG with (this)
+            convert e (CLet bind this {term = GATE} inThis) | (IsLet x) | (MkTEnv decls local) | (Right (MkTRes rest expr prf)) | (Right (MkTRes y z w)) | IsInstG | (CNot o i) with (convert e (CNot o i))
+              convert e (CLet bind this {term = GATE} inThis) | (IsLet x) | (MkTEnv decls local) | (Right (MkTRes rest expr prf)) | (Right (MkTRes y z w)) | IsInstG | (CNot o i) | Left l
+                = Left $ Nested "Attempting to construct this from local let not gate" l
+              convert e (CLet bind this {term = GATE} inThis) | (IsLet x) | (MkTEnv decls local) | (Right (MkTRes rest expr prf)) | (Right (MkTRes y z w)) | IsInstG | (CNot o i) | Right (MkTRes _ newNot prfType)
+                = Right (MkTRes y (Let bind expr GATE z) w)
+
+
+            convert e (CLet bind this {term = GATE} inThis) | (IsLet x) | (MkTEnv decls local) | (Right (MkTRes rest expr prf)) | (Right (MkTRes y z w)) | IsInstG | (CGate ty o ins) with (convert e (CGate ty o ins))
+              convert e (CLet bind this {term = GATE} inThis) | (IsLet x) | (MkTEnv decls local) | (Right (MkTRes rest expr prf)) | (Right (MkTRes y z w)) | IsInstG | (CGate ty o ins) | Left l
+                = Left $ Nested "Attempting to construct this from local let gate gate" l
+              convert e (CLet bind this {term = GATE} inThis) | (IsLet x) | (MkTEnv decls local) | (Right (MkTRes rest expr prf)) | (Right (MkTRes y z w)) | IsInstG | (CGate ty o ins) | Right (MkTRes _ newNot prfType)
+                = Right (MkTRes y (Let bind expr GATE z) w)
+
+            convert e (CLet bind this {term = GATE} inThis) | (IsLet x) | (MkTEnv decls local) | (Right (MkTRes rest expr prf)) | (Right (MkTRes y z w)) | IsInstG | _
+              = Left $ General "Expected local let `this` to be a Gate, it wasn't"                                                                                                                                                    --
+
   -- Any other pattern here is unexpected.
   convert e (CLet bind this {term = term} inThis) | Unbindable = Left $ General "We were given something unbindable"
 
@@ -383,6 +455,18 @@ convert e (CModuleInst _ kvs) with (e)
          let ns = map fst xs'
          pure (MkTRes decls (NewModule xs') (CM (sort ns)))
 
+-- [ Gates ]
+convert e (CNot o i) with (e)
+  convert e (CNot o i) | (MkTEnv decls local)
+    = do o' <- chan' convert e o
+         i' <- chan' convert e i
+         pure (MkTRes decls (Not o' i') GG)
+
+convert e (CGate ty o ins) with (e)
+  convert e (CGate ty o ins) | (MkTEnv decls local)
+    = do o'  <- chan'  convert e o
+         is' <- chans' convert e ins
+         pure (MkTRes decls (Gate ty o' is') GG)
 
 export
 covering

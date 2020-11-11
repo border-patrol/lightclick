@@ -32,6 +32,11 @@ updateKVs : (newGlobal : Context)
          -> Either TError (Vect n (String, Expr local newGlobal type))
 updateKVs newGlobal = traverse (updateKV newGlobal)
 
+updateChans: (newGlobal : Context)
+          -> (es : Vect (S (S n)) (Expr local global type))
+          -> Either TError (Vect (S (S n)) (Expr local newGlobal type))
+updateChans newGlobal = traverse (update newGlobal)
+
 updateDecl : (newGlobal : Context)
           -> (expr : Expr local globalOld (PORT s))
          -> Either TError (Expr local newGlobal (PORT s))
@@ -63,7 +68,10 @@ update newGlobal (Seq x y) =
     do x' <- update newGlobal x
        y' <- update newGlobal y
        pure (Seq x' y')
+
 update newGlobal TYPE = pure TYPE
+update newGlobal GATE = pure GATE
+
 update newGlobal DataLogic = pure DataLogic
 update newGlobal (DataArray type size) =
     do type' <- update newGlobal type
@@ -82,10 +90,22 @@ update newGlobal (Port label dir type) =
 update newGlobal (MDecl xs) =
     do xs' <- updateMDecl newGlobal xs
        pure (MDecl xs')
+
 update newGlobal NewChan = pure NewChan
+
 update newGlobal (NewModule xs) =
     do xs' <- traverse (updateKV newGlobal) xs
        pure (NewModule xs')
+
+update newGlobal (Not o i) =
+    do x' <- update newGlobal o
+       y' <- update newGlobal i
+       pure (Not x' y')
+
+update newGlobal (Gate ty o xs) =
+    do o' <- update newGlobal o
+       xs' <- traverse (update newGlobal) xs
+       pure (Gate ty o' xs')
 
 
 -- [ EOF ]

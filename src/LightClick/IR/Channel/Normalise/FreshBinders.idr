@@ -30,6 +30,17 @@ createModuleBinders state counter (CSeq (CModuleInst mname xs) y)
          (CModuleInst mname xs)
          (createModuleBinders state (S counter) y)
 
+createModuleBinders state counter (CSeq (CNot o i) y)
+  = CLet ("lightclick_module_" <+> show counter)
+         (CNot o i)
+         (createModuleBinders state (S counter) y)
+
+createModuleBinders state counter (CSeq (CGate ty o ins) y)
+  = CLet ("lightclick_module_" <+> show counter)
+         (CGate ty o ins)
+         (createModuleBinders state (S counter) y)
+
+
 createModuleBinders state counter (CSeq x y)
   = CSeq (createModuleBinders state counter x) y
 

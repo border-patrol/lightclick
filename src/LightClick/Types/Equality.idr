@@ -378,6 +378,9 @@ decEq (TyUnion xs) (TyUnion ys) Refl with (Fields.decEq xs ys)
 -- [ Unit ]
 decEq TyUnit TyUnit Refl = Yes (Same Refl Refl)
 
+-- [ Gates ]
+decEq TyGate TyGate Refl = Yes (Same Refl Refl)
+
 -- [ Connections ]
 
 decEq TyConn TyConn Refl = Yes (Same Refl Refl)
@@ -388,6 +391,8 @@ decEq (TyPort l dx sx wx tx ux) (TyPort l dy sy wy ty uy) Refl = Port.decEq (TyP
 decEq (TyModule xs) (TyModule ys) Refl with (Ports.decEq xs ys)
   decEq (TyModule xs) (TyModule xs) Refl | (Yes Refl) = Yes (Same Refl Refl)
   decEq (TyModule xs) (TyModule ys) Refl | (No contra) = No (modBodyDiffer contra)
+
+
 
 DecEqIdx MTy Ty where
   decEq x y prf = Equality.decEq x y prf

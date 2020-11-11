@@ -13,6 +13,7 @@ data MTy : Type where
   MODULE : {n : _} -> (Vect (S n) String) -> MTy
   CONN : MTy
   DATA : MTy
+  GATE : MTy
 
 export
 Show MTy where
@@ -21,6 +22,7 @@ Show MTy where
   show (MODULE ns) = "(MTyModule " <+> show ns <+> ")"
   show CONN        = "(MTyConnection)"
   show DATA        = "(MTyData)"
+  show GATE        = "(MTyGate)"
 
 export
 show' : MTy -> String
@@ -29,6 +31,7 @@ show' UNIT        = "(MTyUnit)"
 show' (MODULE ns) = "(MTyModule)"
 show' CONN        = "(MTyConnection)"
 show' DATA        = "(MTyData)"
+show' GATE        = "(MTyGate)"
 
 export
 Eq MTy where
@@ -37,6 +40,7 @@ Eq MTy where
   (==) (MODULE xs) (MODULE ys) = vecEq xs ys
   (==) CONN        CONN        = True
   (==) DATA        DATA        = True
+  (==) GATE        GATE        = True
   (==) _ _ = False
 
 
@@ -67,6 +71,9 @@ noPortConn Refl impossible
 noPortData : (PORT s = DATA) -> Void
 noPortData Refl impossible
 
+noPortGate : (PORT s = GATE) -> Void
+noPortGate Refl impossible
+
 noUnitConn : (UNIT = CONN) -> Void
 noUnitConn Refl impossible
 
@@ -76,14 +83,27 @@ noUnitModule Refl impossible
 noUnitData : (UNIT = DATA) -> Void
 noUnitData Refl impossible
 
+noUnitGate : (UNIT = GATE) -> Void
+noUnitGate Refl impossible
+
 noModuleConn : (MODULE xs = CONN) -> Void
 noModuleConn Refl impossible
 
 noModuleData : (MODULE xs = DATA) -> Void
 noModuleData Refl impossible
 
+noModuleGate : (MODULE xs = GATE) -> Void
+noModuleGate Refl impossible
+
 noConnData : (CONN = DATA) -> Void
 noConnData Refl impossible
+
+noConnGate : (CONN = GATE) -> Void
+noConnGate Refl impossible
+
+noDataGate : (DATA = GATE) -> Void
+noDataGate Refl impossible
+
 
 export
 DecEq MTy where
@@ -95,6 +115,7 @@ DecEq MTy where
     decEq (PORT x) x2 | (MODULE xs) = No (noPortModule)
     decEq (PORT x) x2 | CONN        = No (noPortConn)
     decEq (PORT x) x2 | DATA        = No noPortData
+    decEq (PORT x) x2 | GATE        = No noPortGate
 
   decEq UNIT x2 with (x2)
     decEq UNIT x2 | (PORT s)    = No (negEqSym noPortUnit)
@@ -102,6 +123,7 @@ DecEq MTy where
     decEq UNIT x2 | (MODULE xs) = No (noUnitModule)
     decEq UNIT x2 | CONN        = No (noUnitConn)
     decEq UNIT x2 | DATA        = No (noUnitData)
+    decEq UNIT x2 | GATE        = No (noUnitGate)
 
   decEq (MODULE xs) x2 with (x2)
     decEq (MODULE xs) x2 | (PORT s)    = No (negEqSym noPortModule)
@@ -112,6 +134,7 @@ DecEq MTy where
 
     decEq (MODULE xs) x2 | CONN        = No (noModuleConn)
     decEq (MODULE xs) x2 | DATA        = No (noModuleData)
+    decEq (MODULE xs) x2 | GATE        = No (noModuleGate)
 
   decEq CONN x2 with (x2)
     decEq CONN x2 | (PORT s)    = No (negEqSym noPortConn)
@@ -119,6 +142,7 @@ DecEq MTy where
     decEq CONN x2 | (MODULE ys) = No (negEqSym noModuleConn)
     decEq CONN x2 | CONN        = Yes Refl
     decEq CONN x2 | DATA        = No noConnData
+    decEq CONN x2 | GATE        = No noConnGate
 
   decEq DATA x2 with (x2)
     decEq DATA x2 | (PORT s)    = No (negEqSym noPortData)
@@ -127,6 +151,16 @@ DecEq MTy where
 
     decEq DATA x2 | CONN        = No (negEqSym noConnData)
     decEq DATA x2 | DATA        = Yes Refl
+    decEq DATA x2 | GATE        = No noDataGate
+
+  decEq GATE x2 with (x2)
+    decEq GATE x2 | (PORT s)    = No (negEqSym noPortGate)
+    decEq GATE x2 | UNIT        = No (negEqSym noUnitGate)
+    decEq GATE x2 | (MODULE ys) = No (negEqSym noModuleGate)
+
+    decEq GATE x2 | CONN        = No (negEqSym noConnGate)
+    decEq GATE x2 | DATA        = No (negEqSym noDataGate)
+    decEq GATE x2 | GATE        = Yes Refl
 
 
 -- --------------------------------------------------------------------- [ EOF ]

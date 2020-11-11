@@ -53,16 +53,16 @@ module receiver
 endmodule; 
 
 module Top ();
-  logic fan_out_from_system_clck_to_producer_clck_receiver_clck;
-  logic fan_out_from_system_rset_to_producer_rset_receiver_rset;
-  point producer_buffer_receiver_buffer;
-  logic producer_ready_src_receiver_ready_src;
-  logic receiver_ready_dst_producer_ready_dst;
-  logic producer_frame_start_receiver_frame_start;
-  logic producer_frame_end_receiver_frame_end;
-  logic producer_payload_start_receiver_payload_start;
-  logic producer_payload_end_receiver_payload_end;
-  logic receiver_error_producer_error;
+  wire logic fan_out_from_system_clck_to_producer_clck_receiver_clck;
+  wire logic fan_out_from_system_rset_to_producer_rset_receiver_rset;
+  wire point producer_buffer_receiver_buffer;
+  wire logic producer_ready_src_receiver_ready_src;
+  wire logic receiver_ready_dst_producer_ready_dst;
+  wire logic producer_frame_start_receiver_frame_start;
+  wire logic producer_frame_end_receiver_frame_end;
+  wire logic producer_payload_start_receiver_payload_start;
+  wire logic producer_payload_end_receiver_payload_end;
+  wire logic receiver_error_producer_error;
   producer lightclick_module_0
      (
        .clck(fan_out_from_system_clck_to_producer_clck_receiver_clck),

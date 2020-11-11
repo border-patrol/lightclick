@@ -24,6 +24,7 @@ data Ty : MTy -> Type where
 
   TyUnit : Ty UNIT
   TyConn : Ty CONN
+  TyGate : Ty GATE
 
   TyPort : (label : String)
         -> (dir : Direction)

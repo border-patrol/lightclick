@@ -336,29 +336,46 @@ mutual
          case compatible tyX tyY of
            No msg contra => Left (UnSafeDirectConnection fc msg)
            Yes prf => do
+
              ty <- getData vX
 
              nX <- genNameConn vX
              nY <- genNameConn vY
 
-             dualX  <- mkDual "input_"  vX
-             dualY  <- mkDual "output_" vY
+             let c_in_name = newName ["not_in",   nX, nY]
+             let c_out_name = newName ["not_out", nX, nY]
 
-             let mName = newName ["not", nX, nY]
-             let mRef = VRef mName (MODULE [nX,nY])
-             Right (VLet mName
-                         (VModule [dualX,dualY])
-                         (VLet (newName [mName, "in"])
+             Right (VLet c_in_name
+                         (VChan ty)
+                         (VLet c_out_name
                                (VChan ty)
-                               (VLet (newName [mName, "out"])
-                                     (VChan ty)
-                                     (VSeq (Direct.newConn (newName [mName, "in"])  vX (newIDX mRef dualX))
-                                           (Direct.newConn (newName [mName, "out"]) vY (newIDX mRef dualY))
-                                     )
+                               (VSeq (Gate.newConn c_in_name vX)
+                                     (VSeq (Gate.newConn c_out_name vY)
+                                           (VNot (VRef c_out_name CHAN)
+                                                 (VRef c_in_name  CHAN)
+                                         )
+                                    )
                                )
                          )
-                   , TyConn, envy)
-             --(VLet n (VChan ty) (newConn n vX vY), TyConn, envy)
+                   , TyGate, envy
+                   )
+
+{-
+  VNot : Value CHAN
+      -> Value CHAN
+      -> Value GATE
+
+  VGate : {n : Nat}
+       -> TyGateComb
+       -> Value CONN
+       -> Vect (S (S n)) (Value CHAN)
+       -> Value GATE
+
+  VConnG : Value CHAN
+        -> Value (PORT p)
+        -> Value CONN
+
+-}
 
   -- [ Checking the GATE ]
   check env (GATE fc ty is o)
@@ -370,29 +387,28 @@ mutual
              Left (UnSafeFan fc FANIN pos reason)
 
            Yes prf => do
-             nO <- genNameConn vO
-             nF <- genNameFan  fs
 
-             nFS <- getNameFan fs
-             dO <- getData vO
+           {-
+              1. gen chan out
+              2. gen chans fan in
 
-             let mName = newName [Gates.toString ty, nO, nF]
+              let
+           -}
 
-             dualFS <- dualFan' "input_" fs
-             dualO  <- mkDual "output_" vO
+             tyO <- getData vO
+             nO  <- genNameConn vO
 
-             let mRef = (VRef mName (MODULE (nO::nFS)))
-             fi <- newConn (newName [mName, Gates.toString ty]) dO mRef fs dualFS
-             Right (VLet mName
-                         (VModule (dualO::dualFS))
-                         (VLet (newName [mName, "output"])
-                               (VChan dO)
-                               (VSeq (Direct.newConn (newName [mName,"output"]) vO (newIDX mRef dualO))
-                                     fi
-                               )
-                         )
-                   , TyConn, envo)
+             nF  <- genNameFan  fs
 
+             let c_out_name = newName [Gates.toString ty, nO, nF, "out"]
+             let c_in_name  = newName [toString ty, nO, nF, "in"]
+
+             (ins', conns) <- Gate.FanIn.newConn c_in_name tyO fs
+
+             Right (VLet c_out_name
+                         (VChan tyO)
+                         (VSeq conns (VGate ty (VRef c_out_name CHAN) ins'))
+                   , TyGate, envo)
 
   -- [ Checking the End ]
   check env End with (free env)

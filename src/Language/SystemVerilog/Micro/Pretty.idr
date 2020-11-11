@@ -9,7 +9,7 @@ import Toolkit.Data.DVect
 
 import Toolkit.Data.Vect.Extra
 
-
+import Language.SystemVerilog.Gates
 
 import Language.SystemVerilog.Micro
 
@@ -26,6 +26,11 @@ krStyleParams : (l,r  : Doc ())
                      -> Doc ()
 krStyleParams l r sep body = vsep [l, indent 2 (align $ vcat (punctuate sep body)), r]
 
+
+prettyGate : TyGateComb -> Doc ()
+prettyGate AND = pretty "and"
+prettyGate IOR = pretty "or"
+prettyGate XOR = pretty "xor"
 
 mutual
 
@@ -44,10 +49,34 @@ mutual
   covering
   prettyExpr : Expr lctxt gctxt type -> Doc ()
 
-  prettyExpr End = emptyDoc
+  prettyExpr End  = emptyDoc
   prettyExpr TYPE = emptyDoc
+  prettyExpr GATE = emptyDoc
+
   prettyExpr (Local label x) = pretty label
   prettyExpr (Global label x)   = pretty label
+
+  prettyExpr (Let this beThis withType IsLetCD inThis) =
+    vsep [ hsep [ pretty "wire"
+                , prettyExpr withType
+                , hcat [pretty this, prettyExpr beThis, semi]
+                ]
+         , prettyExpr inThis
+         ]
+
+  prettyExpr (Let this (Not o i) withType IsLetGG inThis) =
+    vsep [ hsep [ pretty "not"
+                , hcat [pretty this, prettyExpr (Not o i), semi]
+                ]
+         , prettyExpr inThis
+         ]
+
+  prettyExpr (Let this (Gate ty o ins) withType IsLetGG inThis) =
+    vsep [ hsep [ prettyGate ty
+                , hcat [pretty this, prettyExpr (Gate ty o ins), semi]
+                ]
+         , prettyExpr inThis
+         ]
 
   prettyExpr (Let this beThis withType prf inThis) =
     vsep [ hsep [ prettyExpr withType
@@ -92,6 +121,12 @@ mutual
     let params = map (\(l,c) => dot <+> pretty l <+> parens (prettyExpr c)) xs
     in let ps' = indent 2 (krStyleParams lparen rparen comma params)
     in hardline <++> ps'
+
+  prettyExpr (Not o i)
+    = krStyle lparen rparen (punctuate comma $ [prettyExpr o, prettyExpr i])
+  prettyExpr (Gate ty o ins)
+    = let ins' = map prettyExpr ins
+      in krStyle lparen rparen (punctuate comma $ prettyExpr o :: (toList ins'))
 
 export
 covering
