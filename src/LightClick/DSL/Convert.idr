@@ -52,18 +52,6 @@ doKVConvert ctxt type (k,v) = do
     v' <- checkType ctxt type v
     Right (k,v')
 
-
-convertKVs : (type : MTy)
-          -> (ctxt : Context)
-          -> (kvs : Vect (S n) (Pair String AST))
-          -> MetaTyCheck (Vect (S n) (Pair String (Term ctxt type)))
-convertKVs type ctxt = traverse (doKVConvert ctxt type)
-
-convertListData : (ctxt : Context)
-               -> (ps : Vect (S n) (Pair String AST))
-               -> MetaTyCheck (Vect (S n) (Pair String (Term ctxt DATA)))
-convertListData = convertKVs DATA
-
 convertListPort : (ctxt : Context)
                -> (ps : Vect n AST)
                -> MetaTyCheck (ss : Vect n String
@@ -143,11 +131,11 @@ convert ctxt (DataArray fc ty l) = do
   Right (DATA ** DataArray fc term l)
 
 convert ctxt (DataStruct fc kvs) = do
-    kvs' <- convertListData ctxt kvs
+    kvs' <- traverse (doKVConvert ctxt DATA) kvs
     Right (DATA ** DataStruct fc kvs')
 
 convert ctxt (DataUnion fc kvs) = do
-    kvs' <- convertListData ctxt kvs
+    kvs' <- traverse (doKVConvert ctxt DATA) kvs
     Right (DATA ** DataUnion fc kvs')
 
 convert ctxt (Port fc l d s w t) = do

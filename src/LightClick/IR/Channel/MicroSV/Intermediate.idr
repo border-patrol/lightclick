@@ -32,8 +32,13 @@ data MicroSvIR : (lctxt : Context)
   where
     End : MicroSvIR ctxt UNIT
 
-    Local  : (label : String) -> Index ctxt (label, type) -> MicroSvIR ctxt type
-    Global : (label : String) -> (ty : Ty) -> MicroSvIR ctxt ty
+    Local  : (label : String)
+                   -> Index ctxt (label, type)
+                   -> MicroSvIR ctxt type
+
+    Global : (label : String)
+          -> (ty    : Ty)
+                   -> MicroSvIR ctxt ty
 
     Let : {typeE, ty : Ty}
        -> (this     : String)
@@ -203,29 +208,6 @@ chan' f e c with (f e c)
   chan' f e c | (Left err) = Left $ Nested "Attempted to convert chan" err
   chan' f e c | (Right (MkTRes decls expr CC)) = Right expr
 
-chans' : (f  : TFuncSig local CHAN)
-      -> (e  : TEnv local)
-      -> (cs : Vect (S (S n)) (ChannelIR CHAN))
-            -> Either TError (Vect (S (S n)) (MicroSvIR local CHAN))
-chans' f e (x :: y :: xs)
-    = do x' <- chan' f e x
-         xs' <- chans'' f e (y::xs)
-         pure (x'::xs')
-  where
-
-    chans'' : (f  : TFuncSig local CHAN)
-           -> (e  : TEnv local)
-           -> (cs : Vect m (ChannelIR CHAN))
-                 -> Either TError (Vect m (MicroSvIR local CHAN))
-    chans'' f e [] = pure Nil
-    chans'' f e (x :: xs) =
-      do x' <- chan' f e x
-         xs' <- chans'' f e xs
-         pure (x'::xs')
-
-
-
-
 %inline
 kvpair : (f : TFuncSig local DATA)
       -> (e : TEnv local)
@@ -234,29 +216,6 @@ kvpair : (f : TFuncSig local DATA)
 kvpair f e (l,c) with (f e c)
   kvpair f e (l,c) | (Left err) = Left $ Nested "Attempted to convert KVPair" err
   kvpair f e (l,c) | (Right (MkTRes decls expr DD)) = Right (l,expr)
-
-kvpairs : {n : Nat}
-       -> (f  : TFuncSig local DATA)
-       -> (e  : TEnv local)
-       -> (cs : Vect (S n) (String, ChannelIR DATA))
-       -> Either TError (Vect (S n) (String, (MicroSvIR local DATA)))
-kvpairs f e (x :: xs)
-    = do x' <- kvpair f e x
-         xs' <- kvpairs' f e xs
-         pure (x'::xs')
-  where
-
-    kvpairs' : (f  : TFuncSig local DATA)
-            -> (e  : TEnv local)
-            -> (cs : Vect m (String, ChannelIR DATA))
-            -> Either TError (Vect m (String, (MicroSvIR local DATA)))
-    kvpairs' f e [] = pure Nil
-    kvpairs' f e (x :: xs) =
-      do x' <- kvpair f e x
-         xs' <- kvpairs' f e xs
-         pure (x'::xs')
-
-
 
 Eq (ChannelIR PORT) where
   (==) (CPort x f d) (CPort y g e) = x == y
@@ -430,12 +389,12 @@ convert e (CDataArray type k) with (convert e type)
 
 convert e (CDataStruct xs) with (e)
   convert e (CDataStruct xs) | (MkTEnv decls local)
-    = do xs' <- kvpairs convert e xs
+    = do xs' <- traverse (kvpair convert e) xs
          pure (MkTRes decls (DataStruct xs') DD)
 
 convert e (CDataUnion xs) with (e)
   convert e (CDataUnion xs) | (MkTEnv decls local)
-    = do xs' <- kvpairs convert e xs
+    = do xs' <- traverse (kvpair convert e) xs
          pure (MkTRes decls (DataUnion xs') DD)
 
 
@@ -465,7 +424,7 @@ convert e (CNot o i) with (e)
 convert e (CGate ty o ins) with (e)
   convert e (CGate ty o ins) | (MkTEnv decls local)
     = do o'  <- chan'  convert e o
-         is' <- chans' convert e ins
+         is' <- traverse (chan' convert e) ins
          pure (MkTRes decls (Gate ty o' is') GG)
 
 export

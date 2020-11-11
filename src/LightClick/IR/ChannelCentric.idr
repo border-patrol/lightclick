@@ -174,9 +174,14 @@ convPort (MIDX label x z)
 
     convModule : ChannelIR MODULE -> Convert (ChannelIR MODULE)
     convModule m@(CRef x MODULE) = Right m
-    convModule (CLet x z w) = Left (NotSupposedToHappen (Just "convModule CIR let"))
-    convModule (CSeq x z)   = Left (NotSupposedToHappen (Just "convModule CIR CSeq"))
-    convModule (CModule xs) = Left (NotSupposedToHappen (Just "convModule CIR CMod"))
+    convModule (CLet x z w)
+      = Left (NotSupposedToHappen (Just "convModule CIR let"))
+
+    convModule (CSeq x z)
+      = Left (NotSupposedToHappen (Just "convModule CIR CSeq"))
+
+    convModule (CModule xs)
+      = Left (NotSupposedToHappen (Just "convModule CIR CMod"))
 
 covering
 mkConn : (p : ModuleIR PORT)
@@ -196,23 +201,6 @@ convPorts c (x :: (z :: xs)) =
        rest <- convPorts c (z::xs)
        pure (CSeq con rest)
 
-covering
-convertKVs : Vect y (String, ModuleIR DATA) -> Convert (Vect y (String, ChannelIR DATA))
-convertKVs [] = Right Nil
-convertKVs ((l,x) :: xs) =
- do x' <- convert x
-    rest <- convertKVs xs
-    pure ((l,x')::rest)
-
-covering
-convertChans : Vect n (ModuleIR CHAN)
-            -> Convert (Vect n (ChannelIR CHAN))
-convertChans Nil = Right Nil
-convertChans (c::cs)
-  = do c' <- convert c
-       rest <- convertChans cs
-       pure (c'::rest)
-
 -- [ Definition ]
 convert (MRef x t) = Right $ CRef x t
 convert (MLet x y z) =
@@ -230,15 +218,8 @@ convert (MPort x y z) =
      pure $ CPort x y z'
 
 convert (MModule {n} x) =
-    do xs <- convertPS x
+    do xs <- traverse convert x
        pure $ CModule xs
-  where
-    convertPS : Vect y (ModuleIR PORT) -> Convert (Vect y (ChannelIR PORT))
-    convertPS [] = Right Nil
-    convertPS (y :: xs) =
-       do y' <- convert y
-          rest <- convertPS xs
-          pure (y'::rest)
 
 convert MDataLogic = Right $ CDataLogic
 
@@ -246,12 +227,12 @@ convert (MDataArray x k) =
   do x' <- convert x
      pure $ CDataArray x' k
 convert (MDataStruct xs) =
-    do xs' <- convertKVs xs
-       pure $ CDataStruct xs' -- (map (\(k,v) => MkPair k (convert v)) xs)
+    do xs' <- traverse (\(l,x) => do {x' <- convert x; pure (l, x')}) xs
+       pure $ CDataStruct xs'
 
 convert (MDataUnion xs)  =
-    do xs' <- convertKVs xs
-       pure $ CDataUnion xs' -- (map (\(k,v) => MkPair k (convert v)) xs)
+    do xs' <- traverse (\(l,x) => do {x' <- convert x; pure (l,x')}) xs
+       pure $ CDataUnion xs'
 
 convert (MChan x) =
   do x' <- convert x
@@ -275,7 +256,7 @@ convert (MNot o i)
 
 convert (MGate ty o ins)
   = do o' <- convert o
-       rest <- convertChans ins
+       rest <- traverse convert ins
        pure (CGate ty o' rest)
 
 convert (MConnG c idx)
