@@ -125,19 +125,7 @@ convertChans f env ((k,v) :: xs) with (xs)
          ys' <- convertChans f env (y::ys)
          pure $ (k,r) :: ys'
 
-convertChans' : (f   : ConvertFuncSig local global CHAN)
-             -> (env : TEnv local global)
-             -> (ds  : Vect (S (S n)) (MicroSvIR local CHAN))
-                    -> Either TError (Vect (S (S n)) (Expr local global CHAN))
-convertChans' f env (v :: w :: Nil)
-    = do v' <- f env v
-         w' <- f env w
-         pure [v',w']
 
-convertChans' f env (v :: w :: x :: xs)
-    = do v' <- f env v
-         rest <- convertChans' f env (w::x::xs)
-         pure (v':: rest)
 
 -- [ Implementation of `convertExpr` ]
 convertExpr env End = pure End
@@ -216,7 +204,7 @@ convertExpr env (Not o i)
 
 convertExpr env (Gate ty o ins)
   = do o' <- convertExpr env o
-       ins' <- convertChans' convertExpr env ins
+       ins' <- traverse (convertExpr env) ins
        pure (Gate ty o' ins')
 
 

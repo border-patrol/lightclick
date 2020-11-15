@@ -407,7 +407,11 @@ mutual
 
              Right (VLet c_out_name
                          (VChan tyO)
-                         (VSeq conns (VGate ty (VRef c_out_name CHAN) ins'))
+                         (VSeq conns
+                               (VSeq (Gate.newConn c_out_name vO)
+                                     (VGate ty (VRef c_out_name CHAN) ins')
+                               )
+                         )
                    , TyGate, envo)
 
   -- [ Checking the End ]
