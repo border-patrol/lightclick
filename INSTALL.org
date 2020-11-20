@@ -4,7 +4,7 @@
 
 To build and use LightClick we advise that you use the [[https://github.com/idris-lang/Idris2][latest development version]] of Idris2 due to issues with Idris2 totality checker.
 
-One Idris2 has been installed you can build the project with:
+Once Idris2 has been installed you can build the project with:
 
 #+begin_src bash
 make lightclick
@@ -13,48 +13,111 @@ make lightclick
 The output should look something like:
 
 #+begin_src bash
-1/52: Building Toolkit.Data.DList (src/Toolkit/Data/DList.idr)
-2/52: Building Toolkit.Data.DList.DeBruijn (src/Toolkit/Data/DList/DeBruijn.idr)
-3/52: Building Toolkit.Decidable.Equality.Indexed (src/Toolkit/Decidable/Equality/Indexed.idr)
-4/52: Building Toolkit.Data.DVect (src/Toolkit/Data/DVect.idr)
-6/52: Building Toolkit.Data.Vect.Extra (src/Toolkit/Data/Vect/Extra.idr)
-7/52: Building LightClick.Types.Meta (src/LightClick/Types/Meta.idr)
-15/52: Building LightClick.Types (src/LightClick/Types.idr)
-17/52: Building LightClick.Terms (src/LightClick/Terms.idr)
-18/52: Building LightClick.Values (src/LightClick/Values.idr)
-19/52: Building LightClick.IR.ModuleCentric (src/LightClick/IR/ModuleCentric.idr)
-20/52: Building Language.SystemVerilog.MetaTypes (src/Language/SystemVerilog/MetaTypes.idr)
-21/52: Building LightClick.IR.Channel.MicroSV.Error (src/LightClick/IR/Channel/MicroSV/Error.idr)
-23/52: Building Language.SystemVerilog.Micro (src/Language/SystemVerilog/Micro.idr)
-24/52: Building LightClick.IR.Channel.MicroSV.Update (src/LightClick/IR/Channel/MicroSV/Update.idr)
-25/52: Building Toolkit.Data.DVect.Elem (src/Toolkit/Data/DVect/Elem.idr)
-26/52: Building Toolkit.Data.DList.Elem (src/Toolkit/Data/DList/Elem.idr)
-28/52: Building LightClick.Types.Equality (src/LightClick/Types/Equality.idr)
-29/52: Building LightClick.Types.Compatibility (src/LightClick/Types/Compatibility.idr)
-30/52: Building LightClick.Connection (src/LightClick/Connection.idr)
-31/52: Building LightClick.Types.Usage (src/LightClick/Types/Usage.idr)
-32/52: Building LightClick.Env (src/LightClick/Env.idr)
-33/52: Building LightClick.Check (src/LightClick/Check.idr)
-34/52: Building LightClick.IR.ChannelCentric (src/LightClick/IR/ChannelCentric.idr)
-35/52: Building LightClick.IR.Channel.Normalise.LetFloat (src/LightClick/IR/Channel/Normalise/LetFloat.idr)
-36/52: Building LightClick.IR.Channel.Normalise.Merge (src/LightClick/IR/Channel/Normalise/Merge.idr)
-37/52: Building LightClick.IR.Channel.Normalise.FreshBinders (src/LightClick/IR/Channel/Normalise/FreshBinders.idr)
-38/52: Building LightClick.IR.Channel.Normalise (src/LightClick/IR/Channel/Normalise.idr)
-39/52: Building LightClick.IR.Channel.MicroSV.InterpTy (src/LightClick/IR/Channel/MicroSV/InterpTy.idr)
-40/52: Building LightClick.IR.Channel.MicroSV.Intermediate (src/LightClick/IR/Channel/MicroSV/Intermediate.idr)
-41/52: Building LightClick.IR.Channel.MicroSV (src/LightClick/IR/Channel/MicroSV.idr)
-50/52: Building LightClick.DSL.Convert (src/LightClick/DSL/Convert.idr)
-51/52: Building Language.SystemVerilog.Micro.Pretty (src/Language/SystemVerilog/Micro/Pretty.idr)
-52/52: Building LightClick.Main (src/LightClick/Main.idr)
+$ make lightclick
+idris2 --build lightclick.ipkg
+1/53: Building Toolkit.Data.DList (src/Toolkit/Data/DList.idr)
+2/53: Building Toolkit.Data.DList.DeBruijn (src/Toolkit/Data/DList/DeBruijn.idr)
+3/53: Building Toolkit.Decidable.Equality.Indexed (src/Toolkit/Decidable/Equality/Indexed.idr)
+4/53: Building Toolkit.Data.DVect (src/Toolkit/Data/DVect.idr)
+6/53: Building Toolkit.Data.Location (src/Toolkit/Data/Location.idr)
+7/53: Building Toolkit.Data.Vect.Extra (src/Toolkit/Data/Vect/Extra.idr)
+8/53: Building LightClick.Types.Meta (src/LightClick/Types/Meta.idr)
+9/53: Building LightClick.IR.Channel.Normalise.Error (src/LightClick/IR/Channel/Normalise/Error.idr)
+10/53: Building LightClick.Error (src/LightClick/Error.idr)
+11/53: Building Toolkit.Data.Rig (src/Toolkit/Data/Rig.idr)
+12/53: Building Toolkit.Decidable.Informative (src/Toolkit/Decidable/Informative.idr)
+13/53: Building LightClick.Types.Direction (src/LightClick/Types/Direction.idr)
+14/53: Building LightClick.Types.Sensitivity (src/LightClick/Types/Sensitivity.idr)
+15/53: Building LightClick.Types.WireType (src/LightClick/Types/WireType.idr)
+16/53: Building LightClick.Types (src/LightClick/Types.idr)
+17/53: Building Language.SystemVerilog.Utilities (src/Language/SystemVerilog/Utilities.idr)
+18/53: Building LightClick.Terms (src/LightClick/Terms.idr)
+19/53: Building LightClick.Values (src/LightClick/Values.idr)
+20/53: Building LightClick.IR.ModuleCentric (src/LightClick/IR/ModuleCentric.idr)
+21/53: Building Language.SystemVerilog.MetaTypes (src/Language/SystemVerilog/MetaTypes.idr)
+22/53: Building LightClick.IR.Channel.MicroSV.Error (src/LightClick/IR/Channel/MicroSV/Error.idr)
+23/53: Building Language.SystemVerilog.Direction (src/Language/SystemVerilog/Direction.idr)
+24/53: Building Language.SystemVerilog.Micro (src/Language/SystemVerilog/Micro.idr)
+25/53: Building LightClick.IR.Channel.MicroSV.Update (src/LightClick/IR/Channel/MicroSV/Update.idr)
+26/53: Building Toolkit.Data.DVect.Elem (src/Toolkit/Data/DVect/Elem.idr)
+27/53: Building Toolkit.Data.DList.Elem (src/Toolkit/Data/DList/Elem.idr)
+28/53: Building Toolkit.System (src/Toolkit/System.idr)
+29/53: Building LightClick.Types.Equality (src/LightClick/Types/Equality.idr)
+30/53: Building LightClick.Types.Compatibility (src/LightClick/Types/Compatibility.idr)
+31/53: Building LightClick.Connection (src/LightClick/Connection.idr)
+32/53: Building LightClick.Types.Usage (src/LightClick/Types/Usage.idr)
+33/53: Building LightClick.Env (src/LightClick/Env.idr)
+34/53: Building LightClick.Check (src/LightClick/Check.idr)
+35/53: Building LightClick.IR.ChannelCentric (src/LightClick/IR/ChannelCentric.idr)
+36/53: Building LightClick.IR.Channel.Normalise.LetFloat (src/LightClick/IR/Channel/Normalise/LetFloat.idr)
+37/53: Building LightClick.IR.Channel.Normalise.Merge (src/LightClick/IR/Channel/Normalise/Merge.idr)
+38/53: Building LightClick.IR.Channel.Normalise.FreshBinders (src/LightClick/IR/Channel/Normalise/FreshBinders.idr)
+39/53: Building LightClick.IR.Channel.Normalise (src/LightClick/IR/Channel/Normalise.idr)
+40/53: Building LightClick.IR.Channel.MicroSV.InterpTy (src/LightClick/IR/Channel/MicroSV/InterpTy.idr)
+41/53: Building LightClick.IR.Channel.MicroSV.Intermediate (src/LightClick/IR/Channel/MicroSV/Intermediate.idr)
+42/53: Building LightClick.IR.Channel.MicroSV (src/LightClick/IR/Channel/MicroSV.idr)
+43/53: Building LightClick.DSL.AST (src/LightClick/DSL/AST.idr)
+44/53: Building Toolkit.Data.Nat (src/Toolkit/Data/Nat.idr)
+45/53: Building Toolkit.Text.Lexer.Run (src/Toolkit/Text/Lexer/Run.idr)
+46/53: Building LightClick.DSL.Lexer (src/LightClick/DSL/Lexer.idr)
+47/53: Building Toolkit.Text.Parser.Support (src/Toolkit/Text/Parser/Support.idr)
+48/53: Building Toolkit.Text.Parser.Location (src/Toolkit/Text/Parser/Location.idr)
+49/53: Building Toolkit.Text.Parser.Run (src/Toolkit/Text/Parser/Run.idr)
+50/53: Building LightClick.DSL.Parser (src/LightClick/DSL/Parser.idr)
+51/53: Building LightClick.DSL.Convert (src/LightClick/DSL/Convert.idr)
+52/53: Building Language.SystemVerilog.Micro.Pretty (src/Language/SystemVerilog/Micro/Pretty.idr)
+53/53: Building LightClick.Main (src/LightClick/Main.idr)
 #+end_src
 
-and take around 10-15 seconds to check:
+and will take around 15 seconds to check:
 
 #+begin_src bash
 10.57user 0.45system 0:11.06elapsed 99%CPU (0avgtext+0avgdata 267244maxresident)k
 0inputs+28088outputs (0major+235691minor)pagefaults 0swaps
 #+end_src
 
+* Testing
+
+The test suite can be ran using:
+
+#+begin_src bash
+make test
+#+end_src
+
+and the output will look something like:
+
+#+begin_src bash
+make -C tests testbin
+make[1]: Entering directory 'lightclick/tests'
+idris2 --build tests.ipkg
+1/2: Building Golden (Golden.idr)
+2/2: Building Main (Main.idr)
+make[1]: Leaving directory 'lightclick/tests'
+make -C tests test
+make[1]: Entering directory 'lightclick/tests'
+./build/exec/runtests ../../build/exec/lightclick --timing  --only
+"lightclick/tests"
+000-mux-check: success duration: 0s 503221ns
+001-nice-exempler: success duration: 0s 364052ns
+002-unused-port: success duration: 0s 383926ns
+003-linear-check: success duration: 0s 395434ns
+004-malformed-file: success duration: 0s 635011ns
+005-locallink: success duration: 0s 503838ns
+006-unused-port: success duration: 0s 546120ns
+007-firewall: success duration: 0s 364036ns
+008-core-alliance-swerv-eh1: success duration: 0s 665520ns
+009-scrubbing: success duration: 0s 439118ns
+010-gates: success duration: 0s 408549ns
+make[1]: Leaving directory 'lightclick/tests'
+#+end_src
+
+and will take around 4 seconds to check:
+
+#+begin_src bash
+make[1]: Leaving directory 'lightclick/tests'
+3.33user 0.42system 0:03.76elapsed 99%CPU (0avgtext+0avgdata 160748maxresident)k
+0inputs+592outputs (0major+287268minor)pagefaults 0swaps
+#+end_src
 * Installing
 
 We have yet to add installation scripts or turn this into a serious tool to play with.
