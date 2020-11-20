@@ -1,6 +1,6 @@
 module LightClick.Types.Compatibility
 
-import public Decidable.Equality.Indexed
+import public Toolkit.Decidable.Equality.Indexed
 
 import public Toolkit.Decidable.Informative
 
