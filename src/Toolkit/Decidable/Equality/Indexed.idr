@@ -55,7 +55,9 @@ namespace Index
   indexAreSame contra (Same Refl prfVal) = contra Refl
 
   public export
-  decEq : DecEq iTy
+  decEq : {iTy : Type}
+       -> {eTy : iTy -> Type}
+       -> DecEq iTy
        => DecEqIdx iTy eTy
        => {i,j : iTy}
        -> (x : eTy i)
