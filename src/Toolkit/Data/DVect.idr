@@ -12,6 +12,7 @@
 module Toolkit.Data.DVect
 
 import Data.Strings
+import Data.Nat
 
 import public Data.Vect
 import public Data.Vect.Elem
@@ -58,7 +59,7 @@ mapToVect f (x::xs) = f x :: mapToVect f xs
 
 toList : Vect q a -> List a
 toList Nil = Nil
-toList (x::xs) = x :: toList xs
+toList (x::xs) = x :: DVect.toList xs
 
 ||| Function to show a `DList`.
 |||
@@ -75,7 +76,7 @@ showDVect : (showFunc : forall a . elemTy a -> String)
 showDVect f xs = "[" ++ unwords asList ++ "]"
   where
     asList : List String
-    asList = toList $ intersperse "," (mapToVect f xs)
+    asList = DVect.toList $ intersperse "," (mapToVect f xs)
 
 namespace Alternative
   public export

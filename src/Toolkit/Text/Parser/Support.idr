@@ -16,6 +16,5 @@ RuleEmpty tok ty = Grammar (TokenData tok) False ty
 
 export
 eoi : (f : a -> Bool) -> RuleEmpty a ()
-eoi f = do
-    nextIs "Not End of Input" (f . tok)
-    pure ()
+eoi f
+  = ignore $ nextIs "Not End of Input" (f . tok)

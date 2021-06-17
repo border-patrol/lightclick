@@ -2,6 +2,7 @@ module LightClick.DSL.Parser
 
 import        Data.Vect
 import        Data.List
+import        Data.List1
 import        Data.Strings
 import        Data.Maybe
 
@@ -73,7 +74,7 @@ identifier
                                 ID str => Just str
                                 _ => Nothing)
 
-doc : Rule Token (List String)
+doc : Rule Token (List1 String)
 doc = some docString
   where
     docString : Rule Token String
@@ -101,19 +102,20 @@ parens : Inf (Rule Token a)
       -> Rule Token a
 parens = between (symbol "(") (symbol ")")
 
-commaSepBy1 : Rule Token a -> Rule Token (xs : List a ** NonEmpty xs)
-commaSepBy1 = sepBy1' (symbol ",")
-
-
 sepBy1V : (sep : Rule Token b)
        -> (p : Rule Token a)
        -> Rule Token (n ** Vect (S n) a)
 sepBy1V sep p = do {x <- p; xs <- many (sep *> p); pure (_ ** fromList $ x::xs)}
 
-sepBy2V : (sep : Rule Token b)
+sepBy2V : (sep : Rule Token ())
        -> (p : Rule Token a)
        -> Rule Token (n ** Vect (S (S n)) a)
-sepBy2V sep p = do {x <- p; sep; y <- p; rest <- many (sep *> p); pure (_ ** fromList $ x::y::rest)}
+sepBy2V sep p
+  = do x <- p
+       sep
+       y <- p
+       rest <- many (sep *> p)
+       pure (_ ** fromList $ x::y::rest)
 
 commaSepBy1V : (p : Rule Token a) -> Rule Token (n ** Vect (S n) a)
 commaSepBy1V = sepBy1V (symbol ",")
@@ -175,7 +177,7 @@ mutual
 
 typeDef : Rule Token (FileContext, String, AST)
 typeDef = do
-  optional doc
+  d <- optional doc
   s <- location
   n <- name
   symbol "="
@@ -209,7 +211,7 @@ wireType = do {keyword "general";  pure General}
 portHaskellStyle : Rule Token AST
 portHaskellStyle
   = do st <- location
-       optional doc
+       com <- optional doc
        label <- name
        symbol ":"
        t <- type_
@@ -222,7 +224,7 @@ portHaskellStyle
 portSystemVerilogStyle : Rule Token AST
 portSystemVerilogStyle
   = do st <- location
-       optional doc
+       com <- optional doc
        d <- direction
        s <- sensitivity
        c <- wireType
@@ -237,7 +239,7 @@ port SYSV    = portSystemVerilogStyle
 
 moduleDef : TypeStyle -> Rule Token (FileContext, String, AST)
 moduleDef style
-  = do optional doc
+  = do ds <- optional doc
        d <- location
        n <- name
        symbol "="
@@ -319,7 +321,7 @@ types = do
 export
 design : Rule Token AST
 design = do
-   optional (many doc)
+   ds <- optional (many doc)
    keyword "model"
    keyword "lightclick"
    tyStyleDecl <- optional (do {keyword "verilog"; pure SYSV})

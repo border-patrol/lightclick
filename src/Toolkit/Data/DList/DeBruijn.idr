@@ -81,10 +81,10 @@ namespace KV
 
   public export
   indexEmpty : DecEq type
-           => (t ** Index (String, type) [] (k, t))
+           => {k : String}
+           -> (t ** Index (String, type) [] (k, t))
            -> Void
   indexEmpty (MkDPair _ Here) impossible
-  indexEmpty (MkDPair _ (There _)) impossible
 
 
   public export
