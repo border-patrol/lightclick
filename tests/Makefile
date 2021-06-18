@@ -6,6 +6,8 @@ TARGET = ${TARGETDIR}/runtests
 
 LCLICK_TEST_U ?= --interactive
 
+LCLICK_BENCH_OPTS ?=
+
 testbin:
 	${IDRIS2} --build tests.ipkg
 
@@ -28,7 +30,8 @@ comma := ,
 
 TESTS_RAW = $(shell find . -name "*.click")
 TESTS_ABS = $(foreach T,$(TESTS_RAW),$(abspath $(T)))
-TESTS     = $(subst $(space),$(comma),$(TESTS_ABS))
+TESTS_SRT = $(sort $(TESTS_ABS))
+TESTS     = $(subst $(space),$(comma),$(TESTS_SRT))
 
 
 bench-all: testbin
@@ -36,9 +39,9 @@ bench-all: testbin
 		     --export-markdown report.md \
 		     --export-csv report.csv \
 		     --export-json report.json \
-		     --time-unit millisecond \
 		     --parameter-list test $(TESTS) \
 		     --warmup 10 \
+		     $(LCLICK_BENCH_OPTS) \
 		     '${LCLICK_BIN} {test}'
 
 clean: clobber

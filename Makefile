@@ -5,6 +5,8 @@ HYPERFINE=hyperfine
 TARGETDIR = ${CURDIR}/build/exec
 TARGET = ${TARGETDIR}/${LCLICK}
 
+bopts ?=
+
 lightclick:
 	idris2 --build ${LCLICK}.ipkg
 
@@ -38,6 +40,6 @@ bench-all: lightclick testbin
 	${MAKE} -C tests \
 		bench-all \
 		LCLICK_BIN=$(abspath $(TARGET))
-
+		LCLICK_BENCH_OPTS=$(bopts)
 
 .PHONY: clobber clean lightclick test testbin bench bench-all
