@@ -1,14 +1,46 @@
-.PHONY: testbin test
+IDRIS2=idris2
+HYPERFINE=hyperfine
 
-#LIGHT_CLICK_TEST_INTERACTIVE ?= --interactive
+TARGETDIR = ${CURDIR}/build/exec
+TARGET = ${TARGETDIR}/runtests
 
-test:
-	./build/exec/runtests $(LIGHT_CLICK_BIN) --timing $(LIGHT_CLICK_TEST_INTERACTIVE) --only $(LIGHT_CLICK_TEST_JUST)
+LCLICK_TEST_U ?= --interactive
 
 testbin:
-	idris2 --build tests.ipkg
+	${IDRIS2} --build tests.ipkg
 
-clean:
-	rm -r build
-	find . -name '*.ibc' | xargs rm -f
+test: testbin
+	${TARGET} \
+	  $(LCLICK_BIN) \
+	  --timing \
+	  $(LCLICK_TEST_U) \
+	  --only $(LCLICK_TEST_O)
+
+bench: testbin
+	$(HYPERFINE) --warmup 10 \
+	  -L test 007-firewall,008-core-alliance-swerv-eh1 \
+	  '$(TARGET) $(LCLICK_BIN) --only {test}'
+
+
+space :=
+space +=
+comma := ,
+
+TESTS_LIST = $(shell cat tests.txt)
+TESTS = $(subst $(space),$(comma),$(TESTS_LIST))
+
+bench-all: testbin
+	$(HYPERFINE) --export-markdown report.md \
+		     --export-csv report.csv \
+		     -L test $(TESTS) \
+		     --warmup 10 \
+		     '$(TARGET) $(LCLICK_BIN) --only {test}'
+
+clean: clobber
 	find . -name 'output' | xargs rm -f
+
+clobber: clean
+	${RM} -rf build
+
+
+.PHONY: testbin test clean clobber bench bench-all
