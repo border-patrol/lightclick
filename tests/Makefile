@@ -16,25 +16,28 @@ test: testbin
 	  $(LCLICK_TEST_U) \
 	  --only $(LCLICK_TEST_O)
 
-bench: testbin
-	$(HYPERFINE) --warmup 10 \
-	  -L test 007-firewall,008-core-alliance-swerv-eh1 \
-	  '$(TARGET) $(LCLICK_BIN) --only {test}'
+bench:
+	$(HYPERFINE) --warmup 10 --ignore-failure \
+	  -L test 007-firewall/firewall.click,008-core-alliance-swerv-eh1/core-alliance-swerv-eh1-top.click \
+	  '$(LCLICK_BIN) {test}'
 
 
 space :=
 space +=
 comma := ,
 
-TESTS_LIST = $(shell cat tests.txt)
-TESTS = $(subst $(space),$(comma),$(TESTS_LIST))
+TESTS_RAW = $(shell find . -name "*.click")
+TESTS_ABS = $(foreach T,$(TESTS_RAW),$(abspath $(T)))
+TESTS     = $(subst $(space),$(comma),$(TESTS_ABS))
+
 
 bench-all: testbin
-	$(HYPERFINE) --export-markdown report.md \
+	$(HYPERFINE) --ignore-failure \
+		     --export-markdown report.md \
 		     --export-csv report.csv \
 		     -L test $(TESTS) \
 		     --warmup 10 \
-		     '$(TARGET) $(LCLICK_BIN) --only {test}'
+		     '${LCLICK_BIN} {test}'
 
 clean: clobber
 	find . -name 'output' | xargs rm -f

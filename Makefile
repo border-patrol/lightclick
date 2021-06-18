@@ -37,8 +37,7 @@ bench: ${TARGET} testbin
 bench-all: lightclick testbin
 	${MAKE} -C tests \
 		bench-all \
-		IDRIS2=$(IDRIS2)
-		LCLICK_BIN=${TARGET}
+		LCLICK_BIN=$(abspath $(TARGET))
 
 
 .PHONY: clobber clean lightclick test testbin bench bench-all
