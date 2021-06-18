@@ -17,7 +17,7 @@ test: testbin
 	  --only $(LCLICK_TEST_O)
 
 bench:
-	$(HYPERFINE) --warmup 10 --ignore-failure \
+	$(HYPERFINE) --ignore-failure \
 	  -L test 007-firewall/firewall.click,008-core-alliance-swerv-eh1/core-alliance-swerv-eh1-top.click \
 	  '$(LCLICK_BIN) {test}'
 
@@ -35,7 +35,9 @@ bench-all: testbin
 	$(HYPERFINE) --ignore-failure \
 		     --export-markdown report.md \
 		     --export-csv report.csv \
-		     -L test $(TESTS) \
+		     --export-json report.json \
+		     --time-unit millisecond \
+		     --parameter-list test $(TESTS) \
 		     --warmup 10 \
 		     '${LCLICK_BIN} {test}'
 
