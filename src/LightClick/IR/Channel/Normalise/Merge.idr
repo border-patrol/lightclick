@@ -8,7 +8,6 @@ import Toolkit.Data.DVect
 
 import LightClick.Types
 import LightClick.Terms
-import LightClick.Error
 
 import LightClick.IR.ModuleCentric
 import LightClick.IR.ChannelCentric
@@ -89,11 +88,11 @@ mergeModules state expr = expr
 
 export
 covering
-runMerge : ChannelIR type -> Either LightClick.Error (ChannelIR type)
+runMerge : ChannelIR type -> Either Normalise.Error (ChannelIR type)
 runMerge expr =
   case isModuleNF Empty expr of
-    Empty => Left (NormalisationError $ MergeError NoModuleInstances)
-    InlineModule => Left (NormalisationError $ MergeError ModuleInlined)
+    Empty => Left (NoModuleInstances)
+    InlineModule => Left (ModuleInlined)
     RepeatedName => runMerge (mergeModules Nil expr)
     UniqueNames _ => Right expr
 

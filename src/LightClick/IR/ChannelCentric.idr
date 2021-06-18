@@ -151,6 +151,9 @@ export
 Show (ChannelIR type) where
   show expr = assert_total $ showC expr
 
+
+
+
 public export
 Convert : Type -> Type
 Convert = Either LightClick.Error

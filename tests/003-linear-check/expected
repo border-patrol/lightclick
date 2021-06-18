@@ -1,6 +1,6 @@
 LOG: Parsing Complete 
 LOG: MetaTyping Complete 
 Error Happened
-global:35:0-7:
+example.click:35:0-7:
 The port "c" is already in use.
 LOG: Typing Complete 

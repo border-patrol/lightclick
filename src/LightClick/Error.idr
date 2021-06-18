@@ -4,10 +4,16 @@ import Control.WellFounded
 import Data.Vect
 import Data.Fin
 import Data.Strings
+import Data.List
+import Data.List.Views
 
 import Toolkit.Data.Location
+import Toolkit.Data.DVect
 
-import LightClick.Types.Meta
+import LightClick.Types
+import LightClick.Connection
+import LightClick.Types.Compatibility
+
 import LightClick.IR.Channel.Normalise.Error
 
 %default total
@@ -16,67 +22,62 @@ export
 interface PrettyError (type : Type) where
   toString : type -> String
 
-namespace Compatibility
+export
+PrettyError Direction.Valid.Error where
+  toString InputCannotSend = "Input cannot send"
+  toString DirIsSame = "Directions are the same"
+  toString OutputCannotReceive = "Output ports cannot receive"
 
-  namespace Wire
-    public export
-    data Error = TypesDiffer
+export
+PrettyError Direction.Safe.Error where
+  toString (VCError x) = toString x
+  toString PossibleFeedbackFromReceiver = "Possible Feedback from Receiver."
+  toString PossibleFeedbackFromSender = "Possible Feedback from Sender."
 
-    export
-    PrettyError Wire.Error where
-      toString TypesDiffer = "Types are not compatible"
 
-  namespace Sensitivity
-    public export
-    data Error = NoChangeFromHigh
-               | NoChangeFromLow
-               | NoChangeFromRising
-               | NoChangeFromFalling
+export
+Show Wire where
+   show Data      = "Data"
+   show Address   = "Address"
+   show Clock     = "Clock"
+   show Reset     = "Reset"
+   show Info      = "Info"
+   show Interrupt = "Interrupt"
+   show Control   = "Control"
+   show General   = "General"
 
-    export
-    PrettyError (Sensitivity.Error) where
-      toString NoChangeFromHigh    = "Cannot go from High to a different another sensative level."
-      toString NoChangeFromLow     = "Cannot go from Low to a different another sensative level."
-      toString NoChangeFromRising  = "Cannot go from Rising to a different another sensative level."
-      toString NoChangeFromFalling = "Cannot go from Falling to a different another sensative level."
+export
+PrettyError Compatibility.Wire.Error where
+  toString (TypesDiffer a b)
+    = unlines [ "Incompatible wire types:"
+              , "\tExpected:"
+              , "\t\t" <+> show a
+              , "\tGiven:"
+              , "\t\t" <+> show b
+              ]
 
-namespace Direction
+export
+Show Sensitivity where
+ show High        = "High"
+ show Low         = "Low"
+ show Rising      = "Rising"
+ show Falling     = "Falling"
+ show Insensitive = "Insensitive"
 
-  namespace Valid
-    public export
-    data Error = InputCannotSend | DirIsSame | OutputCannotReceive
-
-    export
-    PrettyError Direction.Valid.Error where
-      toString InputCannotSend = "Input cannot send"
-      toString DirIsSame = "Directions are the same"
-      toString OutputCannotReceive = "Output ports cannot receive"
-
-  namespace Safe
-    public export
-    data Error = VCError Direction.Valid.Error
-               | PossibleFeedbackFromReceiver
-               | PossibleFeedbackFromSender
-
-    export
-    PrettyError Direction.Safe.Error where
-      toString (VCError x) = toString x
-      toString PossibleFeedbackFromReceiver = "Possible Feedback from Receiver."
-      toString PossibleFeedbackFromSender = "Possible Feedback from Sender."
-
+export
+PrettyError (Sensitivity.Error) where
+  toString NoChangeFromHigh
+    = "Cannot go from High to a different level."
+  toString NoChangeFromLow
+    = "Cannot go from Low to a different level."
+  toString NoChangeFromRising
+    = "Cannot go from Rising to a different level."
+  toString NoChangeFromFalling
+    = "Cannot go from Falling to a different level."
 
 namespace Compatibility
 
   namespace Data
-    public export
-    data Error : Type where
-      Mismatch : Data.Error
-      MismatchArrayLength : Data.Error
-      MismatchArrayType   : (error : Data.Error) -> Data.Error
-      MismatchStructureFieldType  : (position : Nat) -> (error : Data.Error) -> Data.Error
-      MismatchStructureFieldLabel  : (position : Nat) -> (x,y : String) -> Data.Error
-      MismatchStructureLength : Data.Error
-
 
     toString : (Data.Error) -> String
     toString Mismatch = "The data types are wildly different."
@@ -97,14 +98,6 @@ namespace Compatibility
 
   namespace Port
 
-
-    public export
-    data Error = InCompatSensitivity Sensitivity.Error
-               | InCompatDirection   Direction.Safe.Error
-               | InCompatWTypes      Wire.Error
-               | InCompatDTypes      Data.Error
-
-
     export
     PrettyError Port.Error where
 
@@ -113,15 +106,60 @@ namespace Compatibility
       toString (InCompatWTypes      err) = toString err
       toString (InCompatDTypes      err) = toString err
 
-  namespace PortList
+namespace Types
 
-    public export
-    data Error = PListError Nat Compatibility.Port.Error
 
-  namespace Mux
+  Show TyRig where
+    show None = show 0
+    show One  = show 1
+    show Tonne = "*"
 
-    public export
-    data Error = CtrlNotSafe Compatibility.Port.Error | MuxNotSafe (Compatibility.PortList.Error)
+  mutual
+    kvsToString : Vect n (Pair String (Ty DATA)) -> String
+    kvsToString [] = ""
+    kvsToString ((l, ty) :: xs)
+      = unwords [l, ":", toString ty]
+
+    ksToListString : DVect String (Ty . PORT) n ps -> String
+    ksToListString [] = ""
+    ksToListString (ex :: []) = Types.toString ex
+    ksToListString (ex :: (x :: rest))
+      = Types.toString ex <+> "," <+> ksToListString (x::rest)
+
+    export
+    toString : forall a . Ty a -> String
+    toString TyLogic
+     = "logic"
+    toString (TyArray type length)
+     = toString type <+> "[" <+> show length <+> "]"
+
+    toString (TyStruct kvs)
+      = "struct {" <+> kvsToString kvs <+> "}"
+
+    toString (TyUnion kvs)
+      = "union {" <+> kvsToString kvs <+> "}"
+
+    toString TyUnit
+      = "()"
+    toString TyConn
+      = "conn"
+
+    toString TyGate
+      = "gate"
+
+    toString (TyPort label dir sense wty type usage)
+      = unwords [ label
+                , ":"
+                , "port ("
+                , show dir
+                , show sense
+                , show wty
+                , toString type
+                , show usage
+                , ")"]
+
+    toString (TyModule xs)
+      = "module ( " <+> (ksToListString xs) <+> ")"
 
 
 namespace LightClick
@@ -140,11 +178,13 @@ namespace LightClick
              | MetaTypeConstructionError FileContext MTy MTy
              | PortInUse FileContext String
              | ConstantsNotAllowed FileContext
-             | UnSafeDirectConnection FileContext Compatibility.Port.Error
-             | UnSafeFan FileContext FanTy Nat Compatibility.Port.Error
-             | UnSafeMuxCtrl FileContext Compatibility.Port.Error
-             | NormalisationError NError
+             | UnSafeDirectConnection FileContext Port.Error
+             | UnSafeFan FileContext FanTy Nat Port.Error
+             | UnSafeMuxCtrl FileContext Port.Error
+             | NormalisationError Normalise.Error
              | UnusedPorts (List (String, List String))
+             | Mismatch FileContext (Ty a) (Ty b)
+             | Nest LightClick.Error LightClick.Error
 
 
   export
@@ -218,6 +258,15 @@ namespace LightClick
                 ]
     toString (UnusedPorts (p'::ps)) =
         unlines $ "Unused ports:" :: (map (\(n,ns) => "\t - " <+> (unwords [n, show ns])) (p'::ps))
+
+    toString (Mismatch loc e g) =
+        unlines [ show loc
+                , "Type Mismatch:"
+                , "\tExpected:\n\t\t" <+> toString e
+                , "\tGiven:\n\t\t" <+> toString g]
+
+    toString (Nest x y)
+      = unlines [toString x, toString y]
 
   export
   Show LightClick.Error where

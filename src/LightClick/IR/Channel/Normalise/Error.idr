@@ -4,17 +4,18 @@ import Data.Strings
 
 %default total
 
-public export
-data MError = ModuleInlined | NoModuleInstances
+namespace Normalise
+  public export
+  data Error = ModuleInlined | NoModuleInstances
+
+  export
+  Show Error where
+    show ModuleInlined     = "Normalisation Error: Module Inlined"
+    show NoModuleInstances = "Normalisation Error: No Module instances found"
 
 public export
-data NError = MergeError MError
+Normalise : Type -> Type
+Normalise = Either Error
 
-export
-Show MError where
-  show ModuleInlined = "Module Inlined"
-  show NoModuleInstances = "No Module instances found"
 
-export
-Show NError where
-  show (MergeError err) = unlines ["Normalisation Error", show err]
+-- [ EOF ]

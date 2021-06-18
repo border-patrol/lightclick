@@ -357,7 +357,9 @@ parseClickFile = parseFile LightClickLexer
 export
 parseClickDesignFile : (fname : String)
                     -> IO (Either (Run.ParseError Token) AST)
-parseClickDesignFile = parseFile LightClickLexer design
-
+parseClickDesignFile fname
+  = do Right ast <- parseFile LightClickLexer design fname
+         | Left err => (pure (Left err))
+       pure (Right (setFileName fname ast))
 
 -- [ EOF ]

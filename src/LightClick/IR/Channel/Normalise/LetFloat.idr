@@ -8,10 +8,11 @@ import Toolkit.Data.DVect
 
 import LightClick.Types
 import LightClick.Terms
-import LightClick.Error
 
 import LightClick.IR.ModuleCentric
 import LightClick.IR.ChannelCentric
+
+import LightClick.IR.Channel.Normalise.Error
 
 %default total
 
@@ -62,7 +63,7 @@ letFloat expr = expr
 
 export
 covering -- due to totality checker not liking recursive calls.
-runLetFloat : ChannelIR type -> Either LightClick.Error (ChannelIR type)
+runLetFloat : ChannelIR type -> Normalise (ChannelIR type)
 runLetFloat expr =
   if isNF expr
   then Right expr

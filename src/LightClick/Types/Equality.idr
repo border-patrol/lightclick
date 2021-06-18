@@ -8,8 +8,6 @@ import Toolkit.Data.Rig
 
 import Toolkit.Data.Vect.Extra
 
-import LightClick.Error
-
 import LightClick.Types.Meta
 import LightClick.Types.Direction
 import LightClick.Types.Sensitivity

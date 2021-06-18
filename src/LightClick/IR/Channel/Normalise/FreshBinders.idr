@@ -9,11 +9,12 @@ import Toolkit.Data.DVect
 
 import LightClick.Types
 import LightClick.Terms
-import LightClick.Error
+
 
 import LightClick.IR.ModuleCentric
 import LightClick.IR.ChannelCentric
 
+import LightClick.IR.Channel.Normalise.Error
 import LightClick.IR.Channel.Normalise.LetFloat
 
 %default total
@@ -21,7 +22,7 @@ import LightClick.IR.Channel.Normalise.LetFloat
 createModuleBinders : (state : List String)
                    -> (counter : Nat)
                    -> (expr  : ChannelIR type)
-                   -> ChannelIR type
+                            -> ChannelIR type
 createModuleBinders state counter (CLet bind this inThis)
   = CLet bind this $ createModuleBinders (bind::state) counter inThis
 
@@ -49,8 +50,7 @@ createModuleBinders state counter expr = expr
 export
 covering
 freshBinders : (expr : ChannelIR type)
-                    -> Either LightClick.Error
-                              (ChannelIR type)
+                    -> Normalise (ChannelIR type)
 freshBinders expr
   = runLetFloat (createModuleBinders Nil Z expr)
 

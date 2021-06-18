@@ -2,9 +2,19 @@ Swap Bad
 LOG: Parsing Complete 
 LOG: MetaTyping Complete 
 Error Happened
-global:22:0-26:
+swap-bad.click:22:0-26:
+Type Mismatch:
+	Expected:
+		clk : port ( OUT High Clock logic 1 )
+	Given:
+		ready : port ( IN High Control logic 1 )
+swap-bad.click:22:0-26:
 Unsafe connection :
-	Types are not compatible
+	Incompatible wire types:
+	Expected:
+		Clock
+	Given:
+		Control
 LOG: Typing Complete 
 Swap Good
 LOG: Parsing Complete 
@@ -61,7 +71,7 @@ Fanout Bad
 LOG: Parsing Complete 
 LOG: MetaTyping Complete 
 Error Happened
-global:21:0-11:
+fanout-bad.click:21:0-11:
 The port "clk" is already in use.
 LOG: Typing Complete 
 Fanin Good

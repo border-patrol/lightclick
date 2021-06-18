@@ -7,8 +7,6 @@ import public Toolkit.Decidable.Informative
 import Toolkit.Data.Rig
 import Toolkit.Data.Vect.Extra
 
-import LightClick.Error
-
 import LightClick.Types.Meta
 import LightClick.Types.Direction
 import LightClick.Types.Sensitivity
@@ -140,12 +138,22 @@ namespace Union
   unionsAreNotCompat : (Compatible xs ys -> Void) -> Compatible (TyUnion xs) (TyUnion ys) -> Void
   unionsAreNotCompat contra (CompatUnion prf) = contra prf
 
+namespace Data
+  public export
+  data Error : Type where
+    Mismatch : Data.Error
+    MismatchArrayLength : Data.Error
+    MismatchArrayType   : (error : Data.Error) -> Data.Error
+    MismatchStructureFieldType  : (position : Nat) -> (error : Data.Error) -> Data.Error
+    MismatchStructureFieldLabel  : (position : Nat) -> (x,y : String) -> Data.Error
+    MismatchStructureLength : Data.Error
+
 -- [ Function Declaration ]
 
 export
 compatible : (x : Ty DATA)
           -> (y : Ty DATA)
-                 -> DecInfo Compatibility.Data.Error
+                 -> DecInfo Data.Error
                             (Data.Compatible x y)
 
 

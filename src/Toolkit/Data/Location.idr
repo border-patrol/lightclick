@@ -44,6 +44,14 @@ emptyFC : FileContext
 emptyFC = newFC Nothing (0,0) (0,0)
 
 export
+setSource : String -> FileContext -> FileContext
+setSource str fc
+  = record { source       = Just str
+           , start.source = Just str
+           , end.source   = Just str
+           } fc
+
+export
 Show Location where
   show (MkLoc Nothing  l c) = with List concat [show l, ":", show c]
   show (MkLoc (Just n) l c) = with List concat [n, ":", show l, ":", show c]

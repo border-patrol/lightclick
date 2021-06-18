@@ -8,7 +8,6 @@ import Toolkit.Data.DVect
 
 import Language.SystemVerilog.Gates
 
-import LightClick.Error
 import LightClick.Types
 import LightClick.Values
 

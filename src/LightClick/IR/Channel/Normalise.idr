@@ -8,11 +8,11 @@ import Toolkit.Data.DVect
 
 import LightClick.Types
 import LightClick.Terms
-import LightClick.Error
 
 import LightClick.IR.ModuleCentric
 import LightClick.IR.ChannelCentric
 
+import public LightClick.IR.Channel.Normalise.Error
 import LightClick.IR.Channel.Normalise.LetFloat
 import LightClick.IR.Channel.Normalise.Merge
 import LightClick.IR.Channel.Normalise.FreshBinders
@@ -21,7 +21,7 @@ import LightClick.IR.Channel.Normalise.FreshBinders
 
 export
 covering -- comes from Merge runMerge not being total.
-normalise : ChannelIR UNIT -> Either LightClick.Error (ChannelIR UNIT)
+normalise : ChannelIR UNIT -> Either Normalise.Error (ChannelIR UNIT)
 normalise expr =
   do e'   <- runLetFloat expr
      em'  <- runMerge e'

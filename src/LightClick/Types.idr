@@ -5,8 +5,6 @@ import public Data.Vect
 import public Toolkit.Data.DVect
 import public Toolkit.Data.Rig
 
-import LightClick.Error
-
 import public LightClick.Types.Meta
 import public LightClick.Types.Direction
 import public LightClick.Types.Sensitivity
@@ -49,6 +47,13 @@ mkDual (TyPort l d s w t u) with (d)
   mkDual (TyPort l d s w t u) | OUT = TyPort l IN s w t u
   mkDual (TyPort l d s w t u) | INOUT = TyPort l INOUT s w t u
 
+namespace Control
+  public export
+  mkDual : Ty (PORT label) -> Ty (PORT label)
+  mkDual (TyPort l d s w t u) with (d)
+    mkDual (TyPort l d s w t u) | IN = TyPort l OUT s Control t u
+    mkDual (TyPort l d s w t u) | OUT = TyPort l IN s Control t u
+    mkDual (TyPort l d s w t u) | INOUT = TyPort l INOUT s Control t u
 
 getPortLabel : {label : String} -> Ty (PORT label) -> String
 getPortLabel {label} p = label

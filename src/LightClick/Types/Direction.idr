@@ -4,8 +4,6 @@ import Decidable.Equality
 
 import Toolkit.Decidable.Informative
 
-import LightClick.Error
-
 %default total
 
 public export
@@ -13,9 +11,9 @@ data Direction = IN | OUT | INOUT
 
 export
 Show Direction where
-  show IN = "(IN)"
-  show OUT = "(OUT)"
-  show INOUT = "(INOUT)"
+  show IN = "IN"
+  show OUT = "OUT"
+  show INOUT = "INOUT"
 
 inNotOut : (IN = OUT) -> Void
 inNotOut Refl impossible
@@ -67,8 +65,13 @@ namespace Valid
   dirIsLR' VOB impossible
   dirIsLR' VBB impossible
 
+  public export
+  data Error = InputCannotSend | DirIsSame | OutputCannotReceive
+
+
   export
-  valid : (src, dest : Direction) -> DecInfo Direction.Valid.Error (Valid src dest)
+  valid : (src, dest : Direction)
+                    -> DecInfo Direction.Valid.Error (Valid src dest)
   valid IN dest = No InputCannotSend dirIsLR
   valid OUT dest with (dest)
     valid OUT dest | IN = Yes VOI
@@ -108,6 +111,11 @@ namespace Safe
   safeDirNoFeedbackBO SOI impossible
   safeDirNoFeedbackBO SBI impossible
   safeDirNoFeedbackBO SBB impossible
+
+  public export
+  data Error = VCError Direction.Valid.Error
+             | PossibleFeedbackFromReceiver
+             | PossibleFeedbackFromSender
 
   export
   safe : (src, dest : Direction) -> DecInfo Direction.Safe.Error (Safe src dest)

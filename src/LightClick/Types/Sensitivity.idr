@@ -4,8 +4,6 @@ import Decidable.Equality
 
 import Toolkit.Decidable.Informative
 
-import LightClick.Error
-
 %default total
 
 
@@ -117,6 +115,13 @@ noRF SameSense impossible
 noRF ToInsense impossible
 noRF FoInsense impossible
 
+namespace Compatibility
+  namespace Sensitivity
+    public export
+    data Error = NoChangeFromHigh
+               | NoChangeFromLow
+               | NoChangeFromRising
+               | NoChangeFromFalling
 export
 compatible : (l,r : Sensitivity) -> DecInfo Compatibility.Sensitivity.Error (Compatible l r)
 compatible High High = Yes SameSense

@@ -255,7 +255,8 @@ mutual
          (vY, tyY, envy) <- Port.check envx right
 
          case compatible tyX tyY of
-           No msg contra => Left (UnSafeDirectConnection fc msg)
+           No msg contra => Left (Nest (Mismatch fc tyX tyY)
+                                       (UnSafeDirectConnection fc msg))
            Yes prf => do
              ty <- getData vX
 
@@ -271,8 +272,8 @@ mutual
     = do (vI, tyIN,  envi) <- Port.check env i
          (vF, tyFAN,  envf) <- Fan.check envi fan
          case Fanout.compatible tyIN tyFAN of
-           No (PListError pos reason) contra => do
-             Left (UnSafeFan fc FANOUT pos reason)
+           No (PListError pos ty reason) contra =>
+             Left (Nest (Mismatch fc tyIN ty) (UnSafeFan fc FANOUT pos reason))
 
            Yes prf => do
                ty <- getData vI
@@ -290,11 +291,13 @@ mutual
          (vO, to, envo) <- Port.check envc o
 
          case Mux.compatible tf tc to of
-           No (CtrlNotSafe x) contra =>
-                Left (UnSafeMuxCtrl !(getFC ctrl) x)
-           No (MuxNotSafe (PListError pos reason)) contra => do
+           No (CtrlNotSafe c x) contra =>
+                Left (Nest (Mismatch fc c tc)
+                           (UnSafeMuxCtrl !(getFC ctrl) x))
 
-             Left (UnSafeFan fc FANIN pos reason)
+           No (MuxNotSafe (PListError pos ty reason)) contra =>
+             Left (Nest  (Mismatch fc ty to)
+                         (UnSafeFan fc FANIN pos reason))
            Yes prf => do
              nO <- genNameConn vO
              nC <- genNameConn vC
@@ -334,7 +337,9 @@ mutual
          (vY, tyY, envy) <- Port.check envx o
 
          case compatible tyX tyY of
-           No msg contra => Left (UnSafeDirectConnection fc msg)
+           No msg contra =>
+             Left (Nest (Mismatch fc tyX tyY)
+                        (UnSafeDirectConnection fc msg))
            Yes prf => do
 
              ty <- getData vX
@@ -360,40 +365,16 @@ mutual
                    , TyGate, envy
                    )
 
-{-
-  VNot : Value CHAN
-      -> Value CHAN
-      -> Value GATE
-
-  VGate : {n : Nat}
-       -> TyGateComb
-       -> Value CONN
-       -> Vect (S (S n)) (Value CHAN)
-       -> Value GATE
-
-  VConnG : Value CHAN
-        -> Value (PORT p)
-        -> Value CONN
-
--}
-
   -- [ Checking the GATE ]
   check env (GATE fc ty is o)
     = do (fs, tf, envf) <- Fan.check  env  is
          (vO, to, envo) <- Port.check envf o
 
          case Fanin.compatible tf to of
-           No (PListError pos reason) contra => do
-             Left (UnSafeFan fc FANIN pos reason)
+           No (PListError pos ty reason) contra => do
+             Left (Nest (Mismatch fc ty to) (UnSafeFan fc FANIN pos reason))
 
            Yes prf => do
-
-           {-
-              1. gen chan out
-              2. gen chans fan in
-
-              let
-           -}
 
              tyO <- getData vO
              nO  <- genNameConn vO

@@ -43,4 +43,62 @@ data AST : Type where
 
   End : AST
 
+mutual
+  setKvsFS : String -> Vect n (Pair String AST) -> Vect n (Pair String AST)
+  setKvsFS x [] = Nil
+  setKvsFS x ((y, z) :: xs)
+    = (y, setFileName x z) :: setKvsFS x xs
+
+  setFSs : String -> Vect n AST -> Vect n AST
+  setFSs x [] = []
+  setFSs x (y :: xs) = (setFileName x y) :: setFSs x xs
+
+  export
+  setFileName : String -> AST -> AST
+  setFileName fn (Ref x y)
+    = Ref (setSource fn x) y
+
+  setFileName fn (Bind x y z w)
+    = Bind (setSource fn x) y (setFileName fn z) (setFileName fn w)
+
+  setFileName fn (Seq x y)
+    = Seq (setFileName fn x) (setFileName fn y)
+
+  setFileName fn (DataLogic x)
+    = DataLogic (setSource fn x)
+
+  setFileName fn (DataArray x y k)
+    = DataArray (setSource fn x) (setFileName fn y) k
+
+  setFileName fn (DataStruct x kvs)
+    = DataStruct (setSource fn x) (setKvsFS fn kvs)
+
+  setFileName fn (DataUnion x kvs)
+    = DataUnion (setSource fn x) (setKvsFS fn kvs)
+
+  setFileName fn (Port x label dir sense wty type)
+    = (Port (setSource fn x) label dir sense wty (setFileName fn type))
+
+  setFileName fn (ModuleDef x kvs)
+    = ModuleDef (setSource fn x) (setFSs fn kvs)
+
+  setFileName fn (Index x y z)
+    = Index (setSource fn x) (setFileName fn y) z
+
+  setFileName fn (Connect x y z)
+    = Connect (setSource fn x) (setFileName fn y) (setFileName fn z)
+
+  setFileName fn (FanOut x y ps)
+    = FanOut (setSource fn x) (setFileName fn y) (setFSs fn ps)
+
+  setFileName fn (Mux x ps y z)
+    = Mux (setSource fn x) (setFSs fn ps) (setFileName fn y) (setFileName fn z)
+
+  setFileName fn (NOT x y z)
+    = NOT (setSource fn x) (setFileName fn y) (setFileName fn z)
+
+  setFileName fn (GATE x ty ps y)
+    = GATE (setSource fn x) ty (setFSs fn ps) (setFileName fn y)
+  setFileName fn End = End
+
 -- [ EOF ]

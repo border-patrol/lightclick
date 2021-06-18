@@ -4,8 +4,6 @@ import Decidable.Equality
 
 import Toolkit.Decidable.Informative
 
-import LightClick.Error
-
 %default total
 
 public export
@@ -296,62 +294,69 @@ interCNotCompat SameWire impossible
 interCNotCompat GAny impossible
 interCNotCompat AnyG impossible
 
+namespace Compatibility
+  namespace Wire
+    public export
+    data Error = TypesDiffer Wire Wire
+
+
 export
 compatible : (l,r : Wire) -> DecInfo Compatibility.Wire.Error (Compatible l r)
-compatible Data Data = Yes SameWire
-compatible Data Address = No TypesDiffer daNotCompat
-compatible Data Clock = No TypesDiffer dcNotCompat
-compatible Data Reset = No TypesDiffer drNotCompat
-compatible Data Info = No TypesDiffer ddNotCompat
-compatible Data Interrupt = No TypesDiffer diNotCompat
-compatible Data Control = No TypesDiffer dctrlNotCompat
-compatible Data General = Yes AnyG
-compatible Address Data = No TypesDiffer $ negCompatibleSym daNotCompat
-compatible Address Address = Yes SameWire
-compatible Address Clock = No TypesDiffer acNotCompat
-compatible Address Reset = No TypesDiffer arNotCompat
-compatible Address Info = No TypesDiffer aiNotCompat
-compatible Address Interrupt = No TypesDiffer aitNotCompat
-compatible Address Control = No TypesDiffer actrlNotCompat
-compatible Address General = Yes AnyG
-compatible Clock Data = No TypesDiffer (negCompatibleSym dcNotCompat)
-compatible Clock Address = No TypesDiffer (negCompatibleSym acNotCompat)
-compatible Clock Clock = Yes SameWire
-compatible Clock Reset = No TypesDiffer crNotCompat
-compatible Clock Info = No TypesDiffer ciNotCompat
-compatible Clock Interrupt = No TypesDiffer cintNotCompat
-compatible Clock Control = No TypesDiffer ccNotCompatc
-compatible Clock General = Yes AnyG
-compatible Reset Data = No TypesDiffer (negCompatibleSym drNotCompat)
-compatible Reset Address = No TypesDiffer (negCompatibleSym arNotCompat)
-compatible Reset Clock = No TypesDiffer (negCompatibleSym crNotCompat)
-compatible Reset Reset = Yes SameWire
-compatible Reset Info = No TypesDiffer riNotCompat
-compatible Reset Interrupt = No TypesDiffer rintNotCompat
-compatible Reset Control = No TypesDiffer rcNotCompat
-compatible Reset General = Yes AnyG
-compatible Info Data = No TypesDiffer (negCompatibleSym ddNotCompat)
-compatible Info Address = No TypesDiffer (negCompatibleSym aiNotCompat)
-compatible Info Clock = No TypesDiffer (negCompatibleSym ciNotCompat)
-compatible Info Reset = No TypesDiffer (negCompatibleSym riNotCompat)
-compatible Info Info = Yes SameWire
-compatible Info Interrupt = No TypesDiffer infoINotCompat
-compatible Info Control = No TypesDiffer infoCNotCompat
-compatible Info General = Yes AnyG
-compatible Interrupt Data = No TypesDiffer (negCompatibleSym diNotCompat)
-compatible Interrupt Address = No TypesDiffer (negCompatibleSym aitNotCompat)
-compatible Interrupt Clock = No TypesDiffer (negCompatibleSym cintNotCompat)
-compatible Interrupt Reset = No TypesDiffer (negCompatibleSym rintNotCompat)
-compatible Interrupt Info = No TypesDiffer (negCompatibleSym infoINotCompat)
-compatible Interrupt Interrupt = Yes SameWire
-compatible Interrupt Control = No TypesDiffer interCNotCompat
-compatible Interrupt General = Yes AnyG
-compatible Control Data = No TypesDiffer (negCompatibleSym dctrlNotCompat)
-compatible Control Address = No TypesDiffer (negCompatibleSym actrlNotCompat)
-compatible Control Clock = No TypesDiffer (negCompatibleSym ccNotCompatc)
-compatible Control Reset = No TypesDiffer (negCompatibleSym rcNotCompat)
-compatible Control Info = No TypesDiffer (negCompatibleSym infoCNotCompat)
-compatible Control Interrupt = No TypesDiffer (negCompatibleSym interCNotCompat)
+compatible a@Data      b@Data      = Yes SameWire
+compatible a@Data      b@Address   = No (TypesDiffer a b) daNotCompat
+compatible a@Data      b@Clock     = No (TypesDiffer a b) dcNotCompat
+compatible a@Data      b@Reset     = No (TypesDiffer a b) drNotCompat
+compatible a@Data      b@Info      = No (TypesDiffer a b) ddNotCompat
+compatible a@Data      b@Interrupt = No (TypesDiffer a b) diNotCompat
+compatible a@Data      b@Control   = No (TypesDiffer a b) dctrlNotCompat
+compatible a@Data      b@General   = Yes AnyG
+compatible a@Address   b@Data      = No (TypesDiffer a b) $ negCompatibleSym daNotCompat
+compatible a@Address   b@Address   = Yes SameWire
+compatible a@Address   b@Clock     = No (TypesDiffer a b) acNotCompat
+compatible a@Address   b@Reset     = No (TypesDiffer a b) arNotCompat
+compatible a@Address   b@Info      = No (TypesDiffer a b) aiNotCompat
+compatible a@Address   b@Interrupt = No (TypesDiffer a b) aitNotCompat
+compatible a@Address   b@Control   = No (TypesDiffer a b) actrlNotCompat
+compatible a@Address   b@General   = Yes AnyG
+compatible a@Clock     b@Data      = No (TypesDiffer a b) (negCompatibleSym dcNotCompat)
+compatible a@Clock     b@Address   = No (TypesDiffer a b) (negCompatibleSym acNotCompat)
+compatible a@Clock     b@Clock     = Yes SameWire
+compatible a@Clock     b@Reset     = No (TypesDiffer a b) crNotCompat
+compatible a@Clock     b@Info      = No (TypesDiffer a b) ciNotCompat
+compatible a@Clock     b@Interrupt = No (TypesDiffer a b) cintNotCompat
+compatible a@Clock     b@Control   = No (TypesDiffer a b) ccNotCompatc
+compatible a@Clock     b@General   = Yes AnyG
+compatible a@Reset     b@Data      = No (TypesDiffer a b) (negCompatibleSym drNotCompat)
+compatible a@Reset     b@Address   = No (TypesDiffer a b) (negCompatibleSym arNotCompat)
+compatible a@Reset     b@Clock     = No (TypesDiffer a b) (negCompatibleSym crNotCompat)
+compatible a@Reset     b@Reset     = Yes SameWire
+compatible a@Reset     b@Info      = No (TypesDiffer a b) riNotCompat
+compatible a@Reset     b@Interrupt = No (TypesDiffer a b) rintNotCompat
+compatible a@Reset     b@Control   = No (TypesDiffer a b) rcNotCompat
+compatible a@Reset     b@General   = Yes AnyG
+compatible a@Info      b@Data      = No (TypesDiffer a b) (negCompatibleSym ddNotCompat)
+compatible a@Info      b@Address   = No (TypesDiffer a b) (negCompatibleSym aiNotCompat)
+compatible a@Info      b@Clock     = No (TypesDiffer a b) (negCompatibleSym ciNotCompat)
+compatible a@Info      b@Reset     = No (TypesDiffer a b) (negCompatibleSym riNotCompat)
+compatible a@Info      b@Info      = Yes SameWire
+compatible a@Info      b@Interrupt = No (TypesDiffer a b) infoINotCompat
+compatible a@Info      b@Control   = No (TypesDiffer a b) infoCNotCompat
+compatible a@Info      b@General   = Yes AnyG
+compatible a@Interrupt b@Data      = No (TypesDiffer a b) (negCompatibleSym diNotCompat)
+compatible a@Interrupt b@Address   = No (TypesDiffer a b) (negCompatibleSym aitNotCompat)
+compatible a@Interrupt b@Clock     = No (TypesDiffer a b) (negCompatibleSym cintNotCompat)
+compatible a@Interrupt b@Reset     = No (TypesDiffer a b) (negCompatibleSym rintNotCompat)
+compatible a@Interrupt b@Info      = No (TypesDiffer a b) (negCompatibleSym infoINotCompat)
+compatible a@Interrupt b@Interrupt = Yes SameWire
+compatible a@Interrupt b@Control   = No (TypesDiffer a b) interCNotCompat
+compatible a@Interrupt b@General   = Yes AnyG
+compatible a@Control   b@Data      = No (TypesDiffer a b) (negCompatibleSym dctrlNotCompat)
+compatible a@Control   b@Address   = No (TypesDiffer a b) (negCompatibleSym actrlNotCompat)
+compatible a@Control   b@Clock     = No (TypesDiffer a b) (negCompatibleSym ccNotCompatc)
+compatible a@Control   b@Reset     = No (TypesDiffer a b) (negCompatibleSym rcNotCompat)
+compatible a@Control   b@Info      = No (TypesDiffer a b) (negCompatibleSym infoCNotCompat)
+compatible a@Control   b@Interrupt = No (TypesDiffer a b) (negCompatibleSym interCNotCompat)
+
 compatible Control Control = Yes SameWire
 compatible Control General = Yes AnyG
 compatible General r = Yes GAny

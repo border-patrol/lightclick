@@ -9,8 +9,6 @@ import LightClick.Types
 import LightClick.Types.Equality
 import LightClick.Types.Compatibility
 
-import LightClick.Error
-
 %default total
 
 namespace Port
@@ -46,10 +44,18 @@ namespace Port
                     -> Compatible (TyPort l dir sense wty type usage) (TyPort r x y z t w) -> Void
   dataTypeInCompatible contra (IsSafe flow sens wtype dtype) = contra dtype
 
+  public export
+  data Error = InCompatSensitivity Sensitivity.Error
+             | InCompatDirection   Direction.Safe.Error
+             | InCompatWTypes      Wire.Error
+             | InCompatDTypes      Data.Error
+
+
+
   export
   compatible : (left  : Ty (PORT l))
             -> (right : Ty (PORT r))
-                     -> DecInfo Compatibility.Port.Error
+                     -> DecInfo Port.Error
                                (Compatible left right)
   compatible (TyPort l dx sx wx tx ux) (TyPort r dy sy wy ty uy) with (safe dx dy)
     compatible (TyPort l dx sx wx tx ux) (TyPort r dy sy wy ty uy) | (Yes prfD) with (compatible sx sy)
@@ -95,6 +101,9 @@ namespace Fanout
                  -> Void
     restNotCompat contra (Cons prf rest) = contra rest
 
+    public export
+    data Error = PListError Nat (Ty (PORT s)) Port.Error
+
     export
     compatible : (input : Ty (PORT s))
               -> (ports : DVect String (Ty . PORT) n names)
@@ -105,9 +114,9 @@ namespace Fanout
       compatible i (x :: xs) | (Yes prfX) with (compatible i xs)
         compatible i (x :: xs) | (Yes prfX) | Yes prfXs = Yes (Cons prfX prfXs)
 
-        compatible i (x :: xs) | (Yes prfX) | (No (PListError pos err) contra)
-          = No (PListError (S pos) err) (restNotCompat contra)
-      compatible i (x :: xs) | (No msg contra) = No (PListError Z msg) (headNotCompat contra)
+        compatible i (x :: xs) | (Yes prfX) | (No (PListError pos y err) contra)
+          = No (PListError (S pos) y err) (restNotCompat contra)
+      compatible i (x :: xs) | (No msg contra) = No (PListError Z x msg) (headNotCompat contra)
 
 
   public export
@@ -134,6 +143,11 @@ namespace Fanout
     compatible input (x::y::fan) | No msg contra = No msg (notCompatFanout contra)
 
 namespace Mux
+
+  public export
+  data Error = CtrlNotSafe (Ty (PORT s)) Port.Error
+             | MuxNotSafe (PortList.Error)
+
 
   namespace PortList
 
@@ -172,9 +186,9 @@ namespace Mux
       compatible (x :: xs) o | (Yes prfX) with (compatible xs o)
         compatible (x :: xs) o | (Yes prfX) | Yes prfXs = Yes (Cons prfX prfXs)
 
-        compatible (x :: xs) o | (Yes prfX) | (No (PListError pos err) contra)
-          = No (PListError (S pos) err) (restNotCompat contra)
-      compatible (x :: xs) o | (No msg contra) = No (PListError Z msg) (headNotCompat contra)
+        compatible (x :: xs) o | (Yes prfX) | (No (PListError pos y err) contra)
+          = No (PListError (S pos) y err) (restNotCompat contra)
+      compatible (x :: xs) o | (No msg contra) = No (PListError Z x  msg) (headNotCompat contra)
 
   namespace Fanin
 
@@ -210,7 +224,7 @@ namespace Mux
       CompatMux : (fan  : DVect String (Ty . PORT) (S (S n)) names)
                -> (ctrl : Ty (PORT c))
                -> (out  : Ty (PORT o))
-               -> (safeCTRL  : Port.Compatible ctrl (mkDual ctrl))
+               -> (safeCTRL  : Port.Compatible ctrl (Control.mkDual ctrl))
                -> (safeFanIn : Fanin.Compatible fan out)
                             -> Compatible fan ctrl out
 
@@ -220,7 +234,7 @@ namespace Mux
   faninNotCompat contra (CompatMux f c o prfCtrl prfFanin) = contra prfFanin
 
   ctrlNotCompat : {fan : DVect String (Ty . PORT) (S (S n)) names}
-               -> (Port.Compatible ctrl (mkDual ctrl) -> Void)
+               -> (Port.Compatible ctrl (Control.mkDual ctrl) -> Void)
                -> Compatible fan ctrl output
                -> Void
   ctrlNotCompat contra (CompatMux f c o prfCtrl prfFanin) = contra prfCtrl
@@ -232,11 +246,11 @@ namespace Mux
             -> DecInfo Mux.Error
                        (Compatible fanin ctrl output)
   compatible fan ctrl output with (Fanin.compatible fan output)
-    compatible fan ctrl output | (Yes prfFan) with (compatible ctrl (mkDual ctrl))
+    compatible fan ctrl output | (Yes prfFan) with (compatible ctrl (Control.mkDual ctrl))
       compatible fan ctrl output | (Yes prfFan) | Yes prfCtrl = Yes (CompatMux fan ctrl output prfCtrl prfFan)
 
       compatible fan ctrl output | (Yes prfFan) | No msg contra
-        = No (CtrlNotSafe msg) (ctrlNotCompat contra)
+        = No (CtrlNotSafe (Control.mkDual ctrl) msg) (ctrlNotCompat contra)
     compatible fan ctrl output | No msg contra
       = No (MuxNotSafe msg) (faninNotCompat contra)
 
