@@ -1,0 +1,5 @@
+$1 example-conn-direct-bad-1.click
+$1 example-conn-direct-bad.click
+$1 example-conn-fanout-raw-bad.click
+$1 example-conn-fanout-type-err.click
+$1 example-good.click

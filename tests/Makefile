@@ -1,7 +1,7 @@
 IDRIS2=idris2
 HYPERFINE=hyperfine
 
-TARGETDIR = ${CURDIR}/build/exec
+TARGETDIR = ./build/exec
 TARGET = ${TARGETDIR}/runtests
 
 LCLICK_TEST_U ?= --interactive
@@ -12,11 +12,11 @@ testbin:
 	${IDRIS2} --build tests.ipkg
 
 test: testbin
-	${TARGET} \
-	  $(LCLICK_BIN) \
-	  --timing \
-	  $(LCLICK_TEST_U) \
-	  --only $(LCLICK_TEST_O)
+	${TARGET}        \
+	$(LCLICK_BIN)    \
+	--timing         \
+	$(LCLICK_TEST_U) \
+	--only $(LCLICK_TEST_O)
 
 bench:
 	$(HYPERFINE) --ignore-failure \
@@ -44,7 +44,7 @@ bench-all: testbin
 		     $(LCLICK_BENCH_OPTS) \
 		     '${LCLICK_BIN} {test}'
 
-clean: clobber
+clean:
 	find . -name 'output' | xargs rm -f
 
 clobber: clean

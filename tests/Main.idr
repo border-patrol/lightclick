@@ -11,6 +11,7 @@ tests : TestPool
 tests
   = MkTestPool "Tests"
         []
+        Nothing
         [ "000-mux-check"
         , "001-nice-exempler"
         , "002-unused-port"
@@ -22,11 +23,12 @@ tests
         , "008-core-alliance-swerv-eh1"
         , "009-scrubbing"
         , "010-gates"
+        , "011-paper"
         ]
 
 covering
 main : IO ()
 main
-  = runner [ tests
-           ]
+  = runner [ tests ]
+
 -- [ EOF ]

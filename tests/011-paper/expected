@@ -1,0 +1,195 @@
+LOG: Parsing Complete 
+LOG: MetaTyping Complete 
+Error Happened
+example-conn-direct-bad-1.click:10:0-30:
+Type Mismatch:
+	Expected:
+		ready : port ( IN High Control logic 1 )
+	Given:
+		ready : port ( OUT High Control logic 1 )
+example-conn-direct-bad-1.click:10:0-30:
+Unsafe connection :
+	Input cannot send
+LOG: Typing Complete 
+LOG: Parsing Complete 
+LOG: MetaTyping Complete 
+Error Happened
+example-conn-direct-bad.click:10:0-29:
+Type Mismatch:
+	Expected:
+		clk : port ( OUT High Clock logic 1 )
+	Given:
+		ready : port ( IN High Control logic 1 )
+example-conn-direct-bad.click:10:0-29:
+Unsafe connection :
+	Incompatible wire types:
+	Expected:
+		Clock
+	Given:
+		Control
+LOG: Typing Complete 
+LOG: Parsing Complete 
+LOG: MetaTyping Complete 
+Error Happened
+example-conn-fanout-raw-bad.click:11:0-12:
+The port "clk" is already in use.
+LOG: Typing Complete 
+LOG: Parsing Complete 
+LOG: MetaTyping Complete 
+Error Happened
+example-conn-fanout-type-err.click:10:0-44:
+Type Mismatch:
+	Expected:
+		clk : port ( OUT High Clock logic 1 )
+	Given:
+		ready : port ( OUT High Control logic 1 )
+example-conn-fanout-type-err.click:10:0-44:
+Unsafe Fan-OUT.
+Wire #1 is unsafe:
+	Directions are the same
+LOG: Typing Complete 
+LOG: Parsing Complete 
+LOG: MetaTyping Complete 
+LOG: Typing Complete 
+LOG : Showing ModuleIR
+LOG : Normalising ChannelIR
+LOG : Convert to MicroSV IR
+LOG : Convert to MicroSV
+LOG : Pretty Printing
+module system  
+(
+  output logic clk
+);
+// TO ADD
+endmodule; 
+
+module scrub  
+(
+  output logic[31:0] clean,
+  input logic clk,
+  input logic[31:0] dirty,
+  input logic ready
+);
+// TO ADD
+endmodule; 
+
+module client  
+(
+  input logic clk,
+  input logic[31:0] data_i,
+  output logic[31:0] data_o,
+  output logic ready
+);
+// TO ADD
+endmodule; 
+
+module client_d  
+(
+  input logic clk,
+  input logic[31:0] data_i,
+  output logic[31:0] data_o,
+  output logic ready
+);
+// TO ADD
+endmodule; 
+
+module decider  
+(
+  input logic inA,
+  input logic inB,
+  output logic[1:0] out
+);
+// TO ADD
+endmodule; 
+
+module clone  
+(
+  input logic[1:0] in,
+  output logic[1:0] outA,
+  output logic[1:0] outB
+);
+// TO ADD
+endmodule; 
+
+module reduce  
+(
+  input logic[1:0] in,
+  output logic out
+);
+// TO ADD
+endmodule; 
+
+module mux_scrub_dirty_clone_outA_client_data_o_client_d_data_o  
+(
+  input logic[1:0] control_outA,
+  input logic[31:0] input_fan_1_data_o,
+  input logic[31:0] input_fan_2_data_o,
+  output logic[31:0] output_dirty
+);
+// TO ADD
+endmodule; 
+
+module Top ();
+  wire logic fan_out_from_system_clk_to_scrub_clk_client_clk_client_d_clk;
+  wire logic client_ready_decider_inA;
+  wire logic client_d_ready_decider_inB;
+  wire logic[1:0] decider_out_clone_in;
+  wire logic[1:0] mux_scrub_dirty_clone_outA_client_data_o_client_d_data_o_control;
+  wire logic[1:0] clone_outB_reduce_in;
+  wire logic[31:0] mux_scrub_dirty_clone_outA_client_data_o_client_d_data_o_output;
+  wire logic[31:0] mux_scrub_dirty_clone_outA_client_data_o_client_d_data_o_fanin_client_data_o_input_fan_2_data_o;
+  wire logic reduce_out_scrub_ready;
+  wire logic[31:0] mux_scrub_dirty_clone_outA_client_data_o_client_d_data_o_fanin_client_d_data_o_input_fan_1_data_o;
+  wire logic[31:0] fan_out_from_scrub_clean_to_client_data_i_client_d_data_i;
+  client_d lightclick_module_0
+     (
+       .clk(fan_out_from_system_clk_to_scrub_clk_client_clk_client_d_clk),
+       .ready(client_d_ready_decider_inB),
+       .data_o(mux_scrub_dirty_clone_outA_client_data_o_client_d_data_o_fanin_client_d_data_o_input_fan_1_data_o),
+       .data_i(fan_out_from_scrub_clean_to_client_data_i_client_d_data_i)
+     );
+  client lightclick_module_1
+     (
+       .clk(fan_out_from_system_clk_to_scrub_clk_client_clk_client_d_clk),
+       .ready(client_ready_decider_inA),
+       .data_o(mux_scrub_dirty_clone_outA_client_data_o_client_d_data_o_fanin_client_data_o_input_fan_2_data_o),
+       .data_i(fan_out_from_scrub_clean_to_client_data_i_client_d_data_i)
+     );
+  scrub lightclick_module_2
+     (
+       .clk(fan_out_from_system_clk_to_scrub_clk_client_clk_client_d_clk),
+       .dirty(mux_scrub_dirty_clone_outA_client_data_o_client_d_data_o_output),
+       .ready(reduce_out_scrub_ready),
+       .clean(fan_out_from_scrub_clean_to_client_data_i_client_d_data_i)
+     );
+  reduce lightclick_module_3
+     (
+       .in(clone_outB_reduce_in),
+       .out(reduce_out_scrub_ready)
+     );
+  clone lightclick_module_4
+     (
+       .in(decider_out_clone_in),
+       .outA(mux_scrub_dirty_clone_outA_client_data_o_client_d_data_o_control),
+       .outB(clone_outB_reduce_in)
+     );
+  mux_scrub_dirty_clone_outA_client_data_o_client_d_data_o lightclick_module_5
+     (
+       .control_outA(mux_scrub_dirty_clone_outA_client_data_o_client_d_data_o_control),
+       .output_dirty(mux_scrub_dirty_clone_outA_client_data_o_client_d_data_o_output),
+       .input_fan_2_data_o(mux_scrub_dirty_clone_outA_client_data_o_client_d_data_o_fanin_client_data_o_input_fan_2_data_o),
+       .input_fan_1_data_o(mux_scrub_dirty_clone_outA_client_data_o_client_d_data_o_fanin_client_d_data_o_input_fan_1_data_o)
+     );
+  decider lightclick_module_6
+     (
+       .inA(client_ready_decider_inA),
+       .inB(client_d_ready_decider_inB),
+       .out(decider_out_clone_in)
+     );
+  system lightclick_module_7
+     (
+       .clk(fan_out_from_system_clk_to_scrub_clk_client_clk_client_d_clk)
+     );
+
+endmodule;
+LOG : Bye

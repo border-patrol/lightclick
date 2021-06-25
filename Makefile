@@ -3,7 +3,7 @@ IDRIS2=idris2
 HYPERFINE=hyperfine
 
 TARGETDIR = ${CURDIR}/build/exec
-TARGET = ${TARGETDIR}/${LCLICK}
+TARGET    = ${TARGETDIR}/${LCLICK}
 
 bopts ?=
 
@@ -26,7 +26,7 @@ testbin:
 test: testbin
 	${MAKE} -C tests test \
 			 IDRIS2=$(IDRIS2) \
-			 LCLICK_BIN=${TARGET} \
+			 LCLICK_BIN=$(TARGET) \
 			 LCLICK_TEST_U=$(LCLICK_TEST_U) \
 			 LCLICK_TEST_O=$(LCLICK_TEST_O)
 
