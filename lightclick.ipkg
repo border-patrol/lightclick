@@ -14,6 +14,8 @@ modules =
 
         , Toolkit.Data.Vect.Extra
 
+        , Toolkit.Data.List.View.PairWise
+
         , Toolkit.Data.DList
         , Toolkit.Data.DList.Elem
         , Toolkit.Data.DList.DeBruijn

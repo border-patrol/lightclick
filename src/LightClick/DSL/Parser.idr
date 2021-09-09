@@ -9,6 +9,8 @@ import        Data.Maybe
 import public Text.Lexer
 import public Text.Parser
 
+import Toolkit.Data.List.View.PairWise
+
 import public Toolkit.Data.Location
 import public Toolkit.Text.Lexer.Run
 import public Toolkit.Text.Parser.Support
@@ -168,13 +170,18 @@ ref : Rule AST
 ref = idx
 
 connect : Rule AST
-connect = do
-  s <- Toolkit.location
-  l <- ref
-  arrow
-  r <- ref
-  e <- Toolkit.location
-  pure (Connect (newFC s e) l r)
+connect
+    = do s <- Toolkit.location
+         l <- ref
+         arrow
+         r <- ref
+         e <- Toolkit.location
+         pure (newConn s e l r)
+  where
+    newConn : (s,e : Location)
+           -> (l,r : AST)
+           -> AST
+    newConn s e = Connect (newFC s e)
 
 fanout : Rule AST
 fanout = do
@@ -226,8 +233,12 @@ gate = do s <- Toolkit.location
           e <- Toolkit.location
           pure (GATE (newFC s e) ty (snd fs) o)
 
-conn : Rule AST
-conn = not <|> mux <|> fanout <|> connect <|> gate
+conns : Rule (List1 AST)
+conns
+    = some (conn <* symbol ";")
+  where
+    conn : Rule  AST
+    conn = not <|> mux <|> fanout <|> gate <|> connect
 
 types : Rule ( List1 (FileContext, String, AST))
 types = do
@@ -246,7 +257,7 @@ design = do
    (keyword "modules")
    ms <- some (moduleDef typeStyle <* symbol ";")
    (keyword "connections")
-   cs <- some (conn <* symbol ";")
+   cs <- conns
    eoi
    let cs' = foldr Seq End (forget cs)
    let ms' = foldr buildBind cs' (forget ms)

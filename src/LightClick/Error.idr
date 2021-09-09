@@ -37,19 +37,19 @@ PrettyError Direction.Safe.Error where
 
 export
 Show Wire where
-   show Data      = "Data"
-   show Address   = "Address"
-   show Clock     = "Clock"
-   show Reset     = "Reset"
-   show Info      = "Info"
-   show Interrupt = "Interrupt"
-   show Control   = "Control"
-   show General   = "General"
+   show Data      = "data"
+   show Address   = "address"
+   show Clock     = "clock"
+   show Reset     = "reset"
+   show Info      = "info"
+   show Interrupt = "interrupt"
+   show Control   = "control"
+   show General   = "general"
 
 export
 PrettyError Compatibility.Wire.Error where
   toString (TypesDiffer a b)
-    = unlines [ "Incompatible wire types:"
+    = unlines [ "Incompatible intentions:"
               , "\tExpected:"
               , "\t\t" <+> show a
               , "\tGiven:"
@@ -58,11 +58,11 @@ PrettyError Compatibility.Wire.Error where
 
 export
 Show Sensitivity where
- show High        = "High"
- show Low         = "Low"
- show Rising      = "Rising"
- show Falling     = "Falling"
- show Insensitive = "Insensitive"
+ show High        = "high"
+ show Low         = "low"
+ show Rising      = "rising"
+ show Falling     = "falling"
+ show Insensitive = "insensitive"
 
 export
 PrettyError (Sensitivity.Error) where
@@ -230,8 +230,7 @@ namespace LightClick
 
     toString (UnSafeDirectConnection loc msg) =
         unlines [ show loc
-                , "Unsafe connection :"
-                , "\t" <+> toString msg
+                , "Unsafe connection with " <+> toString msg
                 ]
 
     toString (UnSafeFan loc ty idx msg) =
@@ -261,12 +260,12 @@ namespace LightClick
 
     toString (Mismatch loc e g) =
         unlines [ show loc
-                , "Type Mismatch:"
-                , "\tExpected:\n\t\t" <+> toString e
-                , "\tGiven:\n\t\t" <+> toString g]
+                , "Connection mismatch when trying to connect:"
+                , "\tthis:\n\t\t" <+> toString e
+                , "\tthat:\n\t\t" <+> toString g]
 
     toString (Nest x y)
-      = unlines [toString x, toString y]
+      = unlines [toString x, "Specifically:", toString y]
 
   export
   Show LightClick.Error where
