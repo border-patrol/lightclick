@@ -122,9 +122,9 @@ portHaskellStyle
        label <- name
        symbol ":"
        t <- type_
-       c <- wireType
+       c <- option General wireType
        d <- direction
-       s <- sensitivity
+       s <- option Insensitive sensitivity
        e <- Toolkit.location
        pure (Port (newFC st e) label d s c t)
 
@@ -133,8 +133,8 @@ portSystemVerilogStyle
   = do st <- Toolkit.location
        com <- optional doc
        d <- direction
-       s <- sensitivity
-       c <- wireType
+       s <- option Insensitive sensitivity
+       c <- option General wireType
        t <- type_
        label <- name
        e <- Toolkit.location
