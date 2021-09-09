@@ -1,0 +1,173 @@
+LOG: Parsing Complete 
+LOG: MetaTyping Complete 
+LOG: Typing Complete 
+LOG : Showing ModuleIR
+LOG : Normalising ChannelIR
+LOG : Convert to MicroSV IR
+LOG : Convert to MicroSV
+LOG : Pretty Printing
+module system  
+(
+  input logic[31:0] clean,
+  output logic clk,
+  output logic[31:0] dirty,
+  input logic ready,
+  output logic rst
+);
+// TO ADD
+endmodule; 
+
+module scrub  
+(
+  input logic clk,
+  input logic[31:0] data_i,
+  output logic[31:0] data_o,
+  output logic ready,
+  input logic rst
+);
+// TO ADD
+endmodule; 
+
+module Top ();
+  wire logic system_clk_scrub_rst;
+  wire logic system_rst_scrub_clk;
+  wire logic scrub_ready_system_ready;
+  wire logic[31:0] system_dirty_scrub_data_i;
+  wire logic[31:0] scrub_data_o_system_clean;
+  system lightclick_module_0
+     (
+       .clk(system_clk_scrub_rst),
+       .rst(system_rst_scrub_clk),
+       .ready(scrub_ready_system_ready),
+       .dirty(system_dirty_scrub_data_i),
+       .clean(scrub_data_o_system_clean)
+     );
+  scrub lightclick_module_1
+     (
+       .rst(system_clk_scrub_rst),
+       .clk(system_rst_scrub_clk),
+       .ready(scrub_ready_system_ready),
+       .data_i(system_dirty_scrub_data_i),
+       .data_o(scrub_data_o_system_clean)
+     );
+
+endmodule;
+LOG : Bye
+LOG: Parsing Complete 
+LOG: MetaTyping Complete 
+Error Happened
+example-fine-but-not-fine-annotated.click:25:0-27:
+Connection mismatch when trying to connect:
+	this:
+		clk : port ( OUT insensitive clock logic 1 )
+	that:
+		rst : port ( IN insensitive reset logic 1 )
+
+Specifically:
+example-fine-but-not-fine-annotated.click:25:0-27:
+Unsafe connection with Incompatible intentions:
+	Expected:
+		clock
+	Given:
+		reset
+LOG: Typing Complete 
+LOG: Parsing Complete 
+LOG: MetaTyping Complete 
+Error Happened
+Unused ports:
+	 - stepUp ["clk"]
+	 - stepDown ["clk"]
+LOG: Typing Complete 
+LOG: Parsing Complete 
+LOG: MetaTyping Complete 
+Error Happened
+example-linear-1.click:46:0-14:
+The port "clk" is already in use.
+LOG: Typing Complete 
+LOG: Parsing Complete 
+LOG: MetaTyping Complete 
+LOG: Typing Complete 
+LOG : Showing ModuleIR
+LOG : Normalising ChannelIR
+LOG : Convert to MicroSV IR
+LOG : Convert to MicroSV
+LOG : Pretty Printing
+module system  
+(
+  input logic[63:0] clean,
+  output logic clk,
+  output logic[63:0] dirty,
+  input logic ready,
+  output logic rst
+);
+// TO ADD
+endmodule; 
+
+module stepDown  
+(
+  input logic clk,
+  input logic[63:0] data_i,
+  output logic[31:0] data_o
+);
+// TO ADD
+endmodule; 
+
+module stepUp  
+(
+  input logic clk,
+  input logic[31:0] data_i,
+  output logic[63:0] data_o
+);
+// TO ADD
+endmodule; 
+
+module scrub  
+(
+  input logic clk,
+  input logic[31:0] data_i,
+  output logic[31:0] data_o,
+  output logic ready,
+  input logic rst
+);
+// TO ADD
+endmodule; 
+
+module Top ();
+  wire logic fan_out_from_system_clk_to_scrub_clk_stepUp_clk_stepDown_clk;
+  wire logic system_rst_scrub_rst;
+  wire logic scrub_ready_system_ready;
+  wire logic[63:0] system_dirty_stepDown_data_i;
+  wire logic[31:0] stepDown_data_o_scrub_data_i;
+  wire logic[31:0] scrub_data_o_stepUp_data_i;
+  wire logic[63:0] stepUp_data_o_system_clean;
+  system lightclick_module_0
+     (
+       .clk(fan_out_from_system_clk_to_scrub_clk_stepUp_clk_stepDown_clk),
+       .rst(system_rst_scrub_rst),
+       .ready(scrub_ready_system_ready),
+       .dirty(system_dirty_stepDown_data_i),
+       .clean(stepUp_data_o_system_clean)
+     );
+  stepUp lightclick_module_1
+     (
+       .clk(fan_out_from_system_clk_to_scrub_clk_stepUp_clk_stepDown_clk),
+       .data_i(scrub_data_o_stepUp_data_i),
+       .data_o(stepUp_data_o_system_clean)
+     );
+  scrub lightclick_module_2
+     (
+       .clk(fan_out_from_system_clk_to_scrub_clk_stepUp_clk_stepDown_clk),
+       .rst(system_rst_scrub_rst),
+       .ready(scrub_ready_system_ready),
+       .data_i(stepDown_data_o_scrub_data_i),
+       .data_o(scrub_data_o_stepUp_data_i)
+     );
+  stepDown lightclick_module_3
+     (
+       .clk(fan_out_from_system_clk_to_scrub_clk_stepUp_clk_stepDown_clk),
+       .data_i(system_dirty_stepDown_data_i),
+       .data_o(stepDown_data_o_scrub_data_i)
+     );
+
+endmodule;
+LOG : Bye

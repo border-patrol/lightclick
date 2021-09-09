@@ -24,6 +24,7 @@ tests
         , "009-scrubbing"
         , "010-gates"
         , "011-paper"
+        , "012-tutorial"
         ]
 
 covering
