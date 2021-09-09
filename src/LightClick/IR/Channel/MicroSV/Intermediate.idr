@@ -2,7 +2,7 @@ module LightClick.IR.Channel.MicroSV.Intermediate
 
 import Data.List
 import Data.Vect
-import Data.Strings
+import Data.String
 
 import Data.Vect.Sort
 

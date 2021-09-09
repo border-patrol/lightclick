@@ -7,6 +7,7 @@ Type Mismatch:
 		ctrl : port ( OUT High Control logic 1 )
 	Given:
 		ctrl : port ( IN High Control logic 1 )
+
 example.click:47:17-26:
 Mux control wire is unsafe :
 	Input cannot send

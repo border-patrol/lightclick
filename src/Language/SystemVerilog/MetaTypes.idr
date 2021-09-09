@@ -1,6 +1,6 @@
 module Language.SystemVerilog.MetaTypes
 
-import        Data.Strings
+import        Data.String
 
 import public Toolkit.Data.DList.DeBruijn
 import public Toolkit.Decidable.Equality.Indexed

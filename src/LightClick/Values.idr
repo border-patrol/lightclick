@@ -6,7 +6,7 @@ import Data.List.Elem
 import Data.Vect
 import Data.Vect.Elem
 
-import Data.Strings
+import Data.String
 
 import Toolkit.Data.DList
 import Toolkit.Data.DVect

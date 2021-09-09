@@ -3,7 +3,7 @@ module LightClick.Error
 import Control.WellFounded
 import Data.Vect
 import Data.Fin
-import Data.Strings
+import Data.String
 import Data.List
 import Data.List.Views
 

@@ -3,7 +3,7 @@ module LightClick.DSL.Parser
 import        Data.Vect
 import        Data.List
 import        Data.List1
-import        Data.Strings
+import        Data.String
 import        Data.Maybe
 
 import public Text.Lexer
@@ -29,87 +29,100 @@ import public LightClick.DSL.Lexer
 
 data TypeStyle = HASKELL | SYSV
 
-eoi : RuleEmpty Token ()
-eoi = eoi isEOI
+namespace LightClick
+  public export
+  Rule : Type -> Type
+  Rule = Rule () Token
 
-  where
-    isEOI : Token -> Bool
-    isEOI EndInput = True
-    isEOI _ = False
+  public export
+  RuleEmpty : Type -> Type
+  RuleEmpty = RuleEmpty () Token
 
-symbol : String -> Rule Token ()
+  export
+  eoi : RuleEmpty ()
+  eoi = eoi isEOI
+    where
+      isEOI : Token -> Bool
+      isEOI EndInput = True
+      isEOI _ = False
+
+
+symbol : String -> Rule ()
 symbol str
   = terminal ("Expected Symbol '" ++ str ++ "'")
-             (\x => case tok x of
+             (\x => case x of
                            Symbol s => if s == str then Just ()
                                                    else Nothing
                            _ => Nothing)
 
 
-keyword : String -> Rule Token ()
+keyword : String -> Rule ()
 keyword str
   = terminal ("Expected Keyword '" ++ str ++ "'")
-               (\x => case tok x of
+               (\x => case x of
                            Keyword s => if s == str then Just ()
                                                     else Nothing
                            _ => Nothing)
 
 
-natLit : Rule Token Nat
+natLit : Rule Nat
 natLit = terminal "Expected nat literal"
-             (\x => case tok x of
+             (\x => case x of
                          LitNat i => Just i
                          _ => Nothing)
 
-strLit : Rule Token String
+strLit : Rule String
 strLit = terminal "Expected string literal"
-             (\x => case tok x of
+             (\x => case x of
                          LitStr s => Just s
                          _ => Nothing)
 
-identifier : Rule Token String
+identifier : Rule String
 identifier
   = terminal "Expected Identifier"
-             (\x => case tok x of
+             (\x => case x of
                                 ID str => Just str
                                 _ => Nothing)
 
-doc : Rule Token (List1 String)
+doc : Rule (List1 String)
 doc = some docString
   where
-    docString : Rule Token String
+    docString : Rule String
     docString = terminal "Documentation String"
-                         (\x => case tok x of
+                         (\x => case x of
                                      Documentation doc => Just doc
                                      _ => Nothing)
 
-name : Rule Token String
+name : Rule String
 name = identifier
 
-arrow : Rule Token ()
+arrow : Rule ()
 arrow = symbol "->"
 
-braces : Inf (Rule Token a)
-      -> Rule Token a
-braces = between (symbol "[")
-                 (symbol "]")
+braces : Rule a
+      -> Rule a
+braces p
+  = do symbol "["
+       a <- p
+       symbol "]"
+       pure a
 
-brackets : Inf (Rule Token a )
-        -> Rule Token a
+brackets : (Rule a)
+        -> Rule a
 brackets = between (symbol "{") (symbol "}")
 
-parens : Inf (Rule Token a)
-      -> Rule Token a
+parens : (Rule a)
+      -> Rule a
 parens = between (symbol "(") (symbol ")")
 
-sepBy1V : (sep : Rule Token b)
-       -> (p : Rule Token a)
-       -> Rule Token (n ** Vect (S n) a)
+sepBy1V : (sep : Rule b)
+       -> (p : Rule a)
+       -> Rule (n ** Vect (S n) a)
 sepBy1V sep p = do {x <- p; xs <- many (sep *> p); pure (_ ** fromList $ x::xs)}
 
-sepBy2V : (sep : Rule Token ())
-       -> (p : Rule Token a)
-       -> Rule Token (n ** Vect (S (S n)) a)
+sepBy2V : (sep : Rule ())
+       -> (p : Rule a)
+       -> Rule (n ** Vect (S (S n)) a)
 sepBy2V sep p
   = do x <- p
        sep
@@ -117,87 +130,87 @@ sepBy2V sep p
        rest <- many (sep *> p)
        pure (_ ** fromList $ x::y::rest)
 
-commaSepBy1V : (p : Rule Token a) -> Rule Token (n ** Vect (S n) a)
+commaSepBy1V : (p : Rule a) -> Rule (n ** Vect (S n) a)
 commaSepBy1V = sepBy1V (symbol ",")
 
-commaSepBy2V : (p : Rule Token a) -> Rule Token (n ** Vect (S (S n)) a)
+commaSepBy2V : (p : Rule a) -> Rule (n ** Vect (S (S n)) a)
 commaSepBy2V = sepBy2V (symbol ",")
 
-var : Rule Token AST
+var : Rule AST
 var = do
-  s <- location
+  s <- Toolkit.location
   n <- name
-  e <- location
+  e <- Toolkit.location
   pure (Ref (newFC s e) n)
 
-logic : Rule Token AST
+logic : Rule AST
 logic = do
-  st <- location
+  st <- Toolkit.location
   keyword "logic"
-  end <- location
+  end <- Toolkit.location
   pure (DataLogic (newFC st end))
 
-type__ : Rule Token AST
+type__ : Rule AST
 type__ = logic <|> var
 
-array : Rule Token AST
+array : Rule AST
 array = do
-  s <- location
+  s <- Toolkit.location
   ty <- type__
   idx <- braces natLit
-  e <- location
+  e <- Toolkit.location
   pure (DataArray (newFC s e) ty idx)
 
 mutual
-  ascrip : Rule Token (String, AST)
+  ascrip : Rule (String, AST)
   ascrip = do
     n <- name
     symbol ":"
     ty <- type_
     pure (n,ty)
 
-  struct : Rule Token AST
+  struct : Rule AST
   struct = do
-    s <- location
+    s <- Toolkit.location
     keyword "struct"
     kvs <- brackets $ commaSepBy1V ascrip
-    e <- location
+    e <- Toolkit.location
     pure (DataStruct (newFC s e) (snd kvs))
 
-  union : Rule Token AST
+  union : Rule AST
   union = do
-    s <- location
+    s <- Toolkit.location
     keyword "union"
     kvs <- brackets $ commaSepBy1V ascrip
-    e <- location
+    e <- Toolkit.location
     pure (DataUnion (newFC s e) (snd kvs))
 
-  type_ : Rule Token AST
+  type_ : Rule AST
   type_ = array <|> struct <|> union <|> type__
 
-typeDef : Rule Token (FileContext, String, AST)
+typeDef : Rule (FileContext, String, AST)
 typeDef = do
   d <- optional doc
-  s <- location
+  s <- Toolkit.location
   n <- name
   symbol "="
   decl <- type_
-  e <- location
+  e <- Toolkit.location
   pure (newFC s e, n, decl)
 
-direction : Rule Token Direction
+direction : Rule Direction
 direction = do {keyword "inout";  pure INOUT}
         <|> do {keyword "output"; pure OUT}
         <|> do {keyword "input"; pure IN}
 
-sensitivity : Rule Token Sensitivity
+sensitivity : Rule Sensitivity
 sensitivity = do {keyword "high";  pure High}
           <|> do {keyword "low"; pure Low}
           <|> do {keyword "rising"; pure Rising}
           <|> do {keyword "falling"; pure Falling}
           <|> do {keyword "insensitive"; pure Insensitive}
 
-wireType : Rule Token Wire
+wireType : Rule Wire
 wireType = do {keyword "general";  pure General}
        <|> do {keyword "data"; pure Data}
        <|> do {keyword "address"; pure Address}
@@ -208,9 +221,9 @@ wireType = do {keyword "general";  pure General}
        <|> do {keyword "info"; pure Info}
 
 
-portHaskellStyle : Rule Token AST
+portHaskellStyle : Rule AST
 portHaskellStyle
-  = do st <- location
+  = do st <- Toolkit.location
        com <- optional doc
        label <- name
        symbol ":"
@@ -218,108 +231,108 @@ portHaskellStyle
        c <- wireType
        d <- direction
        s <- sensitivity
-       e <- location
+       e <- Toolkit.location
        pure (Port (newFC st e) label d s c t)
 
-portSystemVerilogStyle : Rule Token AST
+portSystemVerilogStyle : Rule AST
 portSystemVerilogStyle
-  = do st <- location
+  = do st <- Toolkit.location
        com <- optional doc
        d <- direction
        s <- sensitivity
        c <- wireType
        t <- type_
        label <- name
-       e <- location
+       e <- Toolkit.location
        pure (Port (newFC st e) label d s c t)
 
-port : TypeStyle -> Rule Token AST
+port : TypeStyle -> Rule AST
 port HASKELL = portHaskellStyle
 port SYSV    = portSystemVerilogStyle
 
-moduleDef : TypeStyle -> Rule Token (FileContext, String, AST)
+moduleDef : TypeStyle -> Rule (FileContext, String, AST)
 moduleDef style
   = do ds <- optional doc
-       d <- location
+       d <- Toolkit.location
        n <- name
        symbol "="
-       s <- location
+       s <- Toolkit.location
        keyword "module"
        res <- brackets $ commaSepBy1V (port style)
-       e <- location
+       e <- Toolkit.location
        pure (newFC d e, n, ModuleDef (newFC s e) (snd res))
 
-idx : Rule Token AST
+idx : Rule AST
 idx = do
-  s <- location
+  s <- Toolkit.location
   m <- var
   n <- braces name
-  e <- location
+  e <- Toolkit.location
   pure (Index (newFC s e) m n)
 
-ref : Rule Token AST
+ref : Rule AST
 ref = idx
 
-connect : Rule Token AST
+connect : Rule AST
 connect = do
-  s <- location
+  s <- Toolkit.location
   l <- ref
   arrow
   r <- ref
-  e <- location
+  e <- Toolkit.location
   pure (Connect (newFC s e) l r)
 
-fanout : Rule Token AST
+fanout : Rule AST
 fanout = do
-  s <- location
+  s <- Toolkit.location
   i  <- ref
   arrow
   fs <- brackets $ commaSepBy2V ref
-  e <- location
+  e <- Toolkit.location
   pure (FanOut (newFC s e) i (snd fs))
 
-mux : Rule Token AST
+mux : Rule AST
 mux = do
-  s <- location
+  s <- Toolkit.location
   fs <- brackets $ commaSepBy2V ref
   symbol "-"
   ctrl <- parens ref
   arrow
   o <- ref
-  e <- location
+  e <- Toolkit.location
   pure (Mux (newFC s e) (snd fs) ctrl o)
 
-not : Rule Token AST
-not = do s <- location
+not : Rule AST
+not = do s <- Toolkit.location
          i <- ref
          symbol "!"
          o <- ref
-         e <- location
+         e <- Toolkit.location
          pure (NOT (newFC s e) i o)
 
-gateType : Rule Token TyGateComb
+gateType : Rule TyGateComb
 gateType = do {symbol "&"; pure AND}
        <|> do {symbol "|"; pure IOR}
        <|> do {symbol "+"; pure XOR}
 
-gate : Rule Token AST
-gate = do s <- location
+gate : Rule AST
+gate = do s <- Toolkit.location
           fs <- brackets $ commaSepBy2V ref
           ty <- gateType
           o <- ref
-          e <- location
+          e <- Toolkit.location
           pure (GATE (newFC s e) ty (snd fs) o)
 
-conn : Rule Token AST
+conn : Rule AST
 conn = not <|> mux <|> fanout <|> connect <|> gate
 
-types : Rule Token (xs : List (FileContext, String, AST) ** NonEmpty xs)
+types : Rule ( List1 (FileContext, String, AST))
 types = do
   keyword "types"
-  some' (typeDef <* symbol ";")
+  some (typeDef <* symbol ";")
 
 export
-design : Rule Token AST
+design : Rule AST
 design = do
    ds <- optional (many doc)
    keyword "model"
@@ -328,36 +341,28 @@ design = do
    let typeStyle = fromMaybe HASKELL tyStyleDecl
    ts <- optional types
    (keyword "modules")
-   ms <- some'  (moduleDef typeStyle <* symbol ";")
+   ms <- some (moduleDef typeStyle <* symbol ";")
    (keyword "connections")
-   cs <- some' (conn <* symbol ";")
-   Parser.eoi
-   let cs' = foldr Seq End (fst cs)
-   let ms' = foldr buildBind cs' (fst ms)
-   let res = foldr buildBind ms' $ maybe Nil fst ts
+   cs <- some (conn <* symbol ";")
+   eoi
+   let cs' = foldr Seq End (forget cs)
+   let ms' = foldr buildBind cs' (forget ms)
+   let res = foldr buildBind ms' $ maybe Nil forget ts
    pure res
   where
    buildBind : (FileContext, String, AST) -> AST -> AST
    buildBind (fc, n,e) body = (Bind fc n e body)
 
 export
-parseClickStr : {e   : _}
-             -> (rule : Grammar (TokenData Token) e ty)
-             -> (str : String)
-             -> Either (Run.ParseError Token) ty
-parseClickStr rule str = parseString LightClickLexer rule str
+fromString : (str  : String)
+                  -> Either (ParseError Token) AST
+fromString
+  = parseString LightClickLexer design
 
 export
-parseClickFile : {e     : _}
-              -> (rule  : Grammar (TokenData Token) e ty)
-              -> (fname : String)
-                       -> IO (Either (Run.ParseError Token) ty)
-parseClickFile = parseFile LightClickLexer
-
-export
-parseClickDesignFile : (fname : String)
-                    -> IO (Either (Run.ParseError Token) AST)
-parseClickDesignFile fname
+fromFile : (fname : String)
+                 -> IO (Either (ParseError Token) AST)
+fromFile fname
   = do Right ast <- parseFile LightClickLexer design fname
          | Left err => (pure (Left err))
        pure (Right (setFileName fname ast))

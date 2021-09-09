@@ -1,6 +1,6 @@
 module LightClick.IR.Channel.Normalise.Error
 
-import Data.Strings
+import Data.String
 
 %default total
 

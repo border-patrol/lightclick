@@ -3,7 +3,7 @@ module Toolkit.Text.Lexer.Run
 import System.File
 
 import Data.List
-import Data.Strings
+import Data.String
 
 import Text.Lexer
 
@@ -34,20 +34,22 @@ public export
 record Lexer a where
   constructor MkLexer
   tokenMap : TokenMap a
-  keep : TokenData a -> Bool
+  keep : WithBounds a -> Bool
   endInput : a
 
 export
 lexString : Lexer a
          -> String
-         -> Either LexError (List (TokenData a))
+         -> Either LexError (List (WithBounds a))
 lexString lexer str =
       case Lexer.Core.lex (tokenMap lexer) str of
-        (tok, (c,l, "")) => Right (filter (keep lexer) tok ++ [MkToken c l (endInput lexer)])
+        (tok, (c,l, "")) =>
+          Right $ (filter (keep lexer) tok ++ [MkBounded (endInput lexer) False (MkBounds l c l c)])
+
         (_,   (c,l,i))    => Left (MkLexFail (MkLoc Nothing (toNat c) (toNat l)) i)
 
 export covering
-lexFile : Lexer a -> String -> IO $ Either LexFail (List (TokenData a))
+lexFile : Lexer a -> String -> IO $ Either LexFail (List (WithBounds a))
 lexFile lexer fname = do
   Right str <- readFile fname | Left err => pure (Left (LIOErr err))
   case lexString lexer str of

@@ -45,9 +45,21 @@ negEqSym : {i,j : iTy}
         -> (Equals iTy eTy b a -> Void)
 negEqSym p h = p (sym h)
 
+export
+trans : {i,j,k : iTy}
+     -> {a : eTy i}
+     -> {b : eTy j}
+     -> {c : eTy k}
+     -> (ab : Equals iTy eTy a b)
+     -> (bc : Equals iTy eTy b c)
+           -> Equals iTy eTy a c
+trans {i = i} {j = i} {k = k} {a = a} {b = a} {c = c} (Same Refl Refl) bc with (bc)
+  trans {i = i} {j = i} {k = i} {a = a} {b = a} {c = a} (Same Refl Refl) bc | (Same Refl Refl) = (Same Refl Refl)
+
 namespace Index
   public export
-  indexAreSame : (contra : i = j -> Void)
+  indexAreSame : {i,j : iTy}
+              -> (contra : i = j -> Void)
               -> {x : eTy i}
               -> {y : eTy j}
               -> (prf    : Equals iTy eTy x y)
@@ -57,14 +69,15 @@ namespace Index
   public export
   decEq : {iTy : Type}
        -> {eTy : iTy -> Type}
-       -> DecEq iTy
-       => DecEqIdx iTy eTy
-       => {i,j : iTy}
+       -> DecEqIdx iTy eTy
+       => {i : iTy}
+       -> {j : iTy}
        -> (x : eTy i)
        -> (y : eTy j)
        -> Dec (Equals iTy eTy x y)
   decEq x y {i} {j} {eTy} with (decEq i j)
-    decEq x y {i = i} {j = i} {  eTy = eTy} | (Yes Refl) = Indexed.decEq x y Refl
+    decEq x y {i = i} {j = i} {eTy = eTy} | (Yes Refl) = Indexed.decEq x y Refl
     decEq x y {i = i} {j = j} {eTy = eTy} | (No contra) = No (indexAreSame contra)
+
 
 -- --------------------------------------------------------------------- [ EOF ]

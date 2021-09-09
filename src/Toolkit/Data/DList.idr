@@ -12,7 +12,7 @@
 ||| be used as it requires all elements to have the same type.
 module Toolkit.Data.DList
 
-import        Data.Strings
+import        Data.String
 import public Data.List
 import public Data.List.Elem
 

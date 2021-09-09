@@ -1,7 +1,7 @@
 module LightClick.IR.ChannelCentric
 
 import Data.List
-import Data.Strings
+import Data.String
 import Data.Vect
 
 import Toolkit.Data.DList

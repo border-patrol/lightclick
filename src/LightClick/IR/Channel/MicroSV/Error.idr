@@ -1,6 +1,6 @@
 module LightClick.IR.Channel.MicroSV.Error
 
-import Data.Strings
+import Data.String
 
 import Language.SystemVerilog.MetaTypes
 

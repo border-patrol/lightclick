@@ -1,6 +1,6 @@
 module LightClick.IR.ModuleCentric
 
-import Data.Strings
+import Data.String
 import Data.Vect
 
 import Toolkit.Data.DList

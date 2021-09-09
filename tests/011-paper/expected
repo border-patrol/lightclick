@@ -7,6 +7,7 @@ Type Mismatch:
 		ready : port ( IN High Control logic 1 )
 	Given:
 		ready : port ( OUT High Control logic 1 )
+
 example-conn-direct-bad-1.click:10:0-30:
 Unsafe connection :
 	Input cannot send
@@ -20,6 +21,7 @@ Type Mismatch:
 		clk : port ( OUT High Clock logic 1 )
 	Given:
 		ready : port ( IN High Control logic 1 )
+
 example-conn-direct-bad.click:10:0-29:
 Unsafe connection :
 	Incompatible wire types:
@@ -43,6 +45,7 @@ Type Mismatch:
 		clk : port ( OUT High Clock logic 1 )
 	Given:
 		ready : port ( OUT High Control logic 1 )
+
 example-conn-fanout-type-err.click:10:0-44:
 Unsafe Fan-OUT.
 Wire #1 is unsafe:

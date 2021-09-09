@@ -9,22 +9,16 @@ import Toolkit.Text.Parser.Support
 
 %default total
 
-export
-column : RuleEmpty tok Nat
-column = do
-  tok <- peek
-  pure ((toNat . col) tok)
-
-export
-location : RuleEmpty tok Location
-location = do
-  tok <- peek
-  pure (MkLoc Nothing ((toNat . line) tok) ((toNat . col) tok))
-
-
-namespace WithFileName
+namespace Toolkit
   export
-  location : String -> RuleEmpty tok Location
-  location fname = do
-    l <- location
-    pure (record { source = Just fname} l)
+  location : RuleEmpty state tok Location
+  location = do
+    (x,y) <- Text.Parser.location
+    pure (MkLoc Nothing (toNat x) (toNat y))
+
+  namespace WithFileName
+    export
+    location : String -> RuleEmpty state tok Location
+    location fname = do
+      l <- Toolkit.location
+      pure (record { source = Just fname} l)

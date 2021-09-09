@@ -54,6 +54,25 @@ namespace LightClick
     (==) _ _ = False
 
 
+  showToken : Show a => String -> a -> String
+  showToken n a = "(" <+> n <+> " " <+> show a <+> ")"
+
+  export
+  Show Token where
+    show (ID id)             = showToken "ID" id
+    show (Keyword str)       = showToken "Keyword" str
+    show (LineComment str)   = showToken "LineComment" str
+    show (BlockComment str)  = showToken "BlockComment" str
+    show (Documentation str) = showToken "Documentation" str
+
+    show (LitNat n) = showToken "Nat" n
+    show (LitStr s) = showToken "Str" s
+
+    show (Symbol s) = showToken "Symbol" s
+    show (WS ws) = "WS"
+    show (NotRecognised s) = showToken "Urgh" s
+    show EndInput          = "EndInput"
+
   identifier : Lexer
   identifier = pred startIdent <+> many (pred validIdent)
     where
@@ -85,21 +104,22 @@ namespace LightClick
     , (any, NotRecognised)
     ]
 
-keep : TokenData LightClick.Token -> Bool
-keep t = case tok t of
-    BlockComment _ => False
-    LineComment  _ => False
-    WS           _ => False
-    _              => True
+keep : WithBounds LightClick.Token -> Bool
+keep (MkBounded t _ _)
+  = case t of
+      BlockComment _ => False
+      LineComment  _ => False
+      WS           _ => False
+      _              => True
 
 export
 LightClickLexer : Lexer Token
 LightClickLexer = MkLexer LightClick.tokenMap (keep) EndInput
 
 export
-lexClickStr : String -> Either LexError (List (TokenData Token))
+lexClickStr : String -> Either LexError (List (WithBounds Token))
 lexClickStr = lexString LightClickLexer
 
 export
-lexClickFile : String -> IO $ Either LexFail (List (TokenData Token))
+lexClickFile : String -> IO $ Either LexFail (List (WithBounds Token))
 lexClickFile = lexFile LightClickLexer

@@ -8,6 +8,7 @@ Type Mismatch:
 		clk : port ( OUT High Clock logic 1 )
 	Given:
 		ready : port ( IN High Control logic 1 )
+
 swap-bad.click:22:0-26:
 Unsafe connection :
 	Incompatible wire types:

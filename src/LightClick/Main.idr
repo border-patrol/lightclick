@@ -1,5 +1,7 @@
 module LightClick.Main
 
+import Data.String
+
 import System
 import System.File
 import System.Clock
@@ -27,6 +29,22 @@ import LightClick.DSL.Convert
 
 import Language.SystemVerilog.Micro
 import Language.SystemVerilog.Micro.Pretty
+
+export
+Show a => Show (ParseFailure a) where
+  show err
+    = trim $ unlines [show (location err), (error err)]
+
+export
+Show a => Show (Run.ParseError a) where
+  show (FError err)
+    = trim $ unlines ["File Error: "
+                     , show err]
+  show (PError err)
+    = trim $ unlines (forget (map show err))
+
+  show (LError (MkLexFail l i))
+    = trim $ unlines [show l, show i]
 
 
 processArgs : List String -> IO $ Maybe (Bool, String)
@@ -60,25 +78,14 @@ timeToTryOrDie timing msg f a
                            let diff =  timeDifference stop start
                            printLog timing diff msg
                            pure res
---
---timeRun : (String -> IO Either err AST) -> String -> IO (String, Either err AST)
---timeRun f a = do
---  start <- clockTime UTC
---  let res = f a
---  end <- clockTime UTC
---  let t = timeDifference start end
---  pure (show t, res)
-
 
 main : IO ()
 main = do
   args <- getArgs
-  Just (timing, fname) <- processArgs args | Nothing =>  putStrLn "Invalid args."
-  (res) <- (parseClickDesignFile fname)
+  Just (timing, fname) <- processArgs args | Nothing => do {putStrLn "Invalid args."; exitFailure}
+  (res) <- fromFile fname
   case res of
-    Left (FError err) => do {putStr "File Error: "; printLn err}
-    Left (PError err) => do {putStrLn $ maybe "" show (location err); putStrLn (error err)}
-    Left (LError (MkLexFail l i)) => do {print l; printLn i}
+    Left err => do { printLn err; exitFailure}
     Right ast => do
 
       putStrLn "LOG: Parsing Complete "
@@ -119,3 +126,4 @@ main = do
       printLn prettyMSV
 
       putStrLn "LOG : Bye"
+      exitSuccess

@@ -1,5 +1,7 @@
 module Toolkit.Data.Location
 
+import Toolkit.Data.Nat
+
 %default total
 
 public export
@@ -16,6 +18,11 @@ record FileContext where
   start  : Location
   end    : Location
 
+
+public export
+FC : Type
+FC = FileContext
+
 export
 newFC : Maybe String -> Location -> Location -> FileContext
 newFC n s e = MkFC n (record {source = n} s) (record {source = n} e)
@@ -29,6 +36,15 @@ namespace FromCoords
   newFC : Maybe String -> (Nat, Nat) -> (Nat, Nat) -> FileContext
   newFC n s e = newFC n (newLoc n s) (newLoc n e)
 
+  namespace Int
+    export
+    newLoc : Maybe String -> (Int, Int) -> Location
+    newLoc n (l,c) = newLoc n (toNat l, toNat c)
+
+    export
+    newFC : Maybe String -> (Int , Int) -> (Int, Int) -> FileContext
+    newFC n s e = newFC n (newLoc n s) (newLoc n e)
+
 namespace Anon
 
   export
@@ -41,7 +57,7 @@ namespace Anon
 
 export
 emptyFC : FileContext
-emptyFC = newFC Nothing (0,0) (0,0)
+emptyFC = newFC Nothing (Z,Z) (Z,Z)
 
 export
 setSource : String -> FileContext -> FileContext
@@ -50,6 +66,7 @@ setSource str fc
            , start.source = Just str
            , end.source   = Just str
            } fc
+
 
 export
 Show Location where
