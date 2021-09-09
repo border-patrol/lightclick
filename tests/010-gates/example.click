@@ -31,10 +31,10 @@ connections
 
 alpha[s] ! omega[s];
 
-{ a[s], b[s], c[s], d[s] } & e[s];
+{ a[s], b[s], c[s], d[s] } -[&]-> e[s];
 
-{ a_[s], b_[s], c_[s], d_[s] } | e_[s];
+{ a_[s], b_[s], c_[s], d_[s] } -[|]-> e_[s];
 
-{ a__[s], b__[s], c__[s], d__[s] } + e__[s];
+{ a__[s], b__[s], c__[s], d__[s] } -[+]-> e__[s];
 
 // -- [ EOF ]

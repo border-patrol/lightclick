@@ -86,6 +86,7 @@ modules =
 
         , LightClick.DSL.AST
         , LightClick.DSL.Lexer
+        , LightClick.DSL.Parser.API
         , LightClick.DSL.Parser
         , LightClick.DSL.Convert
 --

@@ -32,9 +32,9 @@ connections
 
 system[clk] -> { scrub[clk], client[clk], client_d[clk] };
 
-{ client[ready], client_d[ready] } + scrub[ready];
+{ client[ready], client_d[ready] } -[+]-> scrub[ready];
 
-{ client[data_o], client_d[data_o] } + scrub[dirty];
+{ client[data_o], client_d[data_o] } -[+]-> scrub[dirty];
 
 scrub[clean] -> { client[data_i], client_d[data_i] };
 
