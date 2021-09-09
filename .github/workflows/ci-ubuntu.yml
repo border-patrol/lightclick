@@ -34,7 +34,7 @@ jobs:
         with:
           path: |
             ~/.idris2
-          key: ${{ runner.os }}-${{ env.IDRIS2_COMMIT }}
+          key: ${{ runner.os }}-idris # ${{ env.IDRIS2_COMMIT }}
 
       - name: Install Chez
         run: |
@@ -46,7 +46,7 @@ jobs:
         run: |
           git clone https://github.com/idris-lang/idris2
           cd idris2
-          git checkout ${{ env.IDRIS2_COMMIT }}
+          # git checkout ${{ env.IDRIS2_COMMIT }}
           make bootstrap && make install
 
       - name: Checkout systemv
