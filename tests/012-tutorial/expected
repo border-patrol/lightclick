@@ -59,9 +59,9 @@ Error Happened
 example-fine-but-not-fine-annotated.click:25:0-27:
 Connection mismatch when trying to connect:
 	this:
-		clk : port ( OUT insensitive clock logic 1 )
+		clk : port ( OUT insensitive clock logic req 1 )
 	that:
-		rst : port ( IN insensitive reset logic 1 )
+		rst : port ( IN insensitive reset logic req 1 )
 
 Specifically:
 example-fine-but-not-fine-annotated.click:25:0-27:

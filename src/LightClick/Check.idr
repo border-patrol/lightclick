@@ -218,13 +218,13 @@ mutual
 
 
   -- [ Checking Ports ]
-  check env (Port fc l d s w (Ref {label} x y))
+  check env (Port fc l d s w (Ref {label} x y) n)
     = do (v, t, env') <- check env (Ref x y)
-         Right (VPort l d (VRef label DATA), TyPort l d s w t One, env')
+         Right (VPort l d (VRef label DATA), TyPort l d s w t n One, env')
 
-  check env (Port fc l d s w term)
+  check env (Port fc l d s w term n)
     = do (v, t, env') <- check env term
-         Right (VPort l d v, TyPort l d s w t One, env')
+         Right (VPort l d v, TyPort l d s w t n One, env')
 
   -- [ Checking Modules ]
 

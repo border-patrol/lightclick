@@ -63,6 +63,7 @@ namespace Term
           -> (s  : Sensitivity)
           -> (w  : Wire)
           -> (i  : Term ctxt DATA)
+          -> (n  : Necessity)
           -> Term ctxt (PORT l)
 
       Module : {n : Nat}
@@ -136,7 +137,7 @@ getFC (DataLogic fc) = Just fc
 getFC (DataArray fc type size) = Just fc
 getFC (DataStruct fc xs) = Just fc
 getFC (DataUnion fc xs) = Just fc
-getFC (Port fc l d s w i) = Just fc
+getFC (Port fc l d s w i n) = Just fc
 getFC (Module fc ports) = Just fc
 getFC (Index fc mod x) = Just fc
 getFC (Connect fc left right) = Just fc

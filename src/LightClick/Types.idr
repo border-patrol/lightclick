@@ -9,7 +9,7 @@ import public LightClick.Types.Meta
 import public LightClick.Types.Direction
 import public LightClick.Types.Sensitivity
 import public LightClick.Types.WireType
-
+import public LightClick.Types.Necessity
 
 %default total
 
@@ -29,6 +29,7 @@ data Ty : MTy -> Type where
         -> (sense: Sensitivity)
         -> (wty : Wire)
         -> (type : Ty DATA)
+        -> (nec  : Necessity)
         -> (usage : TyRig)
         -> Ty (PORT label)
 
@@ -42,29 +43,29 @@ data Ty : MTy -> Type where
 -- [ Accessors and ]
 public export
 mkDual : Ty (PORT label) -> Ty (PORT label)
-mkDual (TyPort l d s w t u) with (d)
-  mkDual (TyPort l d s w t u) | IN = TyPort l OUT s w t u
-  mkDual (TyPort l d s w t u) | OUT = TyPort l IN s w t u
-  mkDual (TyPort l d s w t u) | INOUT = TyPort l INOUT s w t u
+mkDual (TyPort l d s w t n u) with (d)
+  mkDual (TyPort l d s w t n u) | IN = TyPort l OUT s w t n u
+  mkDual (TyPort l d s w t n u) | OUT = TyPort l IN s w t n u
+  mkDual (TyPort l d s w t n u) | INOUT = TyPort l INOUT s w t n u
 
 namespace Control
   public export
   mkDual : Ty (PORT label) -> Ty (PORT label)
-  mkDual (TyPort l d s w t u) with (d)
-    mkDual (TyPort l d s w t u) | IN = TyPort l OUT s Control t u
-    mkDual (TyPort l d s w t u) | OUT = TyPort l IN s Control t u
-    mkDual (TyPort l d s w t u) | INOUT = TyPort l INOUT s Control t u
+  mkDual (TyPort l d s w t n u) with (d)
+    mkDual (TyPort l d s w t n u) | IN = TyPort l OUT s Control t n u
+    mkDual (TyPort l d s w t n u) | OUT = TyPort l IN s Control t n u
+    mkDual (TyPort l d s w t n u) | INOUT = TyPort l INOUT s Control t n u
 
 getPortLabel : {label : String} -> Ty (PORT label) -> String
 getPortLabel {label} p = label
 
 export
 getUsage : Ty (PORT s) -> TyRig
-getUsage (TyPort label dir sense wty type usage) = usage
+getUsage (TyPort label dir sense wty type nec usage) = usage
 
 export
 setUsage : Ty (PORT s) -> TyRig -> Ty (PORT s)
-setUsage (TyPort label dir sense wty type _) = TyPort label dir sense wty type
+setUsage (TyPort label dir sense wty type nec _) = TyPort label dir sense wty type nec
 
 
 

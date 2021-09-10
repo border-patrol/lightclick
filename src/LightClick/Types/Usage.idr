@@ -9,6 +9,7 @@ import Toolkit.Data.DVect
 import LightClick.Error
 
 import LightClick.Types
+import LightClick.Types.Views
 import LightClick.Types.Equality
 
 %default total
@@ -89,35 +90,58 @@ namespace PortList
                 -> State pred ports
   state pred _ [] = MkState Nil Nil Nil Nil Empty
 
-  state pred dec ((TyPort l d s w t u) :: ports) with (dec l (TyPort l d s w t u))
-    state pred dec ((TyPort l d s w t u) :: ports) | (Yes prf) with (state pred dec ports)
-      state pred dec ((TyPort l d s w t u) :: ports) | (Yes prf) | (MkState xs pos ns neg division)
-        = MkState (l::xs) ((TyPort l d s w t u)::pos) ns neg (Pos prf division)
+  state pred dec ((TyPort l d s w t n u) :: ports) with (dec l (TyPort l d s w t n u))
+    state pred dec ((TyPort l d s w t n u) :: ports) | (Yes prf) with (state pred dec ports)
+      state pred dec ((TyPort l d s w t n u) :: ports) | (Yes prf) | (MkState xs pos ns neg division)
+        = MkState (l::xs) ((TyPort l d s w t n u)::pos) ns neg (Pos prf division)
 
-    state pred dec ((TyPort l d s w t u) :: ports) | (No contra) with (state pred dec ports)
-      state pred dec ((TyPort l d s w t u) :: ports) | (No contra) | (MkState xs pos ns neg division)
-        = MkState xs pos (l::ns) ((TyPort l d s w t u)::neg) (Neg contra division)
+    state pred dec ((TyPort l d s w t n u) :: ports) | (No contra) with (state pred dec ports)
+      state pred dec ((TyPort l d s w t n u) :: ports) | (No contra) | (MkState xs pos ns neg division)
+        = MkState xs pos (l::ns) ((TyPort l d s w t n u)::neg) (Neg contra division)
 
 namespace Free
 
   namespace Port
+    ||| Free ports that are bad if unused.
+    |||
+    ||| We restrict this to REQ unused ports
+    |||
+    ||| Optional ports don't matter...
     public export
-    data Free : (l : String) -> (port : Ty (PORT l)) -> Type where
-      FreePort : (label : String)
-              -> (use : TyRig)
-              -> (contra : Not (use = None))
-              -> Free (label) (TyPort label dir sense ety type use)
+    data Free : (l : String)
+             -> (p : Ty (PORT l))
+                  -> Type
+      where
+        IsReq : (l : String)
+             -> (u : TyRig)
+             -> (c : Not (u = None))
+                  -> Free l (TyPort l d s e t REQ u)
 
-    used : Free l (TyPort l d s w t None) -> Void
-    used (FreePort l None contra) = contra Refl
+
+
+    used : Free l (TyPort l d s w t REQ None) -> Void
+    used (IsReq l None contra)
+      = contra Refl
+
+    isOptional : Free label (TyPort label d s w t OPT u) -> Void
+    isOptional (IsReq l x c) impossible
 
     export
     free : (label : String)
         -> (type  : Ty (PORT label))
                  -> Dec (Free label type)
-    free l (TyPort l d s w t None) = No used
-    free l (TyPort l d s w t One) = Yes (FreePort l One (negEqSym noneNotOne))
-    free l (TyPort l d s w t Tonne) = Yes (FreePort l Tonne (negEqSym noneNotTonne))
+    free label type with (necessity type)
+      free label (TyPort label d s w t REQ None) | REQ
+        = No used
+
+      free label (TyPort label d s w t REQ One) | REQ
+        = Yes (IsReq label One (negEqSym noneNotOne))
+
+      free label (TyPort label d s w t REQ Tonne) | REQ
+        = Yes (IsReq label Tonne (negEqSym noneNotTonne))
+
+      free label (TyPort label d s w t OPT u) | OPT
+        = No isOptional
 
   namespace Types
 
@@ -130,10 +154,10 @@ namespace Free
     free TyUnit = Nil
     free TyConn = Nil
     free TyGate = Nil
-    free (TyPort label dir sense wty type usage) with (free label (TyPort label dir sense wty type usage))
-      free (TyPort label dir sense wty type usage) | Yes (FreePort label usage contra)
+    free (TyPort label dir sense wty type nec usage) with (free label (TyPort label dir sense wty type nec usage))
+      free (TyPort label dir sense wty type REQ usage) | Yes (IsReq label usage contra)
         = [label]
-      free (TyPort label dir sense wty type usage) | No contra
+      free (TyPort label dir sense wty type nec usage) | No contra
         = Nil
     free (TyModule ports) with (state Port.Free Port.free ports)
       free (TyModule ports) | (MkState ps pos ns neg division) = toList ps

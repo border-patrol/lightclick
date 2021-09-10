@@ -22,6 +22,7 @@ import        Language.SystemVerilog.Gates
 import        LightClick.Types.Direction
 import        LightClick.Types.Sensitivity
 import        LightClick.Types.WireType
+import        LightClick.Types.Necessity
 
 import        LightClick.DSL.AST
 
@@ -95,26 +96,30 @@ typeDef = do
   pure (newFC s e, n, decl)
 
 direction : Rule Direction
-direction = do {keyword "inout";  pure INOUT}
-        <|> do {keyword "output"; pure OUT}
-        <|> do {keyword "input"; pure IN}
+direction = gives "inout"  INOUT
+        <|> gives "output" OUT
+        <|> gives "input"  IN
 
 sensitivity : Rule Sensitivity
-sensitivity = do {keyword "high";  pure High}
-          <|> do {keyword "low"; pure Low}
-          <|> do {keyword "rising"; pure Rising}
-          <|> do {keyword "falling"; pure Falling}
-          <|> do {keyword "insensitive"; pure Insensitive}
+sensitivity = gives "high"        High
+          <|> gives "low"         Low
+          <|> gives "rising"      Rising
+          <|> gives "falling"     Falling
+          <|> gives "insensitive" Insensitive
+
+necessity : Rule Necessity
+necessity
+  = gives "req" REQ <|> gives "opt" OPT
 
 wireType : Rule Wire
-wireType = do {keyword "general";  pure General}
-       <|> do {keyword "data"; pure Data}
-       <|> do {keyword "address"; pure Address}
-       <|> do {keyword "clock"; pure Clock}
-       <|> do {keyword "reset"; pure Reset}
-       <|> do {keyword "control"; pure Control}
-       <|> do {keyword "interrupt"; pure Interrupt}
-       <|> do {keyword "info"; pure Info}
+wireType = gives "general"   General
+       <|> gives "data"      Data
+       <|> gives "address"   Address
+       <|> gives "clock"     Clock
+       <|> gives "reset"     Reset
+       <|> gives "control"   Control
+       <|> gives "interrupt" Interrupt
+       <|> gives "info"      Info
 
 
 portHaskellStyle : Rule AST
@@ -123,24 +128,26 @@ portHaskellStyle
        com <- optional doc
        label <- name
        symbol ":"
+       n <- option REQ necessity
        t <- type_
        c <- option General wireType
        d <- direction
        s <- option Insensitive sensitivity
        e <- Toolkit.location
-       pure (Port (newFC st e) label d s c t)
+       pure (Port (newFC st e) label d s c t n)
 
 portSystemVerilogStyle : Rule AST
 portSystemVerilogStyle
   = do st <- Toolkit.location
        com <- optional doc
+       n <- option REQ necessity
        d <- direction
        s <- option Insensitive sensitivity
        c <- option General wireType
        t <- type_
        label <- name
        e <- Toolkit.location
-       pure (Port (newFC st e) label d s c t)
+       pure (Port (newFC st e) label d s c t n)
 
 port : TypeStyle -> Rule AST
 port HASKELL = portHaskellStyle

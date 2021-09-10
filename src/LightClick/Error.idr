@@ -34,6 +34,10 @@ PrettyError Direction.Safe.Error where
   toString PossibleFeedbackFromReceiver = "Possible Feedback from Receiver."
   toString PossibleFeedbackFromSender = "Possible Feedback from Sender."
 
+export
+Show Necessity where
+  show REQ = "req"
+  show OPT = "opt"
 
 export
 Show Wire where
@@ -147,7 +151,7 @@ namespace Types
     toString TyGate
       = "gate"
 
-    toString (TyPort label dir sense wty type usage)
+    toString (TyPort label dir sense wty type nec usage)
       = unwords [ label
                 , ":"
                 , "port ("
@@ -155,6 +159,7 @@ namespace Types
                 , show sense
                 , show wty
                 , toString type
+                , show nec
                 , show usage
                 , ")"]
 

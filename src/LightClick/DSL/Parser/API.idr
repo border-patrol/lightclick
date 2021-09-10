@@ -144,5 +144,10 @@ export
 commaSepBy2V : (p : Rule a) -> Rule (n ** Vect (S (S n)) a)
 commaSepBy2V = sepBy2V (symbol ",")
 
+export
+gives : String -> a -> Rule a
+gives s ctor
+  = do keyword s
+       pure ctor
 
 -- [ EOF ]

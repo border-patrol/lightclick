@@ -149,7 +149,9 @@ convertExpr env (Let this beThis {typeE} withType {ty} inThis) with (validLet ty
            pure (Let this beThis' withType' prf inThis')
 
   convertExpr env (Let this beThis {typeE} withType {ty} inThis) | No x
-    = Left $ General $ unwords ["Invalid Let:", show typeE, show ty]
+    = Left $ General $ unlines ["Invalid Let:"
+                               , "\t" <+> show typeE
+                               , "\t" <+> show ty]
 
 convertExpr env (Seq x y) with (convertExpr env x)
   convertExpr env (Seq x y) | Left err = Left err

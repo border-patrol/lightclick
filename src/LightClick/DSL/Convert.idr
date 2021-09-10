@@ -138,9 +138,9 @@ convert ctxt (DataUnion fc kvs) = do
     kvs' <- traverse (doKVConvert ctxt DATA) kvs
     Right (DATA ** DataUnion fc kvs')
 
-convert ctxt (Port fc l d s w t) = do
+convert ctxt (Port fc l d s w t n) = do
   dataType <- checkType ctxt DATA t
-  Right (PORT l ** Port fc l d s w dataType)
+  Right (PORT l ** Port fc l d s w dataType n)
 
 
 convert ctxt (ModuleDef fc ps) = do

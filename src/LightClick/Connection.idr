@@ -22,26 +22,26 @@ namespace Port
             -> (sens  : Sensitivity.Compatible sl sr)
             -> (wtype : WireType.Compatible    wl wr)
             -> (dtype : Data.Compatible        tl tr)
-            -> Port.Compatible (TyPort l dl sl wl tl ul)
-                               (TyPort r dr sr wr tr ur)
+            -> Port.Compatible (TyPort l dl sl wl tl nl ul)
+                               (TyPort r dr sr wr tr nr ur)
 
   directionUnsafe : (Safe dir x -> Void)
-                 -> Compatible (TyPort l dir sense wty type usage) (TyPort r x y z t w)
+                 -> Compatible (TyPort l dir sense wty type nec usage) (TyPort r x y z t n w)
                  -> Void
   directionUnsafe contra (IsSafe flow sens wtype dtype) = contra flow
 
   sensitivityInCompatible : (Compatible sense y -> Void)
-                         -> Compatible (TyPort l dir sense wty type usage) (TyPort r x y z t w)
+                         -> Compatible (TyPort l dir sense wty type nec usage) (TyPort r x y z t n w)
                          -> Void
   sensitivityInCompatible contra (IsSafe flow sens wtype dtype) = contra sens
 
   wireTypesInCompatible : (Compatible wty z -> Void)
-                       -> Compatible (TyPort l dir sense wty type usage) (TyPort r x y z t w)
+                       -> Compatible (TyPort l dir sense wty type nec usage) (TyPort r x y z t n w)
                        -> Void
   wireTypesInCompatible contra (IsSafe flow sens wtype dtype) = contra wtype
 
   dataTypeInCompatible : (Compatible type t -> Void)
-                    -> Compatible (TyPort l dir sense wty type usage) (TyPort r x y z t w) -> Void
+                    -> Compatible (TyPort l dir sense wty type nec usage) (TyPort r x y z t n w) -> Void
   dataTypeInCompatible contra (IsSafe flow sens wtype dtype) = contra dtype
 
   public export
@@ -57,20 +57,20 @@ namespace Port
             -> (right : Ty (PORT r))
                      -> DecInfo Port.Error
                                (Compatible left right)
-  compatible (TyPort l dx sx wx tx ux) (TyPort r dy sy wy ty uy) with (safe dx dy)
-    compatible (TyPort l dx sx wx tx ux) (TyPort r dy sy wy ty uy) | (Yes prfD) with (compatible sx sy)
-      compatible (TyPort l dx sx wx tx ux) (TyPort r dy sy wy ty uy) | (Yes prfD) | (Yes prfS) with (compatible wx wy)
-        compatible (TyPort l dx sx wx tx ux) (TyPort r dy sy wy ty uy) | (Yes prfD) | (Yes prfS) | (Yes prfW) with (compatible tx ty)
-          compatible (TyPort l dx sx wx tx ux) (TyPort r dy sy wy ty uy) | (Yes prfD) | (Yes prfS) | (Yes prfW) | (Yes prfT)
+  compatible (TyPort l dx sx wx tx nx ux) (TyPort r dy sy wy ty ny uy) with (safe dx dy)
+    compatible (TyPort l dx sx wx tx nx ux) (TyPort r dy sy wy ty ny uy) | (Yes prfD) with (compatible sx sy)
+      compatible (TyPort l dx sx wx tx nx ux) (TyPort r dy sy wy ty ny uy) | (Yes prfD) | (Yes prfS) with (compatible wx wy)
+        compatible (TyPort l dx sx wx tx nx ux) (TyPort r dy sy wy ty ny uy) | (Yes prfD) | (Yes prfS) | (Yes prfW) with (compatible tx ty)
+          compatible (TyPort l dx sx wx tx nx ux) (TyPort r dy sy wy ty ny uy) | (Yes prfD) | (Yes prfS) | (Yes prfW) | (Yes prfT)
             = Yes (IsSafe prfD prfS prfW prfT)
 
-          compatible (TyPort l dx sx wx tx ux) (TyPort r dy sy wy ty uy) | (Yes prfD) | (Yes prfS) | (Yes prfW) | (No msg contra)
+          compatible (TyPort l dx sx wx tx nx ux) (TyPort r dy sy wy ty ny uy) | (Yes prfD) | (Yes prfS) | (Yes prfW) | (No msg contra)
             = No (InCompatDTypes msg) (dataTypeInCompatible contra)
-        compatible (TyPort l dx sx wx tx ux) (TyPort r dy sy wy ty uy) | (Yes prfD) | (Yes prfS) | (No msg contra)
+        compatible (TyPort l dx sx wx tx nx ux) (TyPort r dy sy wy ty ny uy) | (Yes prfD) | (Yes prfS) | (No msg contra)
           = No (InCompatWTypes msg) (wireTypesInCompatible contra)
-      compatible (TyPort l dx sx wx tx ux) (TyPort r dy sy wy ty uy) | (Yes prfD) | (No msg contra)
+      compatible (TyPort l dx sx wx tx nx ux) (TyPort r dy sy wy ty ny uy) | (Yes prfD) | (No msg contra)
         = No (InCompatSensitivity msg) (sensitivityInCompatible contra)
-    compatible (TyPort l dx sx wx tx ux) (TyPort r dy sy wy ty uy) | (No msg contra)
+    compatible (TyPort l dx sx wx tx nx ux) (TyPort r dy sy wy ty ny uy) | (No msg contra)
       = No (InCompatDirection msg) (directionUnsafe contra)
 
 namespace Fanout

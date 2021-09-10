@@ -258,7 +258,7 @@ world = module
    output high control logic i_cpu_run_req,        // Async restart req to CPU
    input  high info    logic o_cpu_run_ack,        // Core response to run req
    output high control logic scan_mode,            // To enable scan mode
-   output high control logic mbist_mode            // to enable mbist
+   opt output high control logic mbist_mode            // to enable mbist
 };
 
 // ## SweRV
@@ -496,7 +496,7 @@ dmi_wrapper = module
   input   high general logic tms,                 // Test mode select
   input   high general logic tdi,                 // Test Data Input
   output  high general logic tdo,                 // Test Data Output
-  output  high general logic tdoEnable,           // Test Data Output enable
+  opt output  high general logic tdoEnable,           // Test Data Output enable
 
   // Processor Signals
   input  low  reset   logic    core_rst_n,    // Core reset
