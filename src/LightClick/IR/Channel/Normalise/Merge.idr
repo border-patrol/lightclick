@@ -6,8 +6,7 @@ import Data.Vect
 import Toolkit.Data.DList
 import Toolkit.Data.DVect
 
-import LightClick.Types
-import LightClick.Terms
+import LightClick.Core
 
 import LightClick.IR.ModuleCentric
 import LightClick.IR.ChannelCentric
@@ -87,14 +86,21 @@ mergeModules state CEnd = rebuild CEnd (reduce Nil state)
 mergeModules state expr = expr
 
 export
-covering
-runMerge : ChannelIR type -> Either Normalise.Error (ChannelIR type)
-runMerge expr =
+covering -- from recursive call.
+run : ChannelIR type
+   -> LightClick (ChannelIR type)
+run expr =
   case isModuleNF Empty expr of
-    Empty => Left (NoModuleInstances)
-    InlineModule => Left (ModuleInlined)
-    RepeatedName => runMerge (mergeModules Nil expr)
-    UniqueNames _ => Right expr
+    Empty
+      => throw (NormalisationError NoModuleInstances)
+
+    InlineModule
+      => throw (NormalisationError ModuleInlined)
+
+    RepeatedName
+      => Merge.run (mergeModules Nil expr)
+
+    UniqueNames _ => pure expr
 
 
 -- --------------------------------------------------------------------- [ EOF ]

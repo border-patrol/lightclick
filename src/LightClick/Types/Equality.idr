@@ -97,39 +97,33 @@ namespace Body
 -- [ No's for Ports]
 namespace Ports
   export
-  portDifferUsage : (contra : (ux = uy) -> Void)
-                 -> (TyPort lx dy sy wx ty ux `Equals` TyPort lx dy sy wx ty uy)
-                 -> Void
-  portDifferUsage contra (Same Refl Refl) = contra Refl
-
-  export
   portDifferType :  (contra : (tx `Equals` ty) -> Void)
-                -> (TyPort lx dy sy wx tx ux `Equals` TyPort lx dy sy wy ty uy)
+                -> (TyPort lx dy sy wx tx `Equals` TyPort lx dy sy wy ty)
                 -> Void
   portDifferType contra (Same Refl Refl) = contra (Same Refl Refl)
 
 
   export
   portDifferWire : (contra : (wx = wy) -> Void)
-                -> (TyPort lx dy sy wx tx ux `Equals` TyPort lx dy sy wy ty uy)
+                -> (TyPort lx dy sy wx tx `Equals` TyPort lx dy sy wy ty)
                 -> Void
   portDifferWire contra (Same Refl Refl) = contra Refl
 
   export
   portDifferSens : (contra : (sx = sy) -> Void)
-                -> (TyPort lx dy sx wx tx ux `Equals` TyPort lx dy sy wy ty uy)
+                -> (TyPort lx dy sx wx tx `Equals` TyPort lx dy sy wy ty)
                 -> Void
   portDifferSens contra (Same Refl Refl) = contra Refl
 
   export
   portsDifferDir : (contra : (dx = dy) -> Void)
-                -> (TyPort a dx sx wx tx ux `Equals` TyPort a dy sy wy ty uy)
+                -> (TyPort a dx sx wx tx `Equals` TyPort a dy sy wy ty)
                 -> Void
   portsDifferDir contra (Same Refl Refl) = contra Refl
 
   export
   portsDifferLabel : (contra : (lx = ly) -> Void)
-                  -> (TyPort lx dx sx wx tx ux `Equals` TyPort ly dy sy wy ty uy)
+                  -> (TyPort lx dx sx wx tx `Equals` TyPort ly dy sy wy ty)
                   -> Void
   portsDifferLabel contra (Same Refl Refl) = contra Refl
 
@@ -300,20 +294,20 @@ namespace Port
   decEq : (x : Ty (PORT a))
        -> (y : Ty (PORT b))
        -> Dec (Equals x y)
-  decEq (TyPort a dx sx wx tx ux) (TyPort b dy sy wy ty uy) with (decEq a b)
-    decEq (TyPort a dx sx wx tx ux) (TyPort a dy sy wy ty uy) | (Yes Refl) with (decEq dx dy)
-      decEq (TyPort a dx sx wx tx ux) (TyPort a dx sy wy ty uy) | (Yes Refl) | (Yes Refl) with (decEq sx sy)
-        decEq (TyPort a dx sx wx tx ux) (TyPort a dx sx wy ty uy) | (Yes Refl) | (Yes Refl) | (Yes Refl) with (decEq wx wy)
-          decEq (TyPort a dx sx wx tx ux) (TyPort a dx sx wx ty uy) | (Yes Refl) | (Yes Refl) | (Yes Refl) | (Yes Refl) with (decEq tx ty Refl)
-            decEq (TyPort a dx sx wx tx ux) (TyPort a dx sx wx tx uy) | (Yes Refl) | (Yes Refl) | (Yes Refl) | (Yes Refl) | (Yes (Same Refl Refl)) with (decEq ux uy)
-              decEq (TyPort a dx sx wx tx uy) (TyPort a dx sx wx tx uy) | (Yes Refl) | (Yes Refl) | (Yes Refl) | (Yes Refl) | (Yes (Same Refl Refl)) | (Yes Refl) = Yes (Same Refl Refl)
-              decEq (TyPort a dx sx wx tx ux) (TyPort a dx sx wx tx uy) | (Yes Refl) | (Yes Refl) | (Yes Refl) | (Yes Refl) | (Yes (Same Refl Refl)) | (No contra) = No (portDifferUsage contra)
-            decEq (TyPort a dx sx wx tx ux) (TyPort a dx sx wx ty uy) | (Yes Refl) | (Yes Refl) | (Yes Refl) | (Yes Refl) | (No contra) = No (portDifferType contra)
+  decEq (TyPort a dx sx wx tx) (TyPort b dy sy wy ty) with (decEq a b)
+    decEq (TyPort a dx sx wx tx) (TyPort a dy sy wy ty) | (Yes Refl) with (decEq dx dy)
+      decEq (TyPort a dx sx wx tx ) (TyPort a dx sy wy ty) | (Yes Refl) | (Yes Refl) with (decEq sx sy)
+        decEq (TyPort a dx sx wx tx ) (TyPort a dx sx wy ty ) | (Yes Refl) | (Yes Refl) | (Yes Refl) with (decEq wx wy)
+          decEq (TyPort a dx sx wx tx ) (TyPort a dx sx wx ty ) | (Yes Refl) | (Yes Refl) | (Yes Refl) | (Yes Refl) with (decEq tx ty Refl)
+            decEq (TyPort a dx sx wx tx ) (TyPort a dx sx wx tx ) | (Yes Refl) | (Yes Refl) | (Yes Refl) | (Yes Refl) | (Yes (Same Refl Refl))
+              = Yes (Same Refl Refl)
+            decEq (TyPort a dx sx wx tx ) (TyPort a dx sx wx ty ) | (Yes Refl) | (Yes Refl) | (Yes Refl) | (Yes Refl) | (No contra)
+              = No (portDifferType contra)
 
-          decEq (TyPort a dx sx wx tx ux) (TyPort a dx sx wy ty uy) | (Yes Refl) | (Yes Refl) | (Yes Refl) | (No contra) = No (portDifferWire contra)
-        decEq (TyPort a dx sx wx tx ux) (TyPort a dx sy wy ty uy) | (Yes Refl) | (Yes Refl) | (No contra) = No (portDifferSens contra)
-      decEq (TyPort a dx sx wx tx ux) (TyPort a dy sy wy ty uy) | (Yes Refl) | (No contra) = No (portsDifferDir contra)
-    decEq (TyPort a dx sx wx tx ux) (TyPort b dy sy wy ty uy) | (No contra) = No (portsDifferLabel contra)
+          decEq (TyPort a dx sx wx tx ) (TyPort a dx sx wy ty ) | (Yes Refl) | (Yes Refl) | (Yes Refl) | (No contra) = No (portDifferWire contra)
+        decEq (TyPort a dx sx wx tx ) (TyPort a dx sy wy ty ) | (Yes Refl) | (Yes Refl) | (No contra) = No (portDifferSens contra)
+      decEq (TyPort a dx sx wx tx ) (TyPort a dy sy wy ty ) | (Yes Refl) | (No contra) = No (portsDifferDir contra)
+    decEq (TyPort a dx sx wx tx ) (TyPort b dy sy wy ty ) | (No contra) = No (portsDifferLabel contra)
 
 
 namespace Ports
@@ -384,7 +378,7 @@ decEq TyGate TyGate Refl = Yes (Same Refl Refl)
 decEq TyConn TyConn Refl = Yes (Same Refl Refl)
 
 -- [ Ports ]
-decEq (TyPort l dx sx wx tx ux) (TyPort l dy sy wy ty uy) Refl = Port.decEq (TyPort l dx sx wx tx ux) (TyPort l dy sy wy ty uy)
+decEq (TyPort l dx sx wx tx) (TyPort l dy sy wy ty) Refl = Port.decEq (TyPort l dx sx wx tx) (TyPort l dy sy wy ty)
 
 decEq (TyModule xs) (TyModule ys) Refl with (Ports.decEq xs ys)
   decEq (TyModule xs) (TyModule xs) Refl | (Yes Refl) = Yes (Same Refl Refl)

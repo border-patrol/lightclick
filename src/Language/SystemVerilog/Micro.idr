@@ -25,7 +25,7 @@ data Expr : (lctxt : Context)
 
     Local : (  label : String)
          -> (  idx   : Index lctxt (label, type))
-         -> Expr lctxt gctxt type
+                    -> Expr lctxt gctxt type
 
     Global : {ty : Ty}
           -> (label : String)

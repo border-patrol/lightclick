@@ -9,12 +9,16 @@ import Data.List.Views
 
 import Toolkit.Data.Location
 import Toolkit.Data.DVect
+import Toolkit.Text.Parser.Run
+
+import LightClick.DSL.Lexer
 
 import LightClick.Types
 import LightClick.Connection
 import LightClick.Types.Compatibility
 
 import LightClick.IR.Channel.Normalise.Error
+import LightClick.IR.Channel.MicroSV.Error
 
 %default total
 
@@ -147,7 +151,7 @@ namespace Types
     toString TyGate
       = "gate"
 
-    toString (TyPort label dir sense wty type usage)
+    toString (TyPort label dir sense wty type)
       = unwords [ label
                 , ":"
                 , "port ("
@@ -155,12 +159,11 @@ namespace Types
                 , show sense
                 , show wty
                 , toString type
-                , show usage
+
                 , ")"]
 
     toString (TyModule xs)
       = "module ( " <+> (ksToListString xs) <+> ")"
-
 
 namespace LightClick
 
@@ -182,8 +185,12 @@ namespace LightClick
              | UnSafeFan FileContext FanTy Nat Port.Error
              | UnSafeMuxCtrl FileContext Port.Error
              | NormalisationError Normalise.Error
+             | MicroSVError TError
              | UnusedPorts (List (String, List String))
              | Mismatch FileContext (Ty a) (Ty b)
+             | SeqError
+             | BindError
+             | FileError String (ParseError Token)
              | Nest LightClick.Error LightClick.Error
 
 
@@ -250,6 +257,11 @@ namespace LightClick
                 , show err
                 ]
 
+    toString (MicroSVError err) =
+        unlines ["MicroSV Transformation Error:"
+                , show err
+                ]
+
     toString (UnusedPorts Nil) = "Not supposed to happen: Unused port error is empty."
     toString (UnusedPorts ((n,ps)::Nil)) =
         unlines ["Unused port:"
@@ -264,6 +276,14 @@ namespace LightClick
                 , "\tthis:\n\t\t" <+> toString e
                 , "\tthat:\n\t\t" <+> toString g]
 
+    toString SeqError
+      = "Only Gates and Connections can be sequenced."
+
+    toString BindError
+      = "Only datatypes and modules can be bound."
+
+    toString (FileError str err)
+      = show err
     toString (Nest x y)
       = unlines [toString x, "Specifically:", toString y]
 

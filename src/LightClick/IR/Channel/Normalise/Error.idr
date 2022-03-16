@@ -13,9 +13,4 @@ namespace Normalise
     show ModuleInlined     = "Normalisation Error: Module Inlined"
     show NoModuleInstances = "Normalisation Error: No Module instances found"
 
-public export
-Normalise : Type -> Type
-Normalise = Either Error
-
-
 -- [ EOF ]

@@ -1,10 +1,11 @@
-LOG: Parsing Complete 
-LOG: MetaTyping Complete 
-LOG: Typing Complete 
-LOG : Showing ModuleIR
-LOG : Normalising ChannelIR
-LOG : Convert to MicroSV IR
-LOG : Convert to MicroSV
+LOG : Parsing Complete
+LOG : Type Checking Complete
+LOG : Synth-lification Complete
+LOG : Modularisation Complete
+LOG : Channelisation Complete
+LOG : Normalisation Complete
+LOG : Initial Pass to SystemVerilog Complete
+LOG : Final Pass to SystemVerilog Complete
 LOG : Pretty Printing
 module system  
 (
@@ -52,16 +53,15 @@ module Top ();
      );
 
 endmodule;
-LOG : Bye
-LOG: Parsing Complete 
-LOG: MetaTyping Complete 
+LOG : BYE
+LOG : Parsing Complete
 Error Happened
 example-fine-but-not-fine-annotated.click:25:0-27:
 Connection mismatch when trying to connect:
 	this:
-		clk : port ( OUT insensitive clock logic 1 )
+		clk : port ( OUT insensitive clock logic )
 	that:
-		rst : port ( IN insensitive reset logic 1 )
+		rst : port ( IN insensitive reset logic )
 
 Specifically:
 example-fine-but-not-fine-annotated.click:25:0-27:
@@ -70,27 +70,26 @@ Unsafe connection with Incompatible intentions:
 		clock
 	Given:
 		reset
-LOG: Typing Complete 
-LOG: Parsing Complete 
-LOG: MetaTyping Complete 
+LOG : Type Checking Complete
+LOG : Parsing Complete
 Error Happened
 Unused ports:
 	 - stepUp ["clk"]
 	 - stepDown ["clk"]
-LOG: Typing Complete 
-LOG: Parsing Complete 
-LOG: MetaTyping Complete 
+LOG : Type Checking Complete
+LOG : Parsing Complete
 Error Happened
 example-linear-1.click:46:0-14:
 The port "clk" is already in use.
-LOG: Typing Complete 
-LOG: Parsing Complete 
-LOG: MetaTyping Complete 
-LOG: Typing Complete 
-LOG : Showing ModuleIR
-LOG : Normalising ChannelIR
-LOG : Convert to MicroSV IR
-LOG : Convert to MicroSV
+LOG : Type Checking Complete
+LOG : Parsing Complete
+LOG : Type Checking Complete
+LOG : Synth-lification Complete
+LOG : Modularisation Complete
+LOG : Channelisation Complete
+LOG : Normalisation Complete
+LOG : Initial Pass to SystemVerilog Complete
+LOG : Final Pass to SystemVerilog Complete
 LOG : Pretty Printing
 module system  
 (
@@ -170,4 +169,4 @@ module Top ();
      );
 
 endmodule;
-LOG : Bye
+LOG : BYE

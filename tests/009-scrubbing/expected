@@ -1,13 +1,12 @@
 Swap Bad
-LOG: Parsing Complete 
-LOG: MetaTyping Complete 
+LOG : Parsing Complete
 Error Happened
 swap-bad.click:22:0-26:
 Connection mismatch when trying to connect:
 	this:
-		clk : port ( OUT high clock logic 1 )
+		clk : port ( OUT high clock logic )
 	that:
-		ready : port ( IN high control logic 1 )
+		ready : port ( IN high control logic )
 
 Specifically:
 swap-bad.click:22:0-26:
@@ -16,15 +15,16 @@ Unsafe connection with Incompatible intentions:
 		clock
 	Given:
 		control
-LOG: Typing Complete 
+LOG : Type Checking Complete
 Swap Good
-LOG: Parsing Complete 
-LOG: MetaTyping Complete 
-LOG: Typing Complete 
-LOG : Showing ModuleIR
-LOG : Normalising ChannelIR
-LOG : Convert to MicroSV IR
-LOG : Convert to MicroSV
+LOG : Parsing Complete
+LOG : Type Checking Complete
+LOG : Synth-lification Complete
+LOG : Modularisation Complete
+LOG : Channelisation Complete
+LOG : Normalisation Complete
+LOG : Initial Pass to SystemVerilog Complete
+LOG : Final Pass to SystemVerilog Complete
 LOG : Pretty Printing
 module scrub  
 (
@@ -67,22 +67,22 @@ module Top ();
      );
 
 endmodule;
-LOG : Bye
+LOG : BYE
 Fanout Bad
-LOG: Parsing Complete 
-LOG: MetaTyping Complete 
+LOG : Parsing Complete
 Error Happened
 fanout-bad.click:21:0-11:
 The port "clk" is already in use.
-LOG: Typing Complete 
+LOG : Type Checking Complete
 Fanin Good
-LOG: Parsing Complete 
-LOG: MetaTyping Complete 
-LOG: Typing Complete 
-LOG : Showing ModuleIR
-LOG : Normalising ChannelIR
-LOG : Convert to MicroSV IR
-LOG : Convert to MicroSV
+LOG : Parsing Complete
+LOG : Type Checking Complete
+LOG : Synth-lification Complete
+LOG : Modularisation Complete
+LOG : Channelisation Complete
+LOG : Normalisation Complete
+LOG : Initial Pass to SystemVerilog Complete
+LOG : Final Pass to SystemVerilog Complete
 LOG : Pretty Printing
 module world  
 (
@@ -149,4 +149,4 @@ module Top ();
      );
 
 endmodule;
-LOG : Bye
+LOG : BYE

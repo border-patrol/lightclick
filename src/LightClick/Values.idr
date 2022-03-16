@@ -14,9 +14,9 @@ import Toolkit.Data.DVect
 import Language.SystemVerilog.Gates
 import Language.SystemVerilog.Utilities
 
+import LightClick.Core
 import LightClick.Types
 import LightClick.Terms
-import LightClick.Error
 
 %default total
 
@@ -220,37 +220,41 @@ interp CONN = CONN
 interp DATA = DATA
 interp GATE = GATE
 
+public export
+interpTy : {ty : MTy} -> Ty ty -> TyValue
+interpTy {ty} _ = interp ty
+
 export
-getData : Value (PORT s) -> Either LightClick.Error (Value DATA)
-getData (VRef x (PORT s)) = Left (NotSupposedToHappen (Just "getData"))
-getData (VLet x y z)      = Left (NotSupposedToHappen (Just "getData"))
-getData (VSeq x y)        = Left (NotSupposedToHappen (Just "getData"))
-getData (VPort x y z) = Right z
+getData : Value (PORT s) -> LightClick (Value DATA)
+getData (VRef x (PORT s)) = throw (NotSupposedToHappen (Just "getData"))
+getData (VLet x y z)      = throw (NotSupposedToHappen (Just "getData"))
+getData (VSeq x y)        = throw (NotSupposedToHappen (Just "getData"))
+getData (VPort x y z) = pure z
 getData (VIDX x y z) = getData z
 
 export
-genNameConn : Value (PORT s) -> Either LightClick.Error String
-genNameConn (VRef name (PORT s)) = Left $ NotSupposedToHappen (Just "genNameConn ref")
-genNameConn (VLet x y z)         = Left $ NotSupposedToHappen (Just "genNameConn let")
-genNameConn (VSeq x y)           = Left $ NotSupposedToHappen (Just "genNameConn seq")
-genNameConn (VPort x y z) = Right x
-genNameConn (VIDX x (VRef m (MODULE names)) z) = Right (newName [m,x])
-genNameConn (VIDX x y z) = Left $ NotSupposedToHappen (Just $ "genNameConn idx non-ref" <+> show y)
+genNameConn : Value (PORT s) -> LightClick String
+genNameConn (VRef name (PORT s)) = throw $ NotSupposedToHappen (Just "genNameConn ref")
+genNameConn (VLet x y z)         = throw $ NotSupposedToHappen (Just "genNameConn let")
+genNameConn (VSeq x y)           = throw $ NotSupposedToHappen (Just "genNameConn seq")
+genNameConn (VPort x y z) = pure x
+genNameConn (VIDX x (VRef m (MODULE names)) z) = pure (newName [m,x])
+genNameConn (VIDX x y z) = throw $ NotSupposedToHappen (Just $ "genNameConn idx non-ref" <+> show y)
 
 
 export
-mkDual : (n : String) -> Value (PORT s) -> Either LightClick.Error (Value (PORT (n <+> s)))
-mkDual n (VLet _ _ _)  = Left $ NotSupposedToHappen (Just "mkDual")
-mkDual n (VSeq  _ _)   = Left $ NotSupposedToHappen (Just "mkDual")
-mkDual n (VRef _ _)    = Left $ NotSupposedToHappen (Just "mkDual")
+mkDual : (n : String) -> Value (PORT s) -> LightClick (Value (PORT (n <+> s)))
+mkDual n (VLet _ _ _)  = throw $ NotSupposedToHappen (Just "mkDual")
+mkDual n (VSeq  _ _)   = throw $ NotSupposedToHappen (Just "mkDual")
+mkDual n (VRef _ _)    = throw $ NotSupposedToHappen (Just "mkDual")
 mkDual n (VIDX x y z)  = mkDual n z
-mkDual n (VPort x IN    t) = Right (VPort (n <+> x) OUT t)
-mkDual n (VPort x OUT   t) = Right (VPort (n <+> x) IN t)
-mkDual n (VPort x INOUT t) = Right (VPort (n <+> x) INOUT t)
+mkDual n (VPort x IN    t) = pure (VPort (n <+> x) OUT t)
+mkDual n (VPort x OUT   t) = pure (VPort (n <+> x) IN t)
+mkDual n (VPort x INOUT t) = pure (VPort (n <+> x) INOUT t)
 
 export
-genNameFan : DVect String (Value . PORT) k names -> Either LightClick.Error String
-genNameFan Nil      = Right ""
+genNameFan : DVect String (Value . PORT) k names -> LightClick String
+genNameFan Nil      = pure ""
 genNameFan (x::Nil) = genNameConn x
 genNameFan (x::xs) =
   do n <- genNameConn x
@@ -259,8 +263,8 @@ genNameFan (x::xs) =
 
 export
 getNameFan : DVect String (Value . PORT) k names
-          -> Either LightClick.Error (Vect k String)
-getNameFan Nil      = Right Nil
+          -> LightClick (Vect k String)
+getNameFan Nil      = pure Nil
 getNameFan (x::Nil) = do n <- genNameConn x
                          pure [n]
 getNameFan (x::xs) =
@@ -280,8 +284,8 @@ dualFanG : {k : Nat}
         -> (ps : Vect k String)
         -> {names : Vect k String}
         -> DVect String (Value . PORT) k names
-        -> Either LightClick.Error (DVect String (Value . PORT) k (zipWith (<+>) ps names))
-dualFanG Nil     Nil     = Right Nil
+        -> LightClick (DVect String (Value . PORT) k (zipWith (<+>) ps names))
+dualFanG Nil     Nil     = pure Nil
 dualFanG (p::ps) (x::xs) = do
    rest <- dualFanG ps xs
    d <- mkDual p x
@@ -292,44 +296,44 @@ dualFan : {n : Nat}
        -> (ps : Vect (S (S n)) String)
         -> {names : Vect (S (S n)) String}
        -> DVect String (Value . PORT) (S (S n)) names
-       -> Either LightClick.Error
+       -> LightClick
                  (DVect String (Value . PORT) (S (S n)) (zipWith (<+>) ps names))
-dualFan (p::q::ps) (x::y::xs) = do
-  xs' <- dualFanG ps xs
-  x' <- mkDual p x
-  y' <- mkDual q y
+dualFan (p::q::ps) (x::y::xs)
+  = do xs' <- dualFanG ps xs
+       x' <- mkDual p x
+       y' <- mkDual q y
 
-  pure (x'::y'::xs')
+       pure (x'::y'::xs')
 
 export
 dualFan' : {n     : Nat}
         -> (p     : String)
         -> {names : Vect (S (S n)) String}
         -> (ports : DVect String (Value . PORT) (S (S n)) names)
-        -> Either LightClick.Error
+        -> LightClick
                  (DVect String (Value . PORT) (S (S n)) (zipWith (<+>) (fanPortNames p (S (S n))) names))
 dualFan' p (x::y::xs) {n} = dualFan (fanPortNames p (S (S n))) (x::y::xs)
 
 getPort' : DVect String (Value . PORT) n names
         -> Elem nam names
-        -> Either LightClick.Error (Value (PORT nam))
-getPort' (y :: xs) Here          = Right y
+        -> LightClick (Value (PORT nam))
+getPort' (y :: xs) Here          = pure y
 getPort' (y::ys)   (There later) = getPort' ys later
 
 export
 getPort : DVect String (Value . PORT) (S n) names
        -> Elem nam names
-       -> (Either LightClick.Error $ Value (PORT nam))
-getPort (z :: xs) Here = Right z
+       -> (LightClick $ Value (PORT nam))
+getPort (z :: xs) Here = pure z
 getPort (z :: xs) (There later) = getPort' xs later
 
 export
 getPortFromModule : Value (MODULE names)
                  -> Elem nam names
-                 -> Either LightClick.Error $ Value (PORT nam)
-getPortFromModule (VLet x w s) z = Left $ NotSupposedToHappen (Just "getPrtFromModule")
-getPortFromModule (VSeq x w)   z = Left $ NotSupposedToHappen (Just "getPrtFromModule")
-getPortFromModule (VRef _ _)   z = Left $ NotSupposedToHappen (Just "getPrtFromModule")
+                 -> LightClick $ Value (PORT nam)
+getPortFromModule (VLet x w s) z = throw $ NotSupposedToHappen (Just "getPrtFromModule")
+getPortFromModule (VSeq x w)   z = throw $ NotSupposedToHappen (Just "getPrtFromModule")
+getPortFromModule (VRef _ _)   z = throw $ NotSupposedToHappen (Just "getPrtFromModule")
 getPortFromModule {nam} (VModule x)  z = getPort x z
 
 namespace IndexBuilder
@@ -361,10 +365,10 @@ namespace ConnBuilder
             -> (n     : Nat)
             -> (dTy   : Value DATA)
             -> (iport : Value (PORT i))
-                     -> Either LightClick.Error (Value CHAN, Value CONN)
+                     -> LightClick (Value CHAN, Value CONN)
       helper cname n type src
         = let cname' = newName [cname, show n]
-          in Right ( VRef cname' CHAN
+          in pure ( VRef cname' CHAN
                    , VLet cname'
                           (VChan type)
                           (Gate.newConn cname' src)
@@ -374,7 +378,7 @@ namespace ConnBuilder
               -> (cname : String)
               -> (type  : Value DATA)
               -> (is    : DVect String (Value . PORT) (S (S n)) ins)
-                       -> Either LightClick.Error
+                       -> LightClick
                                  ( Vect (S (S n)) (Value CHAN)
                                  , Value CONN)
       newConn' c name type (i::j::Nil)
@@ -391,7 +395,7 @@ namespace ConnBuilder
       newConn : (cname : String)
              -> (type  : Value DATA)
              -> (is    : DVect String (Value . PORT) (S (S n)) ins)
-                      -> Either LightClick.Error
+                      -> LightClick
                                 ( Vect (S (S n)) (Value CHAN)
                                 , Value CONN
                                 )
@@ -404,6 +408,7 @@ namespace ConnBuilder
            -> Value (PORT outs)
            -> Value CONN
     newConn name x y = (VConnD (VRef name CHAN) x y)
+
   namespace FanOut
     export
     newConn : {n : Nat}
@@ -422,7 +427,7 @@ namespace ConnBuilder
            -> (mod   : Value (MODULE names))
            -> (iport : Value (PORT i))
            -> (oport : Value (PORT o))
-           -> Either LightClick.Error (Value CONN)
+           -> LightClick (Value CONN)
     helper {o} cname dTy m x y = do
       nX <- genNameConn x
       nY <- genNameConn y
@@ -437,7 +442,7 @@ namespace ConnBuilder
            -> (Value (MODULE names))
            -> (is : DVect String (Value . PORT) (S n) ins)
            -> (os : DVect String (Value . PORT) (S n) outs)
-                 -> Either LightClick.Error (Value CONN)
+                 -> LightClick (Value CONN)
     newConn cname type m (i :: []) (o :: []) = helper cname type m i o
     newConn cname type m (i :: i' :: is) (o :: o' :: os)
       = do xy <- helper cname type m i o

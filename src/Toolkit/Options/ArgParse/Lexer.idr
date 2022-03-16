@@ -3,6 +3,7 @@ module Toolkit.Options.ArgParse.Lexer
 import Data.String
 import Text.Lexer
 
+
 import public Toolkit.Text.Lexer.Run
 
 %default total
@@ -57,22 +58,21 @@ rawTokens =
   , (symbol, Unknown)
   ]
 
-keep : WithBounds Token -> Bool
-keep (MkBounded t _ _)
-  = case t of
-      (WS x) => False
-      _      => True
+keep : TokenData Token -> Bool
+keep t with (tok t)
+  keep t | (WS x) = False
+  keep t | _      = True
 
 export
 ArgParseLexer : Lexer Token
 ArgParseLexer = MkLexer rawTokens keep EndInput
 
 export
-lexArgParseStr : String -> Either LexError (List (WithBounds Token))
+lexArgParseStr : String -> Either LexError (List (TokenData Token))
 lexArgParseStr = lexString ArgParseLexer
 
 export
-lexArgParseFile : String -> IO $ Either LexFail (List (WithBounds Token))
+lexArgParseFile : String -> IO $ Either LexFail (List (TokenData Token))
 lexArgParseFile = lexFile ArgParseLexer
 
 -- --------------------------------------------------------------------- [ EOF ]

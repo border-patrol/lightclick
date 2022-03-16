@@ -8,39 +8,9 @@ main = LightClick.Main
 executable = lightclick
 
 modules =
-
-  -- [ Vendored Utilities ]
-          Toolkit.Decidable.Equality.Indexed
-
-        , Toolkit.Data.Vect.Extra
-
-        , Toolkit.Data.List.View.PairWise
-
-        , Toolkit.Data.DList
-        , Toolkit.Data.DList.Elem
-        , Toolkit.Data.DList.DeBruijn
-
-        , Toolkit.Data.DVect
-        , Toolkit.Data.DVect.Elem
-
-        , Toolkit.Data.Nat
-
-        , Toolkit.Data.Location
-        , Toolkit.Data.Rig
-
-        , Toolkit.Decidable.Informative
-
-        , Toolkit.Text.Parser.Support
-        , Toolkit.Text.Parser.Location
-        , Toolkit.Text.Parser.Run
-
-        , Toolkit.Text.Lexer.Run
-
-        , Toolkit.System
-
   -- [ A SystemVerilog EDSL ]
 
-        , Language.SystemVerilog.Utilities
+          Language.SystemVerilog.Utilities
         , Language.SystemVerilog.Direction
         , Language.SystemVerilog.MetaTypes
         , Language.SystemVerilog.Micro
@@ -48,6 +18,7 @@ modules =
 
   -- [ LightClick Itself]
 
+        , LightClick.Core
         , LightClick.Error
 
         , LightClick.Types.Meta
@@ -58,15 +29,12 @@ modules =
         , LightClick.Types
         , LightClick.Types.Equality
         , LightClick.Types.Compatibility
-        , LightClick.Types.Usage
 
         , LightClick.Terms
+        , LightClick.Synthlify
         , LightClick.Values
 
         , LightClick.Connection
-
-        , LightClick.Env
-        , LightClick.Check
 
   -- [ IRs ]
         , LightClick.IR.ModuleCentric
@@ -90,6 +58,5 @@ modules =
         , LightClick.DSL.Lexer
         , LightClick.DSL.Parser.API
         , LightClick.DSL.Parser
-        , LightClick.DSL.Convert
 --
         , LightClick.Main

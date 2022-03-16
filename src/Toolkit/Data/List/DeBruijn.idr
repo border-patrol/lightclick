@@ -105,7 +105,7 @@ namespace KV
   public export
   notInIndex : (keyContra : (k = a) -> Void)
            -> (index     : List (String, type))
-           -> (kvContra  : (t : type ** Index (String, type) xs (k, t)) -> Void)
+           -> (kvContra  : (t : type ** Index (String, type)            xs  (k, t)) -> Void)
            -> (prf       : (t : type ** Index (String, type) ((a, b) :: xs) (k, t)))
                         -> Void
   notInIndex keyContra index kvContra (MkDPair b Here) = keyContra Refl

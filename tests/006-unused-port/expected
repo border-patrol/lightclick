@@ -1,6 +1,5 @@
-LOG: Parsing Complete 
-LOG: MetaTyping Complete 
+LOG : Parsing Complete
 Error Happened
 Unused port:
 	 - charlie ["active"]
-LOG: Typing Complete 
+LOG : Type Checking Complete

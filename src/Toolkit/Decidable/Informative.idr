@@ -18,6 +18,12 @@ data DecInfo : (errType : Type) -> (prop : Type) -> Type where
    Yes : (prfWhy : prop) -> DecInfo errType prop
    No  : (msgWhyNot : errType) -> (prfWhyNot : prop -> Void) -> DecInfo errType prop
 
+export
+embed : (f   : a -> e)
+     -> (res : DecInfo a p)
+            -> DecInfo e p
+embed _ (Yes prfWhy) = Yes prfWhy
+embed f (No msgWhyNot prfWhyNot) = No (f msgWhyNot) prfWhyNot
 
 export
 otherwise : DecInfo e b -> (a -> b) -> Either (e, Not a) b
@@ -43,4 +49,12 @@ namespace Lift
   export
   try : DecInfo eB b -> (eB -> eA) -> (a -> b) -> Either (eA, Not a) b
   try = otherwise
+
+namespace Either
+
+   public export
+   asEither : DecInfo e p -> Either e p
+   asEither (Yes prfWhy) = Right prfWhy
+   asEither (No msgWhyNot prfWhyNot) = Left msgWhyNot
+
 -- --------------------------------------------------------------------- [ EOF ]

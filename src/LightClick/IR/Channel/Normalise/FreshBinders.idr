@@ -7,9 +7,7 @@ import Toolkit.Data.Vect.Extra
 import Toolkit.Data.DList
 import Toolkit.Data.DVect
 
-import LightClick.Types
-import LightClick.Terms
-
+import LightClick.Core
 
 import LightClick.IR.ModuleCentric
 import LightClick.IR.ChannelCentric
@@ -48,11 +46,11 @@ createModuleBinders state counter (CSeq x y)
 createModuleBinders state counter expr = expr
 
 export
-covering
+covering -- from Let float.
 freshBinders : (expr : ChannelIR type)
-                    -> Normalise (ChannelIR type)
+                    -> LightClick (ChannelIR type)
 freshBinders expr
-  = runLetFloat (createModuleBinders Nil Z expr)
+  = LetFloat.run (createModuleBinders Nil Z expr)
 
 
 -- [ EOF ]

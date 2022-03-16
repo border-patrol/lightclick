@@ -19,6 +19,7 @@ import public Toolkit.Text.Parser.Run
 
 import        Language.SystemVerilog.Gates
 
+import        LightClick.Core
 import        LightClick.Types.Direction
 import        LightClick.Types.Sensitivity
 import        LightClick.Types.WireType
@@ -258,8 +259,9 @@ design = do
    ms <- some (moduleDef typeStyle <* symbol ";")
    (keyword "connections")
    cs <- conns
+   start <- Toolkit.location
    eoi
-   let cs' = foldr Seq End (forget cs)
+   let cs' = foldr Seq (End (newFC start start)) (forget cs)
    let ms' = foldr buildBind cs' (forget ms)
    let res = foldr buildBind ms' $ maybe Nil forget ts
    pure res
@@ -267,18 +269,15 @@ design = do
    buildBind : (FileContext, String, AST) -> AST -> AST
    buildBind (fc, n,e) body = (Bind fc n e body)
 
-export
-fromString : (str  : String)
-                  -> Either (ParseError Token) AST
-fromString
-  = parseString LightClickLexer design
 
 export
 fromFile : (fname : String)
-                 -> IO (Either (ParseError Token) AST)
+                 -> LightClick AST
 fromFile fname
-  = do Right ast <- parseFile LightClickLexer design fname
-         | Left err => (pure (Left err))
-       pure (Right (setFileName fname ast))
+  = do res <- parseFile (FileError fname)
+                        LightClickLexer
+                        design
+                        fname
+       pure (setFileName fname res)
 
 -- [ EOF ]

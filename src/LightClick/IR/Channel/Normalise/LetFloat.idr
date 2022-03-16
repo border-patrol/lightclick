@@ -6,8 +6,7 @@ import Data.Vect
 import Toolkit.Data.DList
 import Toolkit.Data.DVect
 
-import LightClick.Types
-import LightClick.Terms
+import LightClick.Core
 
 import LightClick.IR.ModuleCentric
 import LightClick.IR.ChannelCentric
@@ -15,7 +14,6 @@ import LightClick.IR.ChannelCentric
 import LightClick.IR.Channel.Normalise.Error
 
 %default total
-
 
 isNF : ChannelIR type -> Bool
 
@@ -61,13 +59,14 @@ letFloat (CLet x y z) = CLet x (letFloat y) (letFloat z)
 letFloat (CSeq x y) = CSeq (letFloat x) (letFloat y)
 letFloat expr = expr
 
+
 export
 covering -- due to totality checker not liking recursive calls.
-runLetFloat : ChannelIR type -> Normalise (ChannelIR type)
-runLetFloat expr =
-  if isNF expr
-  then Right expr
-  else runLetFloat (letFloat expr)
-
+run : ChannelIR type
+   -> LightClick (ChannelIR type)
+run expr
+  = if isNF expr
+    then pure expr
+    else run (letFloat expr)
 
 -- [ EOF ]

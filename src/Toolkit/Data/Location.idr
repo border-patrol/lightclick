@@ -18,6 +18,12 @@ record FileContext where
   start  : Location
   end    : Location
 
+public export
+record Ref where
+  constructor MkRef
+  span : FileContext
+  get  : String
+
 
 public export
 FC : Type
@@ -67,6 +73,11 @@ setSource str fc
            , end.source   = Just str
            } fc
 
+namespace Ref
+
+  export
+  setSource : String -> Ref -> Ref
+  setSource new ref = record {span $= setSource new} ref
 
 export
 Show Location where
@@ -77,3 +88,5 @@ export
 Show FileContext where
   show (MkFC Nothing (MkLoc _ l scol) (MkLoc _ _ ecol)) = with List concat ["global:", show l, ":", show scol, "-", show ecol, ":"]
   show (MkFC (Just x) (MkLoc _ l scol) (MkLoc _ _ ecol)) = with List concat [x, ":", show l, ":", show scol, "-", show ecol, ":"]
+
+-- [ EOF ]

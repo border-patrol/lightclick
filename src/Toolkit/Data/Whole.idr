@@ -51,6 +51,9 @@ DecEq Whole where
     decEq (W (S j) ItIsSucc) (W (S j) ItIsSucc) | (Yes Refl) = Yes Refl
     decEq (W (S k) ItIsSucc) (W (S j) ItIsSucc) | (No contra) = No (decEqWholeNotEqual contra)
 
+export
+Show Whole where
+  show (W n prf) = show n
 
 export
 toNat : Whole -> Nat

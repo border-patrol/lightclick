@@ -1,26 +1,24 @@
-LOG: Parsing Complete 
-LOG: MetaTyping Complete 
+LOG : Parsing Complete
 Error Happened
 example-conn-direct-bad-1.click:10:0-30:
 Connection mismatch when trying to connect:
 	this:
-		ready : port ( IN high control logic 1 )
+		ready : port ( IN high control logic )
 	that:
-		ready : port ( OUT high control logic 1 )
+		ready : port ( OUT high control logic )
 
 Specifically:
 example-conn-direct-bad-1.click:10:0-30:
 Unsafe connection with Input cannot send
-LOG: Typing Complete 
-LOG: Parsing Complete 
-LOG: MetaTyping Complete 
+LOG : Type Checking Complete
+LOG : Parsing Complete
 Error Happened
 example-conn-direct-bad.click:10:0-29:
 Connection mismatch when trying to connect:
 	this:
-		clk : port ( OUT high clock logic 1 )
+		clk : port ( OUT high clock logic )
 	that:
-		ready : port ( IN high control logic 1 )
+		ready : port ( IN high control logic )
 
 Specifically:
 example-conn-direct-bad.click:10:0-29:
@@ -29,36 +27,35 @@ Unsafe connection with Incompatible intentions:
 		clock
 	Given:
 		control
-LOG: Typing Complete 
-LOG: Parsing Complete 
-LOG: MetaTyping Complete 
+LOG : Type Checking Complete
+LOG : Parsing Complete
 Error Happened
 example-conn-fanout-raw-bad.click:11:0-12:
 The port "clk" is already in use.
-LOG: Typing Complete 
-LOG: Parsing Complete 
-LOG: MetaTyping Complete 
+LOG : Type Checking Complete
+LOG : Parsing Complete
 Error Happened
 example-conn-fanout-type-err.click:10:0-44:
 Connection mismatch when trying to connect:
 	this:
-		clk : port ( OUT high clock logic 1 )
+		clk : port ( OUT high clock logic )
 	that:
-		ready : port ( OUT high control logic 1 )
+		ready : port ( OUT high control logic )
 
 Specifically:
 example-conn-fanout-type-err.click:10:0-44:
 Unsafe Fan-OUT.
 Wire #1 is unsafe:
 	Directions are the same
-LOG: Typing Complete 
-LOG: Parsing Complete 
-LOG: MetaTyping Complete 
-LOG: Typing Complete 
-LOG : Showing ModuleIR
-LOG : Normalising ChannelIR
-LOG : Convert to MicroSV IR
-LOG : Convert to MicroSV
+LOG : Type Checking Complete
+LOG : Parsing Complete
+LOG : Type Checking Complete
+LOG : Synth-lification Complete
+LOG : Modularisation Complete
+LOG : Channelisation Complete
+LOG : Normalisation Complete
+LOG : Initial Pass to SystemVerilog Complete
+LOG : Final Pass to SystemVerilog Complete
 LOG : Pretty Printing
 module system  
 (
@@ -196,4 +193,4 @@ module Top ();
      );
 
 endmodule;
-LOG : Bye
+LOG : BYE

@@ -20,8 +20,8 @@ data AST : Type where
 
   DataLogic  : FileContext -> AST
   DataArray  : FileContext -> AST -> Nat -> AST
-  DataStruct : {n : Nat} -> FileContext -> (kvs : Vect (S n) (Pair String AST)) -> AST
-  DataUnion  : {n : Nat} -> FileContext -> (kvs : Vect (S n) (Pair String AST)) -> AST
+  DataStruct : {n : Nat} -> FileContext -> (kvs : Vect (S n) (String, AST)) -> AST
+  DataUnion  : {n : Nat} -> FileContext -> (kvs : Vect (S n) (String, AST)) -> AST
 
   Port  : FileContext
        -> (label : String)
@@ -31,25 +31,25 @@ data AST : Type where
        -> (type : AST)
        -> AST
 
-  ModuleDef : {n : Nat} -> FileContext -> (kvs : Vect (S n) AST) -> AST
+  ModuleDef : {n : Nat} -> FileContext -> (kvs : Vect (S n) (AST)) -> AST
 
   Index  : FileContext -> AST -> String -> AST
   Connect : FileContext -> AST -> AST -> AST
-  FanOut : {n : Nat} -> FileContext -> AST -> (ps : Vect (S (S n)) AST) -> AST
-  Mux    : {n : Nat} -> FileContext -> (ps : Vect (S (S n)) AST) -> AST -> AST -> AST
+  FanOut : {n : Nat} -> FileContext -> AST -> (ps : Vect (S (S n)) (AST)) -> AST
+  Mux    : {n : Nat} -> FileContext -> (ps : Vect (S (S n)) (AST)) -> AST -> AST -> AST
 
   NOT  : FileContext -> AST -> AST -> AST
-  GATE : {n : Nat} -> FileContext -> (ty : TyGateComb) -> (ps : Vect (S (S n)) AST) -> AST -> AST
+  GATE : {n : Nat} -> FileContext -> (ty : TyGateComb) -> (ps : Vect (S (S n)) (AST)) -> AST -> AST
 
-  End : AST
+  End : FileContext -> AST
 
 mutual
-  setKvsFS : String -> Vect n (Pair String AST) -> Vect n (Pair String AST)
+  setKvsFS : String -> Vect n (String, AST) -> Vect n (String, AST)
   setKvsFS x [] = Nil
   setKvsFS x ((y, z) :: xs)
     = (y, setFileName x z) :: setKvsFS x xs
 
-  setFSs : String -> Vect n AST -> Vect n AST
+  setFSs : String -> Vect n (AST) -> Vect n (AST)
   setFSs x [] = []
   setFSs x (y :: xs) = (setFileName x y) :: setFSs x xs
 
@@ -99,6 +99,6 @@ mutual
 
   setFileName fn (GATE x ty ps y)
     = GATE (setSource fn x) ty (setFSs fn ps) (setFileName fn y)
-  setFileName fn End = End
+  setFileName fn (End fc) = (End (setSource fn fc))
 
 -- [ EOF ]

@@ -1,10 +1,11 @@
-LOG: Parsing Complete 
-LOG: MetaTyping Complete 
-LOG: Typing Complete 
-LOG : Showing ModuleIR
-LOG : Normalising ChannelIR
-LOG : Convert to MicroSV IR
-LOG : Convert to MicroSV
+LOG : Parsing Complete
+LOG : Type Checking Complete
+LOG : Synth-lification Complete
+LOG : Modularisation Complete
+LOG : Channelisation Complete
+LOG : Normalisation Complete
+LOG : Initial Pass to SystemVerilog Complete
+LOG : Final Pass to SystemVerilog Complete
 LOG : Pretty Printing
 typedef struct packed
 {
@@ -94,4 +95,4 @@ module Top ();
      );
 
 endmodule;
-LOG : Bye
+LOG : BYE

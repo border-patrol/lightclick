@@ -8,6 +8,7 @@ import Toolkit.Data.DList
 import Toolkit.Data.DVect
 import Toolkit.Data.DList.DeBruijn
 
+import LightClick.Core
 import LightClick.Error
 
 import LightClick.Types.Direction
@@ -29,31 +30,6 @@ data TEnv : (local,global : Context) -> Type where
           -> (local : Context)
           -> TEnv local global
 
-
-ConvertFuncSig : (local, global : Context) -> Ty -> Type
-ConvertFuncSig local global type =
-     (env : TEnv local global)
-  -> (expr : MicroSvIR local type)
-  -> Either TError (Expr local global type)
-
-convertExpr :  (env : TEnv local global)
-  -> (expr : MicroSvIR local type)
-  -> Either TError (Expr local global type)
-
-convertDecl : {type : Ty}
-           -> {global : Context}
-           -> (decls : Micro.Decls global)
-           -> (bind  : String)
-           -> (expr  : MicroSvIR Nil type)
-           -> Either TError (ValidDecl type TYPE, Expr Nil global type)
-convertDecl decls bind expr {type} {global} with (validDecl type TYPE)
-  convertDecl decls bind expr {global} | (Yes prfVDecl) with (convertExpr (MkEnv global decls Nil) expr)
-    convertDecl decls bind expr {global} | (Yes prfVDecl) | (Left l) = Left $ Nested "Converting Decl" l
-    convertDecl decls bind expr {global} | (Yes prfVDecl) | (Right newDecl) = Right (prfVDecl, newDecl)
-
-  convertDecl decls bind expr | (No contra) = Left MalformedExpr
-
-
 data ValidDecls : List Ty
                -> Context
                -> Type
@@ -64,166 +40,138 @@ data ValidDecls : List Ty
           -> (rest : ValidDecls types kvs)
           -> ValidDecls (type::types) ((name,type)::kvs)
 
-convertDecls : (decls : Intermediate.Decls types)
-            -> Either TError (global ** (ValidDecls types global, Decls global))
+mutual
+  decl : {type   : Ty}
+      -> {global : Context}
+      -> (decls  : Micro.Decls global)
+      -> (bind   : String)
+      -> (expr   : MicroSvIR Nil type)
+                -> LightClick (ValidDecl type TYPE, Expr Nil global type)
+  decl decls bind expr {type} {global} with (validDecl type TYPE)
+    decl decls bind expr {type = type} {global = global} | (Yes prf)
+      = do d <- convert (MkEnv global decls Nil) expr
+           pure (prf,d)
 
-convertDecls [] = Right (_ ** (Empty, Empty))
+    decl decls bind expr {type = type} {global = global} | (No contra)
+      = throw (MicroSVError MalformedExpr)
 
-convertDecls (MkDecl binder expr :: rest) with (convertDecls rest)
-  convertDecls (MkDecl binder expr :: rest) | Left l
-    = Left $ Nested "Converting Decls" l
+  decls : (ds : Intermediate.Decls types)
+             -> LightClick (global ** (ValidDecls types global, Decls global))
+  decls []
+    = pure (_ ** MkPair Empty Empty)
 
-  convertDecls (MkDecl binder expr :: rest) | Right (ctxt ** MkPair ps ds) with (convertDecl ds binder expr)
+  decls ((MkDecl b e) :: rest)
+    = do (ctxt ** MkPair ps ds) <- decls rest
+         (p,d) <- decl ds b e
+         pure (_ ** MkPair (Extend b p ps) (DeclAdd b d p ds))
 
-    convertDecls (MkDecl binder expr :: rest) | Right (ctxt ** MkPair ps ds) | (Left l)
-      = Left l
+  datatypes : (env : TEnv local global)
+           -> (ds  : Vect n (String, MicroSvIR local DATA))
+                 -> LightClick (Vect n (String, Expr local global DATA))
+  datatypes env = traverse (\(l,e) => do {e' <- convert env e; pure (l,e')})
 
-    convertDecls (MkDecl binder expr :: rest) | Right (ctxt ** MkPair ps ds) | (Right (p,d))
-      = Right (_ ** MkPair (Extend binder p ps) (DeclAdd binder d p ds))
+  ports : (env : TEnv local global)
+       -> (ps  : DList String (\a => MicroSvIR local (PORT a)) names)
+              -> LightClick (DList String (\s => Expr local global (PORT s)) names)
+  ports env Nil
+    = pure Nil
 
+  ports env (p::ps)
+    = do p' <- convert env p
+         ps' <- ports env ps
+         pure (p'::ps')
 
-convertData : {n : Nat} -> (f : ConvertFuncSig local global a)
-           -> (env : TEnv local global)
-           -> (ds : Vect (S n) (Pair String (MicroSvIR local a)))
-           -> Either TError (Vect (S n) (Pair String (Expr local global a)))
+  chans : (env : TEnv local global)
+       -> (cs  : List (Pair String (MicroSvIR local CHAN)))
+              -> LightClick (List (Pair String (Expr local global CHAN)))
 
-convertData {n=n} f env ((k,v) :: xs) with (xs)
-  convertData {n=Z} f env ((k,v) :: xs) | []
-    = do r <- f env v
-         pure [(k,r)]
+  chans env = traverse (\(l,e) => do {e' <- convert env e; pure (l,e')})
 
-  convertData {n=S n}f env ((k,v) :: xs) | (y :: ys)
-    = do r <- (f env v)
-         ys' <- convertData f env (y::ys)
-         pure $ (k,r) :: ys'
+  convert : (env  : TEnv local global)
+         -> (expr : MicroSvIR local type)
+                 -> LightClick (Expr local global type)
+  convert env End
+    = pure End
 
-convertPorts : (env : TEnv local global)
-            -> (ports : DList String (\a => MicroSvIR local (PORT a)) names)
-            -> Either TError (DList String (\s => Expr local global (PORT s)) names)
+  convert env (Local label x)
+    = pure (Local label x)
 
-convertPorts env Nil = Right Nil
+  convert env (Global label type) with (env)
+    convert env (Global label type) | (MkEnv global decls local) with (isElem (label,type) global)
+      convert env (Global label type) | (MkEnv global decls local) | (Yes prf)
+        = pure (Global label prf)
 
-convertPorts env (elem :: rest)
-  = do r <- convertExpr env elem
-       rs <- convertPorts env rest
-       pure (r::rs)
+      convert env (Global label type) | (MkEnv global decls local) | (No contra)
+        = throw (MicroSVError (General $ unwords ["Attempting to generate Global ref failed:", show label]))
 
-convertChans : (f : ConvertFuncSig local global CHAN)
-            -> (env : TEnv local global)
-            -> (ds : List (Pair String (MicroSvIR local CHAN)))
-            -> Either TError (List (Pair String (Expr local global CHAN)))
+  -- [ Structural Statements ]
 
-convertChans _ _ Nil = Right Nil
+  convert env (Let this beThis {typeE} withType {ty} inThis) with (validLet typeE ty)
+    convert (MkEnv global decls local) (Let this beThis {typeE = typeE} withType {ty = ty} inThis) | (Yes prf)
+      = do e <- convert (MkEnv global decls local) beThis
+           t <- convert (MkEnv global decls local) withType
+           b <- convert (MkEnv global decls ((this,typeE)::local)) inThis
+           pure (Let this e t prf b)
 
-convertChans f env ((k,v) :: xs) with (xs)
-  convertChans f env ((k,v) :: xs) | []
-    = do r <- f env v
-         pure [(k,r)]
+    convert env (Let this beThis {typeE = typeE} withType {ty = ty} inThis) | (No contra)
+      = throw (MicroSVError (General $ unwords ["Invalid Let:", show typeE, show ty]))
 
-  convertChans f env ((k,v) :: xs) | (y :: ys)
-    = do r <- f env v
-         ys' <- convertChans f env (y::ys)
-         pure $ (k,r) :: ys'
+  convert env (Seq x y)
+    = do x' <- convert env x
+         y' <- convert env y
+         pure (Seq x' y')
 
+  -- [ Types]
 
+  convert env TYPE = pure TYPE
+  convert env GATE = pure GATE
 
--- [ Implementation of `convertExpr` ]
-convertExpr env End = pure End
+  -- [ Data types ]
+  convert env DataLogic
+    = pure DataLogic
 
-convertExpr env (Local label x) = pure $ Local label x
+  convert env (DataArray x size)
+    = do t <- convert env x
+         pure (DataArray t size)
 
-convertExpr env (Global label ty) with (env)
-  convertExpr env (Global label ty) | (MkEnv global decls local) with (isElem (label,ty) global)
-    convertExpr env (Global label ty) | (MkEnv global decls local) | (Yes idx)
-      = pure (Global label idx)
-    convertExpr env (Global label ty) | (MkEnv global decls local) | (No contra)
-      = Left $ General $ unwords ["Attempting to generate Global ref failed:", show label]
+  convert env (DataStruct xs)
+    = do xs' <- datatypes env xs
+         pure (DataStruct xs')
 
--- [ Structural Statements ]
-convertExpr env (Let this beThis {typeE} withType {ty} inThis) with (validLet typeE ty)
-  convertExpr env (Let this beThis {typeE} withType {ty} inThis) | Yes prf with (env)
-    convertExpr env (Let this beThis {typeE} withType {ty} inThis) | Yes prf | MkEnv global decls local
-      = do beThis' <- convertExpr (MkEnv global decls local) beThis
-           withType' <- convertExpr (MkEnv global decls local) withType
-           inThis' <- convertExpr (MkEnv global decls ((this,typeE)::local)) inThis
-           pure (Let this beThis' withType' prf inThis')
+  convert env (DataUnion xs)
+    = do xs' <- datatypes env xs
+         pure (DataUnion xs')
 
-  convertExpr env (Let this beThis {typeE} withType {ty} inThis) | No x
-    = Left $ General $ unwords ["Invalid Let:", show typeE, show ty]
+  -- [ Module constructors ]
+  convert env (Port label dir x)
+    = pure (Port label dir !(convert env x))
 
-convertExpr env (Seq x y) with (convertExpr env x)
-  convertExpr env (Seq x y) | Left err = Left err
+  convert env (MDecl x)
+    = pure (MDecl !(ports env x))
 
-  convertExpr env (Seq x y) | Right x' with (convertExpr env y)
-    convertExpr env (Seq x y) | Right x' | Left err
-      = Left err
-    convertExpr env (Seq x y) | Right x' | Right y'
-      = pure (Seq x' y')
+  -- [ Value Constructors ]
+  convert env NewChan
+    = pure NewChan
 
--- [ The TYPE ]
-convertExpr env TYPE = pure TYPE
+  convert env (NewModule xs)
+    = pure (NewModule !(chans env xs))
 
--- [ The GATE ]
-convertExpr env GATE = pure GATE
+  -- [ Gates ]
+  convert env (Not o i)
+    = pure (Not !(convert env o) !(convert env i))
 
--- [ Data types ]
-convertExpr env DataLogic = pure DataLogic
-convertExpr env (DataArray type size)
-  = do type' <- convertExpr env type
-       pure (DataArray type' size)
-
-convertExpr env (DataStruct xs)
-  = do xs' <- convertData convertExpr env xs
-       pure (DataStruct xs')
-
-convertExpr env (DataUnion xs)
-  = do xs' <- convertData convertExpr env xs
-       pure (DataUnion xs')
-
--- [ Module constructors ]
-convertExpr env (Port label dir type)
-  = do type' <- convertExpr env type
-       pure (Port label dir type')
-
-convertExpr env (MDecl ports)
-  = do ps <- convertPorts env ports
-       pure (MDecl ps)
-
--- [ Value Constructors ]
-convertExpr env NewChan = pure NewChan
-
-convertExpr env (NewModule xs)
-  = do xs' <- convertChans convertExpr env xs
-       pure (NewModule xs')
-
--- [ Gates ]
-convertExpr env (Not o i)
-  = do o' <- convertExpr env o
-       i' <- convertExpr env i
-       pure (Not o' i')
-
-convertExpr env (Gate ty o ins)
-  = do o' <- convertExpr env o
-       ins' <- traverse (convertExpr env) ins
-       pure (Gate ty o' ins')
+  convert env (Gate x out ins)
+    = do o <- convert env out
+         i <- traverse (convert env) ins
+         pure (Gate x o i)
 
 
 export
 covering
-convertSpec : (expr : MicroSvIrSpec)
-                   -> Either TError Spec
-convertSpec (MkMSVIRSpec decls expr) with (convertDecls decls)
-  convertSpec (MkMSVIRSpec decls expr) | (Left l)
-    = Left $ Nested "Attempting to build decls" l
-
-  convertSpec (MkMSVIRSpec decls expr) | (Right (gs ** (prfVDecls,decls'))) with (convertExpr (MkEnv gs decls' Nil) expr)
-
-    convertSpec (MkMSVIRSpec decls expr) | (Right (gs ** (prfVDecls,decls'))) | (Left l)
-      = Left $ Nested "Attempted to build Spec" l
-
-    convertSpec (MkMSVIRSpec decls expr) | (Right (gs ** (prfVDecls,decls'))) | (Right r)
-      = pure (MkSpec decls' r)
-
-
+systemVerilog : (spec : MicroSvIrSpec) -> LightClick Spec
+systemVerilog (MkMSVIRSpec ds top)
+  = do (g ** (pDs,ds)) <- decls ds
+       t <- convert (MkEnv g ds Nil) top
+       pure (MkSpec ds t)
 
 -- --------------------------------------------------------------------- [ EOF ]

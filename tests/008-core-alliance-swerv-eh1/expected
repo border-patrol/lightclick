@@ -1,7 +1,6 @@
-LOG: Parsing Complete 
-LOG: MetaTyping Complete 
+LOG : Parsing Complete
 Error Happened
 Unused ports:
 	 - dmi_wrapper ["tdoEnable"]
 	 - world ["mbist_mode"]
-LOG: Typing Complete 
+LOG : Type Checking Complete

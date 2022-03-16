@@ -6,7 +6,7 @@ import Text.Parser
 import Text.Lexer
 
 import Data.List1
-
+import Data.String
 import Toolkit.Data.Nat
 import Toolkit.Data.Location
 import Toolkit.Text.Lexer.Run
@@ -26,6 +26,23 @@ public export
 data ParseError a = PError (List1 (ParseFailure a))
                   | LError LexError
                   | FError FileError
+
+
+export
+Show a => Show (ParseFailure a) where
+  show err
+    = trim $ unlines [show (location err), (error err)]
+
+export
+Show a => Show (Run.ParseError a) where
+  show (FError err)
+    = trim $ unlines ["File Error: "
+                     , show err]
+  show (PError err)
+    = trim $ unlines (forget (map show err))
+
+  show (LError (MkLexFail l i))
+    = trim $ unlines [show l, show i]
 
 
 convert : (src : Maybe String)
