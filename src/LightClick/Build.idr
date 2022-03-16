@@ -281,7 +281,7 @@ namespace FreeVar
         newMsg (NotSatisfied (NotFound x))
           = IdentifierNotFound fc s
         newMsg (NotSatisfied (IsUsed x))
-          = PortInUse fc s -- @TODO Change
+          = PortInUse fc s
         newMsg NotFound
           = IdentifierNotFound fc s
 
@@ -334,37 +334,22 @@ namespace FreeVar
          pure (UV _ _ newE idx prf)
 
 namespace FreePort
+  data LookupFail = NotFound | IsUsed String
 
-  public export
-  data IsFree : (mref  : String)
-             -> (label : String)
-             -> (item  : Item Item i)
-                      -> Type
-    where
-      IF : (prf  : mref = name)
-        -> (prfF : IsFreePort label item)
-                -> IsFree mref label (I name item)
+  isFreePort : (str : String)
+            -> (i   : Item)
+                   -> DecInfo LookupFail
+                              (IsFreePort str i)
+  isFreePort str i with (Context.FreePort.isFreePort str i)
+    isFreePort str i | (Yes prf)
+      = Yes prf
 
-  data LookupFail = NotFound | IsUsed String String
-
-  isFree : (mref,label : String)
-        -> (item       : Item Item i)
-                      -> DecInfo LookupFail
-                                 (IsFree mref label item)
-  isFree mref label (I name i) with (decEq mref name)
-    isFree mref label (I mref i) | (Yes Refl) with (isFreePort label i)
-      isFree mref label (I mref i) | (Yes Refl) | (Yes prf)
-        = Yes (IF Refl prf)
-      isFree mref label (I mref i) | (Yes Refl) | (No contra)
-        = No (IsUsed mref label)
-             (\(IF Refl prf) => contra prf)
-    isFree mref label (I name i) | (No contra)
-      = No NotFound
-           (\(IF Refl prf) => contra Refl)
+    isFreePort str i | (No contra)
+      = No (IsUsed str) contra
 
   FreePort : {types : List Item} -> String -> String -> Context types -> Type
   FreePort mref label ctxt
-    = Exists (IsFree mref label) ctxt
+    = ExistsFor (IsFreePort label) mref ctxt
 
   lookup : (fc         : FileContext)
         -> (mref,label : String)
@@ -372,34 +357,33 @@ namespace FreePort
         -> (ctxt       : Context types)
                       -> DecInfo (LightClick.Error)
                                  (FreePort mref label ctxt)
-  lookup fc mref label ctxt with (exists (isFree mref label) ctxt)
+  lookup fc mref label ctxt with (existsFor (isFreePort label) mref ctxt)
     lookup fc mref label ctxt | (Yes prfWhy)
       = Yes prfWhy
-    lookup fc mref label ctxt | (No msgWhyNot prfWhyNot)
-        = No (newMsg msgWhyNot)
-             prfWhyNot
+    lookup fc mref label ctxt | (No msg contra)
+        = No (newErr msg) contra
       where
-        newMsg : (Error LookupFail)
-              -> LightClick.Error
-        newMsg (NotSatisfied NotFound)
-          = IdentifierNotFound fc label
-        newMsg (NotSatisfied (IsUsed x y))
-          = PortInUse fc y
+        newErr : Error LookupFail -> LightClick.Error
+        newErr (NotSatisfied NotFound)
+          = IdentifierNotFound fc mref
 
-        newMsg NotFound
-          = PortInUse fc label -- @TODO fix
+        newErr (NotSatisfied (IsUsed x))
+          = PortInUse fc x
+
+        newErr NotFound
+          = IdentifierNotFound fc mref
 
   transform : {m,l  : String}
            -> {curr : Context}
            -> {ctxt : Context curr}
-           -> (idx  : Any Item (Item Item) (Holds Item (IsFree m l)) ctxt)
+           -> (idx  : Any Item (Item Item) (HoldsFor Item (IsFreePort l) m) ctxt)
                    -> DPair Item (\i => FreePort l i curr)
-  transform (H (H (IF prf prfF)))
-    = MkDPair _ (Here prfF)
+  transform (H (H4 prfK prf))
+    = MkDPair _ (Here prf)
+
   transform (T contra later) with (transform later)
     transform (T contra later) | (MkDPair fst snd)
       = MkDPair fst (There snd)
-
 
   usePort : {old  : Context}
          -> (ctxt : Context old)
@@ -432,7 +416,7 @@ namespace FreePort
           -> (curr       : Context old)
                         -> LightClick (UsedPort label old)
   usedPort fc mref label curr {old}
-    = do B _ _ idx' <- embed id (lookup fc mref label curr)
+    = do B4 _ _ idx' <- embed id (lookup fc mref label curr)
 
          let (I tyM um ** idx) = transform idx'
          case tyM of

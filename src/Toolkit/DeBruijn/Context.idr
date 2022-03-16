@@ -31,6 +31,7 @@ data Item : (kind : Type)
      -> (type : kind)
              -> Item kind type
 
+
 ||| A generic container to capture properties over items in the
 ||| context.
 public export
@@ -60,6 +61,42 @@ holds f i with (f i)
     = No (NotSatisfied msg)
          (\(H prf) => contra prf)
 
+||| A generic container to capture properties over items in the
+||| context.
+public export
+data HoldsFor : (kind : Type)
+             -> (pred : (type : kind) -> Type)
+             -> (key  : String)
+             -> {type : kind}
+             -> (item : Item kind type)
+                     -> Type
+  where
+    H4 : {pred : (type : kind) -> Type}
+      -> {i    : kind}
+      -> (prfK : key = str)
+      -> (prf  : pred i)
+              -> HoldsFor kind pred key (I str i)
+
+||| Does the given predicate hold over the context item
+holdsFor : {pred : (type : kind) -> Type}
+        -> (func : (type : kind) -> DecInfo err (pred type))
+        -> (key  : String)
+        -> {type : kind}
+        -> (item : Item kind type)
+                -> DecInfo (Error err)
+                           (HoldsFor kind pred key item)
+holdsFor func key (I name type) with (decEq key name)
+  holdsFor func key (I key type) | (Yes Refl) with (func type)
+    holdsFor func key (I key type) | (Yes Refl) | (Yes prfWhy)
+      = Yes (H4 Refl prfWhy)
+
+    holdsFor func key (I key type) | (Yes Refl) | (No msg contra)
+      = No (NotSatisfied msg)
+           (\(H4 Refl prf) => contra prf)
+
+  holdsFor func key (I name type) | (No contra)
+    = No NotFound
+         (\(H4 Refl prf) => contra Refl)
 
 public export
 Context : (kind : Type) -> (types : List kind) -> Type
@@ -78,11 +115,11 @@ extend ctxt l type = I l type :: ctxt
 |||
 ||| We will make it nameless later on, as if we try now the indicies are not sufficiently linked to prove false.
 public export
-data Exists : {kind : Type}
-          -> {types : List kind}
-          -> (pred : {type : kind} -> (item : Item kind type) -> Type)
-           -> (ctxt : Context kind types)
-                   -> Type
+data Exists : {kind  : Type}
+           -> {types : List kind}
+           -> (pred  : {type : kind} -> (item : Item kind type) -> Type)
+           -> (ctxt  : Context kind types)
+                    -> Type
   where
     B : {pred : {type : kind} -> (item : Item kind type) -> Type}
      -> {ctxt : Context kind types}
@@ -129,6 +166,65 @@ exists func (elem :: rest) with (holds func elem)
     exists func (elem :: rest) | (No msgWhyNot prfWhyNot) | (No x f)
       = No x (errFound f prfWhyNot)
 
+
+||| A quantifier over the context that the given predicate holds.
+|||
+||| This is modelled after De Bruijn indices, and the underlying quantifier is `Any`.
+|||
+||| We will make it nameless later on, as if we try now the indicies are not sufficiently linked to prove false.
+public export
+data ExistsFor : {kind  : Type}
+              -> {types : List kind}
+              -> (pred  : (type : kind) -> Type)
+              -> (key   : String)
+              -> (ctxt  : Context kind types)
+                       -> Type
+  where
+    B4 : {pred : (type : kind) -> Type}
+      -> {ctxt : Context kind types}
+      -> {type : kind}
+      -> (item : Item kind type)
+      -> (prfP : pred type)
+      -> (prfE : Any kind (Item kind) (HoldsFor kind pred key) ctxt)
+              -> ExistsFor pred key ctxt
+
+e4ContextEmpty : ExistsFor pred key [] -> Void
+e4ContextEmpty (B4 _ _ (H prf)) impossible
+e4ContextEmpty (B4 _ _ (T contra later)) impossible
+
+
+e4ErrorLater : (ExistsFor pred k rest -> Void)
+            -> (HoldsFor kind pred k i -> Void)
+            -> ExistsFor pred k (i :: rest) -> Void
+e4ErrorLater f g (B4 item prfP (H prf)) = g prf
+e4ErrorLater f g (B4 item prfP (T contra later)) = f (B4 item prfP later)
+
+
+||| Does the given variable exist in the context and satisfy the given predicate.
+export
+existsFor : {kind  : Type}
+         -> {err   : Type}
+         -> {types : List kind}
+         -> {pred  : (type : kind) -> Type}
+         -> (func  : (type : kind) -> DecInfo err (pred type))
+         -> (key   : String)
+         -> (ctxt  : Context kind types)
+                  -> DecInfo (Error err)
+                             (ExistsFor pred key ctxt)
+existsFor f _ []
+  = No NotFound (e4ContextEmpty)
+existsFor f k (elem :: rest) with (holdsFor f k elem)
+  existsFor f k ((I str x) :: rest) | (Yes (H4 prfK prf))
+    = Yes (B4 (I str x) prf (H (H4 prfK prf)))
+
+  existsFor f k (elem :: rest) | (No msg contra) with (existsFor f k rest)
+    existsFor f k (elem :: rest) | (No msg contra) | (Yes (B4 item prfP prfE))
+      = Yes (B4 item prfP (T contra prfE))
+
+    existsFor f k (elem :: rest) | (No (NotSatisfied x) contra) | (No mRest cRest)
+      = No (NotSatisfied x) (e4ErrorLater cRest contra)
+    existsFor f k (elem :: rest) | (No NotFound contra) | (No mRest cRest)
+      = No mRest (e4ErrorLater cRest contra)
 
 public export
 data Nameless : {kind : Type}
