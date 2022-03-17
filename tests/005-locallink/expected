@@ -66,29 +66,29 @@ module Top ();
   wire logic receiver_error_producer_error;
   producer lightclick_module_0
      (
-       .clck(fan_out_from_system_clck_to_producer_clck_receiver_clck),
-       .rset(fan_out_from_system_rset_to_producer_rset_receiver_rset),
        .buffer(producer_buffer_receiver_buffer),
-       .ready_src(producer_ready_src_receiver_ready_src),
-       .ready_dst(receiver_ready_dst_producer_ready_dst),
-       .frame_start(producer_frame_start_receiver_frame_start),
+       .clck(fan_out_from_system_clck_to_producer_clck_receiver_clck),
+       .error(receiver_error_producer_error),
        .frame_end(producer_frame_end_receiver_frame_end),
-       .payload_start(producer_payload_start_receiver_payload_start),
+       .frame_start(producer_frame_start_receiver_frame_start),
        .payload_end(producer_payload_end_receiver_payload_end),
-       .error(receiver_error_producer_error)
+       .payload_start(producer_payload_start_receiver_payload_start),
+       .ready_dst(receiver_ready_dst_producer_ready_dst),
+       .ready_src(producer_ready_src_receiver_ready_src),
+       .rset(fan_out_from_system_rset_to_producer_rset_receiver_rset)
      );
   receiver lightclick_module_1
      (
-       .clck(fan_out_from_system_clck_to_producer_clck_receiver_clck),
-       .rset(fan_out_from_system_rset_to_producer_rset_receiver_rset),
        .buffer(producer_buffer_receiver_buffer),
-       .ready_src(producer_ready_src_receiver_ready_src),
-       .ready_dst(receiver_ready_dst_producer_ready_dst),
-       .frame_start(producer_frame_start_receiver_frame_start),
+       .clck(fan_out_from_system_clck_to_producer_clck_receiver_clck),
+       .error(receiver_error_producer_error),
        .frame_end(producer_frame_end_receiver_frame_end),
-       .payload_start(producer_payload_start_receiver_payload_start),
+       .frame_start(producer_frame_start_receiver_frame_start),
        .payload_end(producer_payload_end_receiver_payload_end),
-       .error(receiver_error_producer_error)
+       .payload_start(producer_payload_start_receiver_payload_start),
+       .ready_dst(receiver_ready_dst_producer_ready_dst),
+       .ready_src(producer_ready_src_receiver_ready_src),
+       .rset(fan_out_from_system_rset_to_producer_rset_receiver_rset)
      );
   system lightclick_module_2
      (

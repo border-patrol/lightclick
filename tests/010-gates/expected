@@ -203,7 +203,7 @@ module Top ();
      (
        .s(ior_e__s_a__s_b__s_c__s_d__s_out)
      );
-  or lightclick_module_14(
+  ior lightclick_module_14(
     ior_e__s_a__s_b__s_c__s_d__s_out,
     ior_e__s_a__s_b__s_c__s_d__s_in_0,
     ior_e__s_a__s_b__s_c__s_d__s_in_2,
@@ -308,23 +308,23 @@ module Top ();
   client_d lightclick_module_2
      (
        .clk(fan_out_from_system_clk_to_scrub_clk_client_clk_client_d_clk),
-       .ready(xor_scrub_ready_client_ready_client_d_ready_in_1),
+       .data_i(fan_out_from_scrub_clean_to_client_data_i_client_d_data_i),
        .data_o(xor_scrub_dirty_client_data_o_client_d_data_o_in_1),
-       .data_i(fan_out_from_scrub_clean_to_client_data_i_client_d_data_i)
+       .ready(xor_scrub_ready_client_ready_client_d_ready_in_1)
      );
   client lightclick_module_3
      (
        .clk(fan_out_from_system_clk_to_scrub_clk_client_clk_client_d_clk),
-       .ready(xor_scrub_ready_client_ready_client_d_ready_in_0),
+       .data_i(fan_out_from_scrub_clean_to_client_data_i_client_d_data_i),
        .data_o(xor_scrub_dirty_client_data_o_client_d_data_o_in_0),
-       .data_i(fan_out_from_scrub_clean_to_client_data_i_client_d_data_i)
+       .ready(xor_scrub_ready_client_ready_client_d_ready_in_0)
      );
   scrub lightclick_module_4
      (
+       .clean(fan_out_from_scrub_clean_to_client_data_i_client_d_data_i),
        .clk(fan_out_from_system_clk_to_scrub_clk_client_clk_client_d_clk),
-       .ready(xor_scrub_ready_client_ready_client_d_ready_out),
        .dirty(xor_scrub_dirty_client_data_o_client_d_data_o_out),
-       .clean(fan_out_from_scrub_clean_to_client_data_i_client_d_data_i)
+       .ready(xor_scrub_ready_client_ready_client_d_ready_out)
      );
   system lightclick_module_5
      (

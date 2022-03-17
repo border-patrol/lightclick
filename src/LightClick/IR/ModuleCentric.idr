@@ -84,6 +84,7 @@ data ModuleIR : TyIR -> Type where
   MConnG : ModuleIR CHAN
         -> ModuleIR PORT
         -> ModuleIR CONN
+  MNoOp : ModuleIR PORT -> ModuleIR CONN
 
 -- go from value (with proof of normal form) to moduleIR
 public export
@@ -126,7 +127,8 @@ mutual
   convert (VNot o i) = MNot (convert o) (convert i)
   convert (VGate ty o ins) = MGate ty (convert o) (map convert ins)
   convert (VConnG c idx) = MConnG (convert c) (convert idx)
-
+  convert (VNoOp p)
+    = MNoOp (convert p)
 
 export
 modularise : (v : Value type) -> LightClick (ModuleIR (interp type))
@@ -216,6 +218,8 @@ mutual
   showM (MConnG c idx)
     = unwords ["(MConnG", showM c, showM idx, ")"]
 
+  showM (MNoOp p)
+    = unwords ["(MNoOp", showM p, ")"]
 
 export
 Show (ModuleIR type) where

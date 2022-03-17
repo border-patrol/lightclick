@@ -32,6 +32,18 @@ updateKVs : (newGlobal : Context)
          -> Either TError (Vect n (String, Expr local newGlobal type))
 updateKVs newGlobal = traverse (updateKV newGlobal)
 
+updatePorts : (newGlobal : Context)
+           -> (es        : DList String (\s => Pair (Label s) (Expr l g CHAN)) names)
+                        -> Either TError
+                                  (DList String (\s => Pair (Label s) (Expr l newGlobal CHAN)) names)
+updatePorts newGlobal []
+  = pure Nil
+
+updatePorts newGlobal ((L s, x) :: xs)
+  = do x <- update newGlobal x
+       xs <- updatePorts newGlobal xs
+       pure ((L s, x)::xs)
+
 updateChans: (newGlobal : Context)
           -> (es : Vect (S (S n)) (Expr local global type))
           -> Either TError (Vect (S (S n)) (Expr local newGlobal type))
@@ -94,8 +106,8 @@ update newGlobal (MDecl xs) =
 update newGlobal NewChan = pure NewChan
 
 update newGlobal (NewModule xs) =
-    do xs' <- traverse (updateKV newGlobal) xs
-       pure (NewModule xs')
+    do xs <- updatePorts newGlobal xs
+       pure (NewModule xs)
 
 update newGlobal (Not o i) =
     do x' <- update newGlobal o
@@ -107,5 +119,7 @@ update newGlobal (Gate ty o xs) =
        xs' <- traverse (update newGlobal) xs
        pure (Gate ty o' xs')
 
+update newGlobal NoOp
+  = pure NoOp
 
 -- [ EOF ]

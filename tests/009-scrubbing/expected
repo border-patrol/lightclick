@@ -53,16 +53,16 @@ module Top ();
   wire logic world_ready_scrub_ready;
   scrub lightclick_module_0
      (
-       .data_o(scrub_data_o_world_data_o),
-       .data_i(world_data_i_scrub_data_i),
        .clk(world_clk_scrub_clk),
+       .data_i(world_data_i_scrub_data_i),
+       .data_o(scrub_data_o_world_data_o),
        .ready(world_ready_scrub_ready)
      );
   world lightclick_module_1
      (
-       .data_o(scrub_data_o_world_data_o),
-       .data_i(world_data_i_scrub_data_i),
        .clk(world_clk_scrub_clk),
+       .data_i(world_data_i_scrub_data_i),
+       .data_o(scrub_data_o_world_data_o),
        .ready(world_ready_scrub_ready)
      );
 
@@ -127,25 +127,25 @@ module Top ();
   world lightclick_module_0
      (
        .clk(world_clk_scrub_clk),
-       .ready(world_ready_scrub_ready),
-       .select(mux_scrub_data_i_world_select_world_data_ia_world_data_ib_control),
        .data_ia(mux_scrub_data_i_world_select_world_data_ia_world_data_ib_fanin_world_data_ia_input_fan_2_data_ia),
        .data_ib(mux_scrub_data_i_world_select_world_data_ia_world_data_ib_fanin_world_data_ib_input_fan_1_data_ib),
-       .data_o(scrub_data_o_world_data_o)
+       .data_o(scrub_data_o_world_data_o),
+       .ready(world_ready_scrub_ready),
+       .select(mux_scrub_data_i_world_select_world_data_ia_world_data_ib_control)
      );
   scrub lightclick_module_1
      (
        .clk(world_clk_scrub_clk),
-       .ready(world_ready_scrub_ready),
        .data_i(mux_scrub_data_i_world_select_world_data_ia_world_data_ib_output),
-       .data_o(scrub_data_o_world_data_o)
+       .data_o(scrub_data_o_world_data_o),
+       .ready(world_ready_scrub_ready)
      );
   mux_scrub_data_i_world_select_world_data_ia_world_data_ib lightclick_module_2
      (
        .control_select(mux_scrub_data_i_world_select_world_data_ia_world_data_ib_control),
-       .output_data_i(mux_scrub_data_i_world_select_world_data_ia_world_data_ib_output),
+       .input_fan_1_data_ib(mux_scrub_data_i_world_select_world_data_ia_world_data_ib_fanin_world_data_ib_input_fan_1_data_ib),
        .input_fan_2_data_ia(mux_scrub_data_i_world_select_world_data_ia_world_data_ib_fanin_world_data_ia_input_fan_2_data_ia),
-       .input_fan_1_data_ib(mux_scrub_data_i_world_select_world_data_ia_world_data_ib_fanin_world_data_ib_input_fan_1_data_ib)
+       .output_data_i(mux_scrub_data_i_world_select_world_data_ia_world_data_ib_output)
      );
 
 endmodule;

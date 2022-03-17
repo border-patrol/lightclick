@@ -329,8 +329,8 @@ term env (GATE fc ty fs output prf)
 
          nF  <- genNameFan fs
 
-         let c_out_name = newName [Gates.toString ty, nO, nF, "out"]
-         let c_in_name  = newName [toString ty, nO, nF, "in"]
+         let c_out_name = newName [show ty, nO, nF, "out"]
+         let c_in_name  = newName [show ty, nO, nF, "in"]
 
          (ins', conns) <- Gate.FanIn.newConn c_in_name tyO fs
 

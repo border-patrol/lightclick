@@ -145,23 +145,23 @@ module Top ();
   client_d lightclick_module_0
      (
        .clk(fan_out_from_system_clk_to_scrub_clk_client_clk_client_d_clk),
-       .ready(client_d_ready_decider_inB),
+       .data_i(fan_out_from_scrub_clean_to_client_data_i_client_d_data_i),
        .data_o(mux_scrub_dirty_clone_outA_client_data_o_client_d_data_o_fanin_client_d_data_o_input_fan_1_data_o),
-       .data_i(fan_out_from_scrub_clean_to_client_data_i_client_d_data_i)
+       .ready(client_d_ready_decider_inB)
      );
   client lightclick_module_1
      (
        .clk(fan_out_from_system_clk_to_scrub_clk_client_clk_client_d_clk),
-       .ready(client_ready_decider_inA),
+       .data_i(fan_out_from_scrub_clean_to_client_data_i_client_d_data_i),
        .data_o(mux_scrub_dirty_clone_outA_client_data_o_client_d_data_o_fanin_client_data_o_input_fan_2_data_o),
-       .data_i(fan_out_from_scrub_clean_to_client_data_i_client_d_data_i)
+       .ready(client_ready_decider_inA)
      );
   scrub lightclick_module_2
      (
+       .clean(fan_out_from_scrub_clean_to_client_data_i_client_d_data_i),
        .clk(fan_out_from_system_clk_to_scrub_clk_client_clk_client_d_clk),
        .dirty(mux_scrub_dirty_clone_outA_client_data_o_client_d_data_o_output),
-       .ready(reduce_out_scrub_ready),
-       .clean(fan_out_from_scrub_clean_to_client_data_i_client_d_data_i)
+       .ready(reduce_out_scrub_ready)
      );
   reduce lightclick_module_3
      (
@@ -177,9 +177,9 @@ module Top ();
   mux_scrub_dirty_clone_outA_client_data_o_client_d_data_o lightclick_module_5
      (
        .control_outA(mux_scrub_dirty_clone_outA_client_data_o_client_d_data_o_control),
-       .output_dirty(mux_scrub_dirty_clone_outA_client_data_o_client_d_data_o_output),
+       .input_fan_1_data_o(mux_scrub_dirty_clone_outA_client_data_o_client_d_data_o_fanin_client_d_data_o_input_fan_1_data_o),
        .input_fan_2_data_o(mux_scrub_dirty_clone_outA_client_data_o_client_d_data_o_fanin_client_data_o_input_fan_2_data_o),
-       .input_fan_1_data_o(mux_scrub_dirty_clone_outA_client_data_o_client_d_data_o_fanin_client_d_data_o_input_fan_1_data_o)
+       .output_dirty(mux_scrub_dirty_clone_outA_client_data_o_client_d_data_o_output)
      );
   decider lightclick_module_6
      (

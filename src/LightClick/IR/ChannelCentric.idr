@@ -52,6 +52,7 @@ data ChannelIR : TyIR -> Type where
       -> ChannelIR PORT
 
   CChan : ChannelIR DATA -> ChannelIR CHAN
+  CNoOp : ChannelIR CHAN
 
   CModuleInst : {n : Nat}
               -> (mname : ChannelIR MODULE)
@@ -128,6 +129,7 @@ mutual
   showC (CDataUnion {n} xs) = "(TyUnion " <+> show (showC xs) <+> ")"
 
   showC (CChan x) = "(CChan " <+> showC x <+> ")"
+  showC (CNoOp) = "(CNoOp)"
 
   showC (CIDX l m) =
     "(CIDX "
@@ -276,6 +278,9 @@ mutual
     = do c' <- convert c
          p  <- mkConn idx c'
          pure p
+
+  convert (MNoOp idx)
+    = mkConn idx CNoOp
 
 export
 channelise : (m : ModuleIR type) -> LightClick (ChannelIR type)

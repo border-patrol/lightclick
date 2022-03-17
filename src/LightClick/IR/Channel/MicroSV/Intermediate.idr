@@ -72,12 +72,13 @@ data MicroSvIR : (lctxt : Context)
         -> (type  : MicroSvIR ctxt DATA)
         -> MicroSvIR ctxt (PORT label)
 
-    MDecl : DList String (\s => MicroSvIR ctxt (PORT s)) names
+    MDecl : DList String (MicroSvIR ctxt . PORT) names
          -> MicroSvIR ctxt (MODULE names)
 
     -- Ctors
+    NoOp    : MicroSvIR ctxt CHAN
     NewChan : MicroSvIR ctxt CHAN
-    NewModule : List (Pair String (MicroSvIR ctxt CHAN))
+    NewModule : DList String (\s => Pair (Label s) (MicroSvIR ctxt CHAN)) names
              -> MicroSvIR ctxt (MINST names)
 
     -- Gates
@@ -177,11 +178,15 @@ mutual
 
   chans : {local : _}
        -> (e  : TEnv local)
-       -> (cs : Vect n (String, ChannelIR CHAN))
-             -> LightClick (List (String, (MicroSvIR local CHAN)))
-  chans e cs
-    = do cs' <- traverse (chan e) cs
-         pure (toList cs')
+       -> (cs : List (String, ChannelIR CHAN))
+             -> LightClick (DPair (List String) (DList String (\s => Pair (Label s) (MicroSvIR local CHAN))))
+  chans e []
+    = pure (_ ** Nil)
+
+  chans e (x :: xs)
+    = do (s,x) <- chan e x
+         (ss ** xs) <- chans e xs
+         pure (s::ss ** (L s,x) :: xs)
 
   %inline
   chan' : {local : _}
@@ -365,9 +370,15 @@ mutual
 
   convert e (CModuleInst _ kvs) with (e)
     convert e (CModuleInst _ kvs) | (MkTEnv decls local)
-      = do xs' <- chans e kvs
-           let ns = map fst xs'
-           pure (MkTRes decls (NewModule xs') (CM (sort ns)))
+        = do (ns ** kvs) <- chans e kvsSorted
+             pure (MkTRes decls (NewModule kvs) (CM ns))
+      where
+        kvCompare : (x,y : (String, ChannelIR CHAN))
+                        -> Ordering
+        kvCompare x y = compare (fst x) (fst y)
+
+        kvsSorted : List (String, ChannelIR CHAN)
+        kvsSorted = sortBy kvCompare (toList kvs)
 
   -- [ Gates ]
   convert e (CNot o i) with (e)
@@ -381,6 +392,8 @@ mutual
       = do o'  <- chan' e o
            is' <- chans' e ins
            pure (MkTRes decls (Gate ty o' is') GG)
+
+  convert (MkTEnv ds l) CNoOp = pure (MkTRes ds NoOp CC)
 
 export
 systemVerilog : (c : ChannelIR UNIT) -> LightClick MicroSvIrSpec

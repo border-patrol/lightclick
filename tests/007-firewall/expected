@@ -195,103 +195,103 @@ module Top ();
   mac lightclick_module_0
      (
        .clk(fan_out_from_sys_clk_to_mac_clk_iconv_clk_pparser_clk_pbuffer_clk_decider_clk_rulebase_clk_oconv_clk),
-       .rst(fan_out_from_sys_rst_to_mac_rst_iconv_rst_pparser_rst_pbuffer_rst_decider_rst_rulebase_rst_oconv_rst),
-       .data_out(mac_data_out_iconv_data_in),
-       .src_rdy_out(mac_src_rdy_out_iconv_src_rdy_in),
-       .dst_rdy_out(iconv_dst_rdy_in_mac_dst_rdy_out),
-       .sof_out(mac_sof_out_iconv_sof_in),
-       .eof_out(mac_eof_out_iconv_eof_in),
        .data_in(oconv_data_out_mac_data_in),
-       .src_rdy_in(oconv_src_rdy_out_mac_src_rdy_in),
+       .data_out(mac_data_out_iconv_data_in),
        .dst_rdy_in(mac_dst_rdy_in_oconv_dst_rdy_out),
+       .dst_rdy_out(iconv_dst_rdy_in_mac_dst_rdy_out),
+       .eof_in(oconv_eof_out_mac_eof_in),
+       .eof_out(mac_eof_out_iconv_eof_in),
+       .rst(fan_out_from_sys_rst_to_mac_rst_iconv_rst_pparser_rst_pbuffer_rst_decider_rst_rulebase_rst_oconv_rst),
        .sof_in(oconv_sof_out_mac_sof_in),
-       .eof_in(oconv_eof_out_mac_eof_in)
+       .sof_out(mac_sof_out_iconv_sof_in),
+       .src_rdy_in(oconv_src_rdy_out_mac_src_rdy_in),
+       .src_rdy_out(mac_src_rdy_out_iconv_src_rdy_in)
      );
   oconv lightclick_module_1
      (
        .clk(fan_out_from_sys_clk_to_mac_clk_iconv_clk_pparser_clk_pbuffer_clk_decider_clk_rulebase_clk_oconv_clk),
-       .rst(fan_out_from_sys_rst_to_mac_rst_iconv_rst_pparser_rst_pbuffer_rst_decider_rst_rulebase_rst_oconv_rst),
        .data_in(decider_data_out_oconv_data_in),
-       .src_rdy_in(decider_src_rdy_out_oconv_src_rdy_in),
-       .dst_rdy_in(oconv_dst_rdy_in_decider_dst_rdy_out),
-       .sof_in(decider_sof_out_oconv_sof_in),
-       .eof_in(decider_eof_out_oconv_eof_in),
        .data_out(oconv_data_out_mac_data_in),
-       .src_rdy_out(oconv_src_rdy_out_mac_src_rdy_in),
+       .dst_rdy_in(oconv_dst_rdy_in_decider_dst_rdy_out),
        .dst_rdy_out(mac_dst_rdy_in_oconv_dst_rdy_out),
+       .eof_in(decider_eof_out_oconv_eof_in),
+       .eof_out(oconv_eof_out_mac_eof_in),
+       .rst(fan_out_from_sys_rst_to_mac_rst_iconv_rst_pparser_rst_pbuffer_rst_decider_rst_rulebase_rst_oconv_rst),
+       .sof_in(decider_sof_out_oconv_sof_in),
        .sof_out(oconv_sof_out_mac_sof_in),
-       .eof_out(oconv_eof_out_mac_eof_in)
+       .src_rdy_in(decider_src_rdy_out_oconv_src_rdy_in),
+       .src_rdy_out(oconv_src_rdy_out_mac_src_rdy_in)
      );
   decider lightclick_module_2
      (
        .clk(fan_out_from_sys_clk_to_mac_clk_iconv_clk_pparser_clk_pbuffer_clk_decider_clk_rulebase_clk_oconv_clk),
-       .rst(fan_out_from_sys_rst_to_mac_rst_iconv_rst_pparser_rst_pbuffer_rst_decider_rst_rulebase_rst_oconv_rst),
        .data_in(pbuffer_data_out_decider_data_in),
-       .src_rdy_in(pbuffer_src_rdy_out_decider_src_rdy_in),
-       .dst_rdy_in(decider_dst_rdy_in_pbuffer_dst_rdy_out),
-       .sof_in(pbuffer_sof_out_decider_sof_in),
-       .eof_in(pbuffer_eof_out_decider_eof_in),
-       .result_in(rulebase_result_out_decider_result_in),
        .data_out(decider_data_out_oconv_data_in),
-       .src_rdy_out(decider_src_rdy_out_oconv_src_rdy_in),
+       .dst_rdy_in(decider_dst_rdy_in_pbuffer_dst_rdy_out),
        .dst_rdy_out(oconv_dst_rdy_in_decider_dst_rdy_out),
+       .eof_in(pbuffer_eof_out_decider_eof_in),
+       .eof_out(decider_eof_out_oconv_eof_in),
+       .result_in(rulebase_result_out_decider_result_in),
+       .rst(fan_out_from_sys_rst_to_mac_rst_iconv_rst_pparser_rst_pbuffer_rst_decider_rst_rulebase_rst_oconv_rst),
+       .sof_in(pbuffer_sof_out_decider_sof_in),
        .sof_out(decider_sof_out_oconv_sof_in),
-       .eof_out(decider_eof_out_oconv_eof_in)
+       .src_rdy_in(pbuffer_src_rdy_out_decider_src_rdy_in),
+       .src_rdy_out(decider_src_rdy_out_oconv_src_rdy_in)
      );
   rulebase lightclick_module_3
      (
        .clk(fan_out_from_sys_clk_to_mac_clk_iconv_clk_pparser_clk_pbuffer_clk_decider_clk_rulebase_clk_oconv_clk),
-       .rst(fan_out_from_sys_rst_to_mac_rst_iconv_rst_pparser_rst_pbuffer_rst_decider_rst_rulebase_rst_oconv_rst),
-       .update_in(pparser_update_out_rulebase_update_in),
        .five_tuple_in(pparser_five_tuple_out_rulebase_five_tuple_in),
-       .result_out(rulebase_result_out_decider_result_in)
+       .result_out(rulebase_result_out_decider_result_in),
+       .rst(fan_out_from_sys_rst_to_mac_rst_iconv_rst_pparser_rst_pbuffer_rst_decider_rst_rulebase_rst_oconv_rst),
+       .update_in(pparser_update_out_rulebase_update_in)
      );
   pbuffer lightclick_module_4
      (
        .clk(fan_out_from_sys_clk_to_mac_clk_iconv_clk_pparser_clk_pbuffer_clk_decider_clk_rulebase_clk_oconv_clk),
-       .rst(fan_out_from_sys_rst_to_mac_rst_iconv_rst_pparser_rst_pbuffer_rst_decider_rst_rulebase_rst_oconv_rst),
        .data_in(pparser_data_out_pbuffer_data_in),
-       .src_rdy_in(pparser_src_rdy_out_pbuffer_src_rdy_in),
-       .dst_rdy_in(pbuffer_dst_rdy_in_pparser_dst_rdy_out),
-       .sof_in(pparser_sof_out_pbuffer_sof_in),
-       .eof_in(pparser_eof_out_pbuffer_eof_in),
        .data_out(pbuffer_data_out_decider_data_in),
-       .src_rdy_out(pbuffer_src_rdy_out_decider_src_rdy_in),
+       .dst_rdy_in(pbuffer_dst_rdy_in_pparser_dst_rdy_out),
        .dst_rdy_out(decider_dst_rdy_in_pbuffer_dst_rdy_out),
+       .eof_in(pparser_eof_out_pbuffer_eof_in),
+       .eof_out(pbuffer_eof_out_decider_eof_in),
+       .rst(fan_out_from_sys_rst_to_mac_rst_iconv_rst_pparser_rst_pbuffer_rst_decider_rst_rulebase_rst_oconv_rst),
+       .sof_in(pparser_sof_out_pbuffer_sof_in),
        .sof_out(pbuffer_sof_out_decider_sof_in),
-       .eof_out(pbuffer_eof_out_decider_eof_in)
+       .src_rdy_in(pparser_src_rdy_out_pbuffer_src_rdy_in),
+       .src_rdy_out(pbuffer_src_rdy_out_decider_src_rdy_in)
      );
   pparser lightclick_module_5
      (
        .clk(fan_out_from_sys_clk_to_mac_clk_iconv_clk_pparser_clk_pbuffer_clk_decider_clk_rulebase_clk_oconv_clk),
-       .rst(fan_out_from_sys_rst_to_mac_rst_iconv_rst_pparser_rst_pbuffer_rst_decider_rst_rulebase_rst_oconv_rst),
        .data_in(iconv_data_out_pparser_data_in),
-       .src_rdy_in(iconv_src_rdy_out_pparser_src_rdy_in),
-       .dst_rdy_in(pparser_dst_rdy_in_iconv_dst_rdy_out),
-       .sof_in(iconv_sof_out_pparser_sof_in),
-       .eof_in(iconv_eof_out_pparser_eof_in),
-       .update_out(pparser_update_out_rulebase_update_in),
-       .five_tuple_out(pparser_five_tuple_out_rulebase_five_tuple_in),
        .data_out(pparser_data_out_pbuffer_data_in),
-       .src_rdy_out(pparser_src_rdy_out_pbuffer_src_rdy_in),
+       .dst_rdy_in(pparser_dst_rdy_in_iconv_dst_rdy_out),
        .dst_rdy_out(pbuffer_dst_rdy_in_pparser_dst_rdy_out),
+       .eof_in(iconv_eof_out_pparser_eof_in),
+       .eof_out(pparser_eof_out_pbuffer_eof_in),
+       .five_tuple_out(pparser_five_tuple_out_rulebase_five_tuple_in),
+       .rst(fan_out_from_sys_rst_to_mac_rst_iconv_rst_pparser_rst_pbuffer_rst_decider_rst_rulebase_rst_oconv_rst),
+       .sof_in(iconv_sof_out_pparser_sof_in),
        .sof_out(pparser_sof_out_pbuffer_sof_in),
-       .eof_out(pparser_eof_out_pbuffer_eof_in)
+       .src_rdy_in(iconv_src_rdy_out_pparser_src_rdy_in),
+       .src_rdy_out(pparser_src_rdy_out_pbuffer_src_rdy_in),
+       .update_out(pparser_update_out_rulebase_update_in)
      );
   iconv lightclick_module_6
      (
        .clk(fan_out_from_sys_clk_to_mac_clk_iconv_clk_pparser_clk_pbuffer_clk_decider_clk_rulebase_clk_oconv_clk),
-       .rst(fan_out_from_sys_rst_to_mac_rst_iconv_rst_pparser_rst_pbuffer_rst_decider_rst_rulebase_rst_oconv_rst),
        .data_in(mac_data_out_iconv_data_in),
-       .src_rdy_in(mac_src_rdy_out_iconv_src_rdy_in),
-       .dst_rdy_in(iconv_dst_rdy_in_mac_dst_rdy_out),
-       .sof_in(mac_sof_out_iconv_sof_in),
-       .eof_in(mac_eof_out_iconv_eof_in),
        .data_out(iconv_data_out_pparser_data_in),
-       .src_rdy_out(iconv_src_rdy_out_pparser_src_rdy_in),
+       .dst_rdy_in(iconv_dst_rdy_in_mac_dst_rdy_out),
        .dst_rdy_out(pparser_dst_rdy_in_iconv_dst_rdy_out),
+       .eof_in(mac_eof_out_iconv_eof_in),
+       .eof_out(iconv_eof_out_pparser_eof_in),
+       .rst(fan_out_from_sys_rst_to_mac_rst_iconv_rst_pparser_rst_pbuffer_rst_decider_rst_rulebase_rst_oconv_rst),
+       .sof_in(mac_sof_out_iconv_sof_in),
        .sof_out(iconv_sof_out_pparser_sof_in),
-       .eof_out(iconv_eof_out_pparser_eof_in)
+       .src_rdy_in(mac_src_rdy_out_iconv_src_rdy_in),
+       .src_rdy_out(iconv_src_rdy_out_pparser_src_rdy_in)
      );
   sys lightclick_module_7
      (

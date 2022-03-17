@@ -37,19 +37,19 @@ module Top ();
   wire logic[31:0] scrub_data_o_system_clean;
   system lightclick_module_0
      (
+       .clean(scrub_data_o_system_clean),
        .clk(system_clk_scrub_rst),
-       .rst(system_rst_scrub_clk),
-       .ready(scrub_ready_system_ready),
        .dirty(system_dirty_scrub_data_i),
-       .clean(scrub_data_o_system_clean)
+       .ready(scrub_ready_system_ready),
+       .rst(system_rst_scrub_clk)
      );
   scrub lightclick_module_1
      (
-       .rst(system_clk_scrub_rst),
        .clk(system_rst_scrub_clk),
-       .ready(scrub_ready_system_ready),
        .data_i(system_dirty_scrub_data_i),
-       .data_o(scrub_data_o_system_clean)
+       .data_o(scrub_data_o_system_clean),
+       .ready(scrub_ready_system_ready),
+       .rst(system_clk_scrub_rst)
      );
 
 endmodule;
@@ -141,11 +141,11 @@ module Top ();
   wire logic[63:0] stepUp_data_o_system_clean;
   system lightclick_module_0
      (
+       .clean(stepUp_data_o_system_clean),
        .clk(fan_out_from_system_clk_to_scrub_clk_stepUp_clk_stepDown_clk),
-       .rst(system_rst_scrub_rst),
-       .ready(scrub_ready_system_ready),
        .dirty(system_dirty_stepDown_data_i),
-       .clean(stepUp_data_o_system_clean)
+       .ready(scrub_ready_system_ready),
+       .rst(system_rst_scrub_rst)
      );
   stepUp lightclick_module_1
      (
@@ -156,10 +156,10 @@ module Top ();
   scrub lightclick_module_2
      (
        .clk(fan_out_from_system_clk_to_scrub_clk_stepUp_clk_stepDown_clk),
-       .rst(system_rst_scrub_rst),
-       .ready(scrub_ready_system_ready),
        .data_i(stepDown_data_o_scrub_data_i),
-       .data_o(scrub_data_o_stepUp_data_i)
+       .data_o(scrub_data_o_stepUp_data_i),
+       .ready(scrub_ready_system_ready),
+       .rst(system_rst_scrub_rst)
      );
   stepDown lightclick_module_3
      (

@@ -82,10 +82,16 @@ mutual
          pure (p'::ps')
 
   chans : (env : TEnv local global)
-       -> (cs  : List (Pair String (MicroSvIR local CHAN)))
-              -> LightClick (List (Pair String (Expr local global CHAN)))
+       -> (cs  : DList String (\s => Pair (Label s) (MicroSvIR local CHAN)) names)
+              -> LightClick (DList String (\s => Pair (Label s) (Expr local global CHAN)) names)
 
-  chans env = traverse (\(l,e) => do {e' <- convert env e; pure (l,e')})
+  chans env []
+    = pure Nil
+
+  chans env ((L s, x) :: xs)
+    = do x <- convert env x
+         xs <- chans env xs
+         pure ((L s, x) :: xs)
 
   convert : (env  : TEnv local global)
          -> (expr : MicroSvIR local type)
@@ -152,6 +158,9 @@ mutual
   -- [ Value Constructors ]
   convert env NewChan
     = pure NewChan
+
+  convert env NoOp
+    = pure NoOp
 
   convert env (NewModule xs)
     = pure (NewModule !(chans env xs))

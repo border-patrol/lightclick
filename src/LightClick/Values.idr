@@ -110,6 +110,7 @@ data Value : TyValue -> Type where
         -> Value (PORT p)
         -> Value CONN
 
+  VNoOp : Value (PORT p) -> Value CONN
 
 export
 getType : {type : TyValue} -> Value type -> TyValue
@@ -207,7 +208,8 @@ showV (VGate ty o ins)
 showV (VConnG c idx)
   = unwords ["(VConnG", showV c, showV idx, ")"]
 
-
+showV (VNoOp p)
+  = unwords ["(VNoOp", showV p, ")"]
 export
 Show (Value type) where
   show = assert_total showV -- TODO

@@ -11,6 +11,7 @@ import Toolkit.Data.Vect.Extra
 
 import public Language.SystemVerilog.MetaTypes
 import public Language.SystemVerilog.Direction
+import public Language.SystemVerilog.Necessity
 import public Language.SystemVerilog.Gates
 
 %default total
@@ -66,12 +67,13 @@ data Expr : (lctxt : Context)
         -> (type  : Expr lctxt gctxt DATA)
         -> Expr lctxt gctxt (PORT label)
 
-    MDecl : (ports : DList String (\s => Expr lctxt gctxt (PORT s)) names)
+    MDecl : (ports : DList String (Expr lctxt gctxt . PORT) names)
          -> Expr lctxt gctxt (MODULE names)
 
     -- Ctors
     NewChan : Expr ctxt gctxt CHAN
-    NewModule : List (Pair String (Expr ctxt gctxt CHAN))
+    NoOp : Expr ctxt gctxt CHAN
+    NewModule : DList String (\s => Pair (Label s) (Expr ctxt gctxt CHAN)) names
              -> Expr ctxt gctxt (MINST names)
 
     -- Gates
