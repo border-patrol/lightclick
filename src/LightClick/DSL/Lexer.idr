@@ -16,6 +16,7 @@ keywords = [ "input", "output", "inout"
            , "control", "clock", "data", "address", "reset", "info", "interrupt", "general"
            , "types", "modules", "connections", "module"
            , "logic", "typedef", "struct", "union", "lightclick", "model", "verilog"
+           , "required", "optional"
            ]
 
 public export

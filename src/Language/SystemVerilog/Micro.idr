@@ -11,7 +11,6 @@ import Toolkit.Data.Vect.Extra
 
 import public Language.SystemVerilog.MetaTypes
 import public Language.SystemVerilog.Direction
-import public Language.SystemVerilog.Necessity
 import public Language.SystemVerilog.Gates
 
 %default total

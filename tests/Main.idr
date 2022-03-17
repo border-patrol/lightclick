@@ -25,6 +25,7 @@ tests
         , "010-gates"
         , "011-paper"
         , "012-tutorial"
+        , "013-optional"
         ]
 
 covering

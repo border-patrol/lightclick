@@ -237,6 +237,10 @@ term env (Index fc {names} {port} mref label prf use getP)
        pure (R b (VIDX label (VRef mref (MODULE names)) p))
 
 -- [ Connections ]
+term env (NoOp fc tm)
+  = do R b tm <- term env tm
+       pure (R b (VNoOp tm))
+
 term env (Connect fc left right prf)
 
     = do R b l <- term env left

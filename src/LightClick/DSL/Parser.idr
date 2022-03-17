@@ -99,7 +99,7 @@ typeDef = do
 necessity : Rule Necessity
 necessity
     = do {keyword "required"; pure Required}
-  <|> do {keyword "opt";      pure Optional}
+  <|> do {keyword "optional";      pure Optional}
 
 direction : Rule Direction
 direction = do {keyword "inout";  pure INOUT}

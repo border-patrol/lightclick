@@ -430,11 +430,11 @@ namespace FreePort
 
 
 isUsed : (ctxt : Context curr)
-              -> Dec (All CanStop curr)
+              -> Dec (All IsUsed curr)
 isUsed []
   = Yes []
 
-isUsed ((I name item) :: rest) with (canStop item)
+isUsed ((I name item) :: rest) with (isUsed item)
   isUsed ((I name item) :: rest) | (Yes prf) with (isUsed rest)
     isUsed ((I name item) :: rest) | (Yes prf) | (Yes x)
       = Yes (prf :: x)
@@ -444,15 +444,33 @@ isUsed ((I name item) :: rest) with (canStop item)
   isUsed ((I name item) :: rest) | (No contra)
     = No (\(x::xs) => contra x)
 
+canStop : (ctxt : Context curr)
+               -> Dec (All CanStop curr)
+canStop []
+  = Yes []
+
+canStop ((I name item) :: rest) with (canStop item)
+  canStop ((I name item) :: rest) | (Yes prf) with (canStop rest)
+    canStop ((I name item) :: rest) | (Yes prf) | (Yes x)
+      = Yes (prf :: x)
+
+    canStop ((I name item) :: rest) | (Yes prf) | (No contra)
+      = No (\(x::xs) => contra xs)
+  canStop ((I name item) :: rest) | (No contra)
+    = No (\(x::xs) => contra x)
+
+
 namespace FindFree
 
   freeModulePorts : (p : DVect String (Ty    . PORT) n names)
                  -> (u : DVect String (Usage . PORT) n names)
                       -> List String
   freeModulePorts [] [] = []
-  freeModulePorts ((TyPort x dir sense wty n type) :: y) ((TyPort FREE) :: rest)
+
+  freeModulePorts ((TyPort x dir sense wty Required type) :: y) ((TyPort FREE) :: rest)
     = x :: freeModulePorts y rest
-  freeModulePorts ((TyPort x dir sense wty n type) :: y) ((TyPort USED) :: rest)
+
+  freeModulePorts ((TyPort x dir sense wty n type) :: y) ((TyPort _) :: rest)
     = freeModulePorts y rest
 
   %inline
@@ -460,13 +478,10 @@ namespace FindFree
          -> List String
 
 
-  getFree (I (TyPort label dir sense wty Optional type) (TyPort FREE))
-    = Nil
-
   getFree (I (TyPort label dir sense wty Required type) (TyPort FREE))
     = [label]
 
-  getFree (I x (TyPort USED))
+  getFree (I x (TyPort _))
     = Nil
 
   getFree (I (TyModule x) (TyModule y))
@@ -482,6 +497,58 @@ namespace FindFree
     findFree ((I name x) :: rest) | [] = findFree rest
     findFree ((I name x) :: rest) | (y :: xs)
       = (name,(y::xs)) :: findFree rest
+
+namespace FindNoOp
+
+  freeModulePorts : (p : DVect String (Ty    . PORT) n names)
+                 -> (u : DVect String (Usage . PORT) n names)
+                      -> List String
+  freeModulePorts [] [] = []
+  freeModulePorts ((TyPort x dir sense wty Optional type) :: y) ((TyPort FREE) :: rest)
+    = x :: freeModulePorts y rest
+
+  freeModulePorts ((TyPort x dir sense wty n type) :: y) ((TyPort u) :: rest)
+    = freeModulePorts y rest
+
+  %inline
+  getFree : Item
+         -> List String
+
+
+  getFree (I (TyPort label dir sense wty Optional type) (TyPort FREE))
+    = [label]
+
+  getFree (I x (TyPort _))
+    = Nil
+
+  getFree (I (TyModule x) (TyModule y))
+    = freeModulePorts x y
+
+  getFree (I x _) = Nil
+
+  export
+  findNoOps : (ctxt : Context curr)
+                  -> List ((String, List String))
+  findNoOps [] = []
+  findNoOps ((I name x) :: rest) with (getFree x)
+    findNoOps ((I name x) :: rest) | [] = findNoOps rest
+    findNoOps ((I name x) :: rest) | (y :: xs)
+      = (name,(y::xs)) :: findNoOps rest
+
+noops : (fc   : FileContext)
+     -> (ps   : List (String, List String))
+             -> AST
+noops fc ps
+    = foldr Seq (End' fc) noops'
+  where
+    noop : (String, List String) -> List AST
+    noop (mref, labels)
+      = foldr (\label, acc => NoOp fc (Index fc (Ref fc mref) label) :: acc)
+              Nil
+              labels
+
+    noops' : List AST
+    noops' = foldr (\p, acc => noop p ++ acc) Nil ps
 
 mutual
 
@@ -755,14 +822,26 @@ mutual
 
          pure (R _ _ newEE (GATE fc kind is o prf))
 
-
+  build curr (NoOp fc p)
+    = do (Rp l type new p) <- portRef curr p
+         pure (R _ _ new (NoOp fc p))
   -- [ The End ]
-  build curr (End fc) with (isUsed curr)
-    build curr (End fc) | (Yes prf)
-      = pure (R _ _ Nil (End fc prf))
 
-    build curr (End fc) | (No contra) = throw (UnusedPorts (findFree curr))
+  build curr (End fc) with (canStop curr)
+    build curr (End fc) | (Yes prfStop)
+      = do let nps = noops fc (findNoOps curr)
+           build curr nps
 
+
+    build curr (End fc) | (No contra)
+      = throw (UnusedPorts (findFree curr))
+
+  build curr (End' fc) with (isUsed curr)
+    build curr (End' fc) | (Yes prfStop)
+      = pure (R _ _ Nil (End fc prfStop))
+
+    build curr (End' fc) | (No contra)
+      = throw (UnusedPorts (findFree curr))
 
 export
 termBuilder : (ast : AST)

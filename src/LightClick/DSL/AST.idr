@@ -45,6 +45,9 @@ data AST : Type where
 
   End : FileContext -> AST
 
+  NoOp : FileContext -> AST -> AST
+  End' : FileContext -> AST
+
 mutual
   setKvsFS : String -> Vect n (String, AST) -> Vect n (String, AST)
   setKvsFS x [] = Nil
@@ -103,4 +106,6 @@ mutual
     = GATE (setSource fn x) ty (setFSs fn ps) (setFileName fn y)
   setFileName fn (End fc) = (End (setSource fn fc))
 
+  setFileName fn (End' fc) = (End' (setSource fn fc))
+  setFileName fn (NoOp fc p) = NoOp (setSource fn fc) (setFileName fn p)
 -- [ EOF ]

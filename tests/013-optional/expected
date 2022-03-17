@@ -1,0 +1,38 @@
+LOG : Parsing Complete
+LOG : Type Checking Complete
+LOG : Synth-lification Complete
+LOG : Modularisation Complete
+LOG : Channelisation Complete
+LOG : Normalisation Complete
+LOG : Initial Pass to SystemVerilog Complete
+LOG : Final Pass to SystemVerilog Complete
+LOG : Pretty Printing
+module a  
+(
+  output logic clk,
+  output logic rst
+);
+// TO ADD
+endmodule; 
+
+module b  
+(
+  input logic clk
+);
+// TO ADD
+endmodule; 
+
+module Top ();
+  wire logic a_clk_b_clk;
+  a lightclick_module_0
+     (
+       .clk(a_clk_b_clk),
+       .rst()
+     );
+  b lightclick_module_1
+     (
+       .clk(a_clk_b_clk)
+     );
+
+endmodule;
+LOG : BYE

@@ -712,6 +712,14 @@ mutual
                      -> Term a port b
 
        -- ## Connections
+
+       NoOp : {a,b   : Context}
+           -> {name  : String}
+           -> (fc    : FileContext) -- derived from end of spec
+           -> {type  : Ty (PORT name)}
+           -> (term  : Term a type  b)
+                    -> Term a TyConn b
+
        Connect : {a,b,c : Context}
               -> {pa,pb : String}
               -> {typeA : Ty (PORT pa)}
@@ -787,7 +795,7 @@ mutual
            -> (prf    : Fanin.Compatible ports typeO)
                      -> Term a TyGate c
 
-       End : (fc : FileContext) -> All CanStop ctxt -> Term ctxt TyUnit Nil
+       End : (fc : FileContext) -> All IsUsed ctxt -> Term ctxt TyUnit Nil
 
 export
 getFC : Term old type new -> FileContext
@@ -806,6 +814,7 @@ getFC (FanOut fc input fan prf)         = fc
 getFC (Mux fc fan ctrl output prf)      = fc
 getFC (NOT fc left right prf)           = fc
 getFC (GATE fc ty fan output prf)       = fc
+getFC (NoOp fc p)                       = fc
 getFC (End fc x)                        = fc
 
 -- [ EOF ]
