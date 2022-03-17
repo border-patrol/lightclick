@@ -430,11 +430,11 @@ namespace FreePort
 
 
 isUsed : (ctxt : Context curr)
-              -> Dec (All IsUsed curr)
+              -> Dec (All CanStop curr)
 isUsed []
   = Yes []
 
-isUsed ((I name item) :: rest) with (isUsed item)
+isUsed ((I name item) :: rest) with (canStop item)
   isUsed ((I name item) :: rest) | (Yes prf) with (isUsed rest)
     isUsed ((I name item) :: rest) | (Yes prf) | (Yes x)
       = Yes (prf :: x)
@@ -460,8 +460,12 @@ namespace FindFree
          -> List String
 
 
-  getFree (I (TyPort label dir sense wty n type) (TyPort FREE))
+  getFree (I (TyPort label dir sense wty Optional type) (TyPort FREE))
+    = Nil
+
+  getFree (I (TyPort label dir sense wty Required type) (TyPort FREE))
     = [label]
+
   getFree (I x (TyPort USED))
     = Nil
 

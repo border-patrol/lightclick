@@ -18,24 +18,6 @@ import LightClick.Error
 
 %default total
 
-namespace DVect
-  public export
-  data All : (idx  : Type)
-          -> (type : idx -> Type)
-          -> (p    : {i : idx} -> (x : type i) -> Type)
-          -> (n    : Nat)
-          -> {is   : Vect n idx}
-          -> (xs   : DVect idx type n is)
-                  -> Type
-    where
-      Nil : {p : {i : idx} -> (x : type i) -> Type}
-              -> All idx type p Z Nil
-
-      (::) : {p : {i : idx} -> (x : type i) -> Type}
-          -> (prf : p x)
-          -> (later : All idx type p    n      xs)
-                   -> All idx type p (S n) (x::xs)
-
 namespace Usage
 
   public export
@@ -305,6 +287,80 @@ namespace Context
   isUsed (I x y) with (isUsed y)
     isUsed (I x y) | (Yes prf) = Yes (Used prf)
     isUsed (I x y) | (No contra) = No (\(Used prf) => contra prf)
+
+  mutual
+    public export
+    data CanStop : (item : Item) -> Type where
+      D : CanStop (I tyData TyData)
+      C : CanStop (I TyConn TyConn)
+      G : CanStop (I TyGate TyGate)
+
+      PR : CanStop (I (TyPort k d s w Required type) (TyPort USED))
+      PO : CanStop (I (TyPort k d s w Optional type) (TyPort u))
+
+      M : CanStopPorts ports usages
+       -> CanStop (I (TyModule ports) (TyModule usages))
+
+    Uninhabited (CanStop (I (TyPort k d s w Required type) (TyPort FREE))) where
+      uninhabited D impossible
+
+    public export
+    data CanStopPorts : (ports  : DVect String (Ty    . PORT) n names)
+                     -> (usages : DVect String (Usage . PORT) n names)
+                               -> Type
+      where
+       CSNil : CanStopPorts Nil Nil
+       CSAdd : {ps : DVect String (Ty    . PORT) n names}
+            -> {us : DVect String (Usage . PORT) n names}
+            -> (x  : CanStop (I p u))
+            -> (xs : CanStopPorts ps us)
+                  -> CanStopPorts (p::ps) (u::us)
+  mutual
+    export
+    canStop : (item : Item) -> Dec (CanStop item)
+    canStop (I ty u) = canStop' ty u
+
+    canStop' : (type  : Ty    m)
+            -> (usage : Usage m)
+                     -> Dec (CanStop (I type usage))
+
+    canStop' x TyData
+      = Yes D
+    canStop' TyConn TyConn
+      = Yes C
+    canStop' TyGate TyGate
+      = Yes G
+
+    canStop' (TyPort label dir sense wty Required type) (TyPort FREE)
+      = No absurd
+    canStop' (TyPort label dir sense wty Required type) (TyPort USED)
+      = Yes PR
+
+    canStop' (TyPort label dir sense wty Optional type) (TyPort y)
+      = Yes PO
+
+    canStop' (TyModule x) (TyModule y) with (canStopPorts x y)
+      canStop' (TyModule x) (TyModule y) | (Yes prf)
+        = Yes (M prf)
+
+      canStop' (TyModule x) (TyModule y) | (No contra)
+        = No (\(M prf) => contra prf)
+
+    canStopPorts : (ports  : DVect String (Ty    . PORT) n names)
+                -> (usages : DVect String (Usage . PORT) n names)
+                          -> Dec (CanStopPorts ports usages)
+    canStopPorts [] []
+      = Yes CSNil
+    canStopPorts (p::ps) (u :: us) with (canStop' p u)
+      canStopPorts (p::ps) (u :: us) | (Yes prf) with (canStopPorts ps us)
+        canStopPorts (p::ps) (u :: us) | (Yes prf) | (Yes x)
+          = Yes (CSAdd prf x)
+
+        canStopPorts (p::ps) (u :: us) | (Yes prf) | (No contra)
+          = No (\(CSAdd x xs) => contra xs)
+
+      canStopPorts (p::ps) (u :: us) | (No contra)
+        = No (\(CSAdd x xs) => contra x)
 
   public export
   Context : Type
@@ -731,7 +787,7 @@ mutual
            -> (prf    : Fanin.Compatible ports typeO)
                      -> Term a TyGate c
 
-       End : (fc : FileContext) -> All IsUsed ctxt -> Term ctxt TyUnit Nil
+       End : (fc : FileContext) -> All CanStop ctxt -> Term ctxt TyUnit Nil
 
 export
 getFC : Term old type new -> FileContext
