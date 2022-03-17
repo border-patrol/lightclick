@@ -79,6 +79,11 @@ PrettyError (Sensitivity.Error) where
   toString NoChangeFromFalling
     = "Cannot go from Falling to a different level."
 
+export
+Show Necessity where
+  show Required = "REQ"
+  show Optional = "OPT"
+
 namespace Compatibility
 
   namespace Data
@@ -151,13 +156,14 @@ namespace Types
     toString TyGate
       = "gate"
 
-    toString (TyPort label dir sense wty type)
+    toString (TyPort label dir sense wty n type)
       = unwords [ label
                 , ":"
                 , "port ("
                 , show dir
                 , show sense
                 , show wty
+                , show n
                 , toString type
 
                 , ")"]

@@ -25,6 +25,7 @@ modules =
         , LightClick.Types.Sensitivity
         , LightClick.Types.WireType
         , LightClick.Types.Direction
+        , LightClick.Types.Necessity
 
         , LightClick.Types
         , LightClick.Types.Equality

@@ -1,5 +1,6 @@
 module LightClick.Types.Equality
 
+import public Toolkit.Decidable.Do
 import public Toolkit.Decidable.Equality.Indexed
 
 import public Toolkit.Decidable.Informative
@@ -7,6 +8,8 @@ import public Toolkit.Decidable.Informative
 import Toolkit.Data.Rig
 
 import Toolkit.Data.Vect.Extra
+
+import Toolkit.Data.DVect.View.Shape
 
 import LightClick.Types.Meta
 import LightClick.Types.Direction
@@ -24,370 +27,210 @@ Equals : {a,b : MTy}
       -> Type
 Equals = Equals MTy Ty
 
--- [ No's for Logic vs X]
-namespace Logic
-  export
-  logicNotStruct : (Equals TyLogic (TyStruct xs)) -> Void
-  logicNotStruct (Same _ _) impossible
+-- [ Uninhabited ]
 
-  export
-  logicNotUnion : (Equals TyLogic (TyUnion xs)) -> Void
-  logicNotUnion (Same _ _ ) impossible
+Uninhabited (Equals TyLogic (TyArray ty l)) where
+  uninhabited (Same Refl Refl) impossible
 
-  export
-  logicNotArray : (Equals TyLogic (TyArray x k)) -> Void
-  logicNotArray (Same _ _) impossible
+Uninhabited (Equals TyLogic (TyStruct kvs)) where
+  uninhabited (Same Refl Refl) impossible
 
--- [ No's for Array vs X]
-namespace Array
-  export
-  arrayNotStruct : (Equals (TyArray x k) (TyStruct xs)) -> Void
-  arrayNotStruct (Same _ _) impossible
+Uninhabited (Equals TyLogic (TyUnion kvs)) where
+  uninhabited (Same Refl Refl) impossible
 
-  export
-  arrayNotUnion  : (Equals (TyArray x k) (TyUnion xs)) -> Void
-  arrayNotUnion (Same _ _) impossible
+Uninhabited (Equals (TyArray ty l) (TyUnion kvs)) where
+  uninhabited (Same Refl Refl) impossible
 
-  export
-  arrayDiffIndicies : {k,j : Nat}
-                   -> (contra : (k = j) -> Void)
-                   -> (Equals (TyArray x k) (TyArray y j))
-                   -> Void
-  arrayDiffIndicies contra (Same Refl Refl) {k = j} {j = j} = contra Refl
+Uninhabited (Equals (TyArray ty l) (TyStruct kvs)) where
+  uninhabited (Same Refl Refl) impossible
 
-  export
-  arrayDiffTypes : (contra : (x `Equals` y) -> Void)
-                -> (Equals (TyArray x k) (TyArray y j))
-                -> Void
-  arrayDiffTypes contra (Same Refl Refl) = contra (Same Refl Refl)
+Uninhabited (Equals (TyStruct kvs) (TyUnion kvs')) where
+  uninhabited (Same Refl Refl) impossible
 
--- [ No's for 'Bodies' vs X]
-namespace Body
+Uninhabited (Vect.(::) x xs = Vect.Nil) where
+  uninhabited Refl impossible
 
-  namespace Length
-    export
-    structNotUnion : (TyStruct xs `Equals` TyUnion ys) -> Void
-    structNotUnion (Same _ _) impossible
+Uninhabited (Vect.Nil = Vect.(::) x xs) where
+  uninhabited Refl impossible
 
-    export
-    structDifferBody : {xs : Vect (S n) (Pair String (Ty DATA))}
-                    -> {ys : Vect (S m) (Pair String (Ty DATA))}
-                    -> (contra : (xs = ys) -> Void)
-                    -> (TyStruct xs `Equals` TyStruct ys)
-                    -> Void
-    structDifferBody contra (Same Refl Refl) = contra Refl
+dVectConsNil : x `DVect.(::)` xs = DVect.Nil -> Void
+dVectConsNil Refl impossible
 
-    export
-    unionDifferBody : {xs : Vect (S n) (Pair String (Ty DATA))}
-                   -> {ys : Vect (S m) (Pair String (Ty DATA))}
-                   -> (contra : (xs = ys) -> Void)
-                   -> (TyUnion xs `Equals` TyUnion ys)
-                   -> Void
-    unionDifferBody contra (Same Refl Refl) = contra Refl
-
-    export
-    modDifferBody : {xs : DVect String (Ty . PORT) (S n) ns}
-                 -> {ys : DVect String (Ty . PORT) (S m) ms}
-                 -> (contra : (xs = ys) -> Void)
-                 -> (TyModule xs `Equals` TyModule ys)
-                 -> Void
-    modDifferBody contra (Same Refl Refl) = contra Refl
+dVectNilCons : DVect.Nil = x `DVect.(::)` xs -> Void
+dVectNilCons Refl impossible
 
 
--- [ No's for Ports]
-namespace Ports
-  export
-  portDifferType :  (contra : (tx `Equals` ty) -> Void)
-                -> (TyPort lx dy sy wx tx `Equals` TyPort lx dy sy wy ty)
-                -> Void
-  portDifferType contra (Same Refl Refl) = contra (Same Refl Refl)
-
-
-  export
-  portDifferWire : (contra : (wx = wy) -> Void)
-                -> (TyPort lx dy sy wx tx `Equals` TyPort lx dy sy wy ty)
-                -> Void
-  portDifferWire contra (Same Refl Refl) = contra Refl
-
-  export
-  portDifferSens : (contra : (sx = sy) -> Void)
-                -> (TyPort lx dy sx wx tx `Equals` TyPort lx dy sy wy ty)
-                -> Void
-  portDifferSens contra (Same Refl Refl) = contra Refl
-
-  export
-  portsDifferDir : (contra : (dx = dy) -> Void)
-                -> (TyPort a dx sx wx tx `Equals` TyPort a dy sy wy ty)
-                -> Void
-  portsDifferDir contra (Same Refl Refl) = contra Refl
-
-  export
-  portsDifferLabel : (contra : (lx = ly) -> Void)
-                  -> (TyPort lx dx sx wx tx `Equals` TyPort ly dy sy wy ty)
-                  -> Void
-  portsDifferLabel contra (Same Refl Refl) = contra Refl
-
--- [ No's for Body ]
-namespace Body
-  namespace Length
-    export
-    dataBodyLengthsDiffer : {xs : Vect n (Pair String (Ty DATA))}
-                         -> {ys : Vect m (Pair String (Ty DATA))}
-                         -> (contra : (n = m) -> Void)
-                         -> (xs = ys)
-                         -> Void
-    dataBodyLengthsDiffer contra Refl = contra Refl
-
-    export
-    dataBodyLengthsDiffer' : {xs : Vect (S n) (Pair String (Ty DATA))}
-                          -> {ys : Vect (S m) (Pair String (Ty DATA))}
-                          -> (contra : (xs = ys) -> Void)
-                          -> (xs = ys)
-                          -> Void
-    dataBodyLengthsDiffer' contra Refl = contra Refl
-
-  namespace Values
-
-    namespace Names
-      export
-      modBodyDiffer : {n : Nat}
-                   -> {names : Vect (S n) String}
-                   -> {xs : DVect String (Ty . PORT) (S n) names}
-                   -> {ys : DVect String (Ty . PORT) (S n) names}
-                   -> (contra : (xs = ys) -> Void)
-                   -> (TyModule xs `Equals` TyModule ys)
-                   -> Void
-      modBodyDiffer contra (Same Refl Refl) = contra Refl
-
-
-    namespace Rest
-      export
-      restDataBodyDiffer : {xs : Vect n (Pair String (Ty DATA))}
-                        -> {ys : Vect n (Pair String (Ty DATA))}
-                        -> (contra : (xs = ys) -> Void)
-                        -> (((ky, vy) :: xs) = ((ky, vy) :: ys))
-                        -> Void
-      restDataBodyDiffer contra Refl = contra Refl
-
-      export
-      dataBodyDiffer : {xs : Vect n (Pair String (Ty DATA))}
-                    -> {ys : Vect n (Pair String (Ty DATA))}
-                    -> (contra : (xs = ys) -> Void)
-                    -> (xs = ys)
-                    -> Void
-      dataBodyDiffer contra Refl = contra Refl
-
-
-
-      vRestDiffer : {xs : Vect n (Pair String (Ty DATA))}
-                 -> {ys : Vect m (Pair String (Ty DATA))}
-                 -> (contra : (xs = ys) -> Void)
-                 -> (((ky, vy) :: xs) = ((ky, vy) :: ys))
-                 -> Void
-      vRestDiffer contra Refl = contra Refl
-
-      export
-      dVectElemDiffer : {n : Nat}
-                     -> {ns : Vect n String}
-                     -> {xrest : DVect String (Ty . PORT) n ns}
-                     -> {yrest : DVect String (Ty . PORT) n ns}
-                     -> {x : String}
-                     -> {ex : Ty (PORT x)}
-                     -> {ey : Ty (PORT x)}
-                     -> (contra : (ex `Equals` ey) -> Void)
-                     -> ((ex :: xrest) = (ey :: yrest))
-                     -> Void
-      dVectElemDiffer contra Refl = contra (Same Refl Refl)
-
-      export
-      dVectBodyDiffer : {xrest : DVect String (Ty . PORT) n ns}
-                     -> {yrest : DVect String (Ty . PORT) n ns}
-                     -> (contra : (xrest = yrest) -> Void)
-                     -> ((ey :: xrest) = (ey :: yrest))
-                     -> Void
-      dVectBodyDiffer contra Refl = contra Refl
-
-    namespace Head
-      export
-      elemDataBodyDiffer : {xs : Vect n (Pair String (Ty DATA))}
-                        -> {ys : Vect n (Pair String (Ty DATA))}
-                        -> {vx, vy : Ty DATA}
-                        -> (contra : (vx `Equals` vy) -> Void)
-                        -> (((ky, vx) :: xs) = ((ky, vy) :: ys))
-                        -> Void
-      elemDataBodyDiffer contra Refl = contra (Same Refl Refl)
-
-      export
-      elemDataKeyDiffer : {xs : Vect n (Pair String (Ty DATA))}
-                       -> {ys : Vect n (Pair String (Ty DATA))}
-                       -> {vx, vy : Ty DATA}
-                       -> (contra : (kx = ky) -> Void)
-                       -> (((kx, vx) :: xs) = ((ky, vy) :: ys))
-                       -> Void
-      elemDataKeyDiffer contra Refl = contra Refl
-
-
-export
-decEq : (x : Ty i)
-     -> (y : Ty j)
+-- [ Declarations ]
+decEq : (x   : Ty i)
+     -> (y   : Ty j)
      -> (prf : i = j)
-     -> Dec (Equals MTy Ty x y)
+            -> Dec (Equals MTy Ty x y)
 
-namespace Fields
+kvpair : (x : (Pair String (Ty DATA)))
+      -> (y : (Pair String (Ty DATA)))
+           -> Dec (x = y)
 
-  differentLengthLeft : {y : String}
-                     -> {z : Ty DATA}
-                     -> (y, z) `Vect.(::)` (x `Vect.(::)` xs) = (y, z) `Vect.(::)` Nil -> Void
-  differentLengthLeft _ impossible
+kvpairs : (xs : Vect n (Pair String (Ty DATA)))
+       -> (ys : Vect m (Pair String (Ty DATA)))
+           -> Dec (xs = ys)
 
-  differentLengthRight : {y : String}
-                      -> {z : Ty DATA}
-                      -> (y, z) `Vect.(::)` Nil = (y, z) `Vect.(::)` (x `Vect.(::)` xs) -> Void
-  differentLengthRight _ impossible
+ports : (xs : DVect String (Ty . PORT) n ns)
+     -> (ys : DVect String (Ty . PORT) m ms)
+           -> Dec (xs = ys)
 
-  headTypeDiff : {xs : Vect m (Pair String (Ty DATA))}
-              -> {ys : Vect n (Pair String (Ty DATA))}
-              -> {z,w : Ty DATA}
-              -> (Equals MTy Ty z w -> Void)
-              -> (y, z) `Vect.(::)` xs = (y, w) `Vect.(::)` ys
-              -> Void
-  headTypeDiff contra Refl = contra (Same Refl Refl)
+-- with (shape xs ys)
 
-  headLabelDiff : {xs : Vect m (Pair String (Ty DATA))}
-               -> {ys : Vect n (Pair String (Ty DATA))}
-               -> (x = y -> Void)
-               -> {z,w : Ty DATA}
-               -> (x, z) `Vect.(::)` xs = (y, w) `Vect.(::)` ys
-               -> Void
-  headLabelDiff contra Refl = contra Refl
+-- [ Definitions ]
 
-  fieldsAreNotEqual : {xs : Vect m (Pair String (Ty DATA))}
-                   -> {ys : Vect n (Pair String (Ty DATA))}
-                   -> (x `Vect.(::)` xs = y' `Vect.(::)` ys -> Void)
-                   -> (y, z) `Vect.(::)` (x `Vect.(::)` xs) = (y, z) `Vect.(::)` (y' `Vect.(::)` ys)
-                   -> Void
-  fieldsAreNotEqual contra Refl = contra Refl
+-- ## Ports
 
-  export
-  decEq : (xs : Vect (S n) (Pair String (Ty DATA)))
-       -> (ys : Vect (S m) (Pair String (Ty DATA)))
-             -> Dec (xs = ys)
-  decEq {n} xs {m} ys  with (shape xs ys)
-    decEq {n = n} ((x, z) :: xs) {m = m} ((y, w) :: ys) | Both with (decEq x y)
-      decEq {n = n} ((y, z) :: xs) {m = m} ((y, w) :: ys) | Both | (Yes Refl) with (Equality.decEq z w Refl)
-        decEq {n = n} ((y, z) :: xs) {m = m} ((y, z) :: ys) | Both | (Yes Refl) | (Yes (Same Refl Refl)) with (shape xs ys)
-          decEq {n = 0} ((y, z) :: []) {m = 0} ((y, z) :: []) | Both | (Yes Refl) | (Yes (Same Refl Refl)) | Empty = Yes Refl
+ports {n} {ns} {m} {ms} xs ys with (shape xs ys)
+  ports {n = 0} {ns = []} {m = 0} {ms = []} [] [] | Empty
+    = Yes Refl
 
-          decEq {n = (S len)} ((y, z) :: (x :: xs)) {m = 0} ((y, z) :: []) | Both | (Yes Refl) | (Yes (Same Refl Refl)) | LH = No differentLengthLeft
-          decEq {n = 0} ((y, z) :: []) {m = (S len)} ((y, z) :: (y' :: ys)) | Both | (Yes Refl) | (Yes (Same Refl Refl)) | RH = No differentLengthRight
+  ports {n = (S n)} {ns = (x' :: xs')} {m = 0} {ms = []} (x :: xs) [] | LH
+    = No dVectConsNil
+  ports {n = 0} {ns = []} {m = (S n)} {ms = (x :: xs)} [] (y :: ys) | RH
+    = No (dVectNilCons)
 
-          decEq {n = (S len)} ((y, z) :: (x :: xs)) {m = (S len)} ((y, z) :: (y' :: ys)) | Both | (Yes Refl) | (Yes (Same Refl Refl)) | Both with (Fields.decEq (x::xs) (y'::ys))
-            decEq {n = (S len)} ((y, z) :: (x :: xs)) {m = (S len)} ((y, z) :: (x :: xs)) | Both | (Yes Refl) | (Yes (Same Refl Refl)) | Both | (Yes Refl) = Yes Refl
-            decEq {n = (S len)} ((y, z) :: (x :: xs)) {m = (S len)} ((y, z) :: (y' :: ys)) | Both | (Yes Refl) | (Yes (Same Refl Refl)) | Both | (No contra) = No (fieldsAreNotEqual contra)
+  ports {n = (S n)} {ns = (x' :: xs')} {m = (S n)} {ms = (y' :: ys')} (x :: xs) (y :: ys) | Both
+    = case decEq x' y' of
+        No contra => No (\Refl => contra Refl)
+        Yes Refl =>
+          case decEq x y Refl of
+            No contra => No (\Refl => contra (Same Refl Refl))
+            Yes (Same Refl Refl) =>
+              case ports xs ys of
+                No contra => No (\Refl => contra Refl)
+                Yes Refl => Yes Refl
 
-        decEq {n = n} ((y, z) :: xs) {m = m} ((y, w) :: ys) | Both | (Yes Refl) | (No contra) = No (headTypeDiff contra)
-      decEq {n = n} ((x, z) :: xs) {m = m} ((y, w) :: ys) | Both | (No contra) = No (headLabelDiff contra)
+-- ## KVPair
 
-namespace Port
+kvpair (xk, xv) (yk,yv) with (decEq xk yk)
+  kvpair (xk, xv) (xk,yv) | (Yes Refl) with (decEq xv yv Refl)
+    kvpair (xk, xv) (xk,xv) | (Yes Refl) | (Yes (Same Refl Refl))
+      = Yes Refl
+    kvpair (xk, xv) (xk,yv) | (Yes Refl) | (No contra)
+      = No (\Refl => contra (Same Refl Refl))
 
-  export
-  decEq : (x : Ty (PORT a))
-       -> (y : Ty (PORT b))
-       -> Dec (Equals x y)
-  decEq (TyPort a dx sx wx tx) (TyPort b dy sy wy ty) with (decEq a b)
-    decEq (TyPort a dx sx wx tx) (TyPort a dy sy wy ty) | (Yes Refl) with (decEq dx dy)
-      decEq (TyPort a dx sx wx tx ) (TyPort a dx sy wy ty) | (Yes Refl) | (Yes Refl) with (decEq sx sy)
-        decEq (TyPort a dx sx wx tx ) (TyPort a dx sx wy ty ) | (Yes Refl) | (Yes Refl) | (Yes Refl) with (decEq wx wy)
-          decEq (TyPort a dx sx wx tx ) (TyPort a dx sx wx ty ) | (Yes Refl) | (Yes Refl) | (Yes Refl) | (Yes Refl) with (decEq tx ty Refl)
-            decEq (TyPort a dx sx wx tx ) (TyPort a dx sx wx tx ) | (Yes Refl) | (Yes Refl) | (Yes Refl) | (Yes Refl) | (Yes (Same Refl Refl))
-              = Yes (Same Refl Refl)
-            decEq (TyPort a dx sx wx tx ) (TyPort a dx sx wx ty ) | (Yes Refl) | (Yes Refl) | (Yes Refl) | (Yes Refl) | (No contra)
-              = No (portDifferType contra)
-
-          decEq (TyPort a dx sx wx tx ) (TyPort a dx sx wy ty ) | (Yes Refl) | (Yes Refl) | (Yes Refl) | (No contra) = No (portDifferWire contra)
-        decEq (TyPort a dx sx wx tx ) (TyPort a dx sy wy ty ) | (Yes Refl) | (Yes Refl) | (No contra) = No (portDifferSens contra)
-      decEq (TyPort a dx sx wx tx ) (TyPort a dy sy wy ty ) | (Yes Refl) | (No contra) = No (portsDifferDir contra)
-    decEq (TyPort a dx sx wx tx ) (TyPort b dy sy wy ty ) | (No contra) = No (portsDifferLabel contra)
+  kvpair (xk, xv) (yk,yv) | (No contra)
+    = No (\Refl => contra Refl)
 
 
-namespace Ports
+-- ## KVPairs
 
-  export
-  decEq : {n :Nat}
-       -> {ns : _}
-       -> (xs : DVect String (Ty . PORT) n ns)
-       -> (ys : DVect String (Ty . PORT) n ns)
-             -> Dec (xs = ys)
-  decEq [] [] = Yes Refl
-  decEq (x :: xs) (y :: ys) with (Port.decEq x y)
-    decEq (x :: xs) (x :: ys) | (Yes (Same Refl Refl)) with (Ports.decEq xs ys)
-      decEq (x :: xs) (x :: xs) | (Yes (Same Refl Refl)) | (Yes Refl) = Yes Refl
-      decEq (x :: xs) (y :: ys) | (Yes (Same Refl Refl)) | (No contra) = No (dVectBodyDiffer contra)
-    decEq (x :: xs) (y :: ys) | (No contra) = No (dVectElemDiffer contra)
+kvpairs {n} xs {m} ys with (shape xs ys)
+  kvpairs {n = 0} [] {m = 0} [] | Empty
+    = Yes Refl
 
--- [ Body ]
+  kvpairs {n = (S len)} (x :: xs) {m = 0} [] | LH
+    = No absurd
 
--- [ Logic Types]
-decEq TyLogic TyLogic Refl = Yes (Same Refl Refl)
-decEq TyLogic (TyArray x k) Refl = No logicNotArray
-decEq TyLogic (TyStruct xs) Refl = No logicNotStruct
-decEq TyLogic (TyUnion xs) Refl = No logicNotUnion
+  kvpairs {n = 0} [] {m = (S len)} (y :: ys) | RH
+    = No absurd
 
--- [ Array Types ]
-decEq (TyArray x k) TyLogic Refl = No (negEqSym logicNotArray)
+  kvpairs {n = (S len)} (x :: xs) {m = (S len)} (y :: ys) | Both
+    = decDo $ do Refl <- kvpair x y    `otherwise` (\Refl => Refl)
+                 Refl <- kvpairs xs ys `otherwise` (\Refl => Refl)
+                 pure Refl
 
-decEq (TyArray x i) (TyArray y j) Refl with (decEq i j)
-  decEq (TyArray x i) (TyArray y i) Refl | (Yes Refl) with (decEq x y Refl)
-    decEq (TyArray x i) (TyArray x i) Refl | (Yes Refl) | (Yes (Same Refl Refl))
+-- ## Main DecEq
+
+decEq TyLogic y Refl with (y)
+  decEq TyLogic y Refl | TyLogic
+    = Yes (Same Refl Refl)
+
+  decEq TyLogic y Refl | (TyArray type length)
+    = No absurd
+
+  decEq TyLogic y Refl | (TyStruct kvs)
+    = No absurd
+
+  decEq TyLogic y Refl | (TyUnion kvs)
+    = No absurd
+
+decEq (TyArray type length) y Refl with (y)
+  decEq (TyArray type length) y Refl | TyLogic
+    = No (negEqSym absurd)
+
+  decEq (TyArray type length) y Refl | (TyArray typeB lengthB) with (decEq type typeB Refl)
+    decEq (TyArray typeB length) y Refl | (TyArray typeB lengthB) | (Yes (Same Refl Refl)) with (decEq length lengthB)
+      decEq (TyArray typeB length) y Refl | (TyArray typeB length) | (Yes (Same Refl Refl)) | (Yes Refl)
+        = Yes (Same Refl Refl)
+      decEq (TyArray typeB length) y Refl | (TyArray typeB lengthB) | (Yes (Same Refl Refl)) | (No contra)
+        = No (\(Same Refl Refl) => contra Refl)
+
+    decEq (TyArray type length) y Refl | (TyArray typeB lengthB) | (No contra)
+      = No (\(Same Refl Refl) => contra (Same Refl Refl))
+
+  decEq (TyArray type length) y Refl | (TyStruct kvs)
+    = No absurd
+
+  decEq (TyArray type length) y Refl | (TyUnion kvs)
+    = No absurd
+
+decEq (TyStruct kvs) y Refl with (y)
+  decEq (TyStruct kvs) y Refl | TyLogic
+    = No (negEqSym absurd)
+
+  decEq (TyStruct kvs) y Refl | (TyArray type length)
+   = No (negEqSym absurd)
+
+  decEq (TyStruct kvs) y Refl | (TyStruct kvs') with (kvpairs kvs kvs')
+    decEq (TyStruct kvs) y Refl | (TyStruct kvs) | (Yes Refl)
       = Yes (Same Refl Refl)
-    decEq (TyArray x i) (TyArray y i) Refl | (Yes Refl) | (No contra)
-      = No (arrayDiffTypes contra)
-  decEq (TyArray x i) (TyArray y j) Refl | (No contra)
-    = No (arrayDiffIndicies contra)
 
-decEq (TyArray x k) (TyStruct xs) Refl = No arrayNotStruct
-decEq (TyArray x k) (TyUnion xs) Refl = No arrayNotUnion
+    decEq (TyStruct kvs) y Refl | (TyStruct kvs') | (No contra)
+      = No (\(Same Refl Refl) => contra Refl)
 
--- [ Structs ]
-decEq (TyStruct xs) TyLogic Refl = No (negEqSym logicNotStruct)
-decEq (TyStruct xs) (TyArray type length) Refl = No (negEqSym arrayNotStruct)
+  decEq (TyStruct kvs) y Refl | (TyUnion xs)
+    = No absurd
 
-decEq (TyStruct xs) (TyStruct ys) Refl with (Fields.decEq xs ys)
-  decEq (TyStruct xs) (TyStruct xs) Refl | (Yes Refl)  = Yes (Same Refl Refl)
-  decEq (TyStruct xs) (TyStruct ys) Refl | (No contra) = No (structDifferBody contra)
+decEq (TyUnion kvs) y Refl with (y)
+  decEq (TyUnion kvs) y Refl | TyLogic
+    = No (negEqSym absurd)
 
-decEq (TyStruct xs) (TyUnion kvs) Refl = No structNotUnion
+  decEq (TyUnion kvs) y Refl | (TyArray type length)
+    = No (negEqSym absurd)
 
--- [ Unions ]
-decEq (TyUnion xs) TyLogic Refl = No (negEqSym logicNotUnion)
-decEq (TyUnion xs) (TyArray type length) Refl = No (negEqSym arrayNotUnion)
-decEq (TyUnion xs) (TyStruct kvs) Refl = No (negEqSym structNotUnion)
+  decEq (TyUnion kvs) y Refl | (TyStruct xs)
+    = No (negEqSym absurd)
 
-decEq (TyUnion xs) (TyUnion ys) Refl with (Fields.decEq xs ys)
-  decEq (TyUnion xs) (TyUnion xs) Refl | (Yes Refl)   = Yes (Same Refl Refl)
-  decEq (TyUnion xs) (TyUnion ys) Refl | (No  contra) = No (unionDifferBody contra)
+  decEq (TyUnion kvs) y Refl | (TyUnion kvs') with (kvpairs kvs kvs')
+    decEq (TyUnion kvs) y Refl | (TyUnion kvs) | (Yes Refl)
+      = Yes (Same Refl Refl)
 
--- [ Unit ]
-decEq TyUnit TyUnit Refl = Yes (Same Refl Refl)
+    decEq (TyUnion kvs) y Refl | (TyUnion kvs') | (No contra)
+      = No (\(Same Refl Refl) => contra Refl)
 
--- [ Gates ]
-decEq TyGate TyGate Refl = Yes (Same Refl Refl)
+decEq TyUnit TyUnit Refl
+  = Yes (Same Refl Refl)
 
--- [ Connections ]
+decEq TyConn TyConn Refl
+  = Yes (Same Refl Refl)
 
-decEq TyConn TyConn Refl = Yes (Same Refl Refl)
+decEq TyGate TyGate Refl
+  = Yes (Same Refl Refl)
 
--- [ Ports ]
-decEq (TyPort l dx sx wx tx) (TyPort l dy sy wy ty) Refl = Port.decEq (TyPort l dx sx wx tx) (TyPort l dy sy wy ty)
+decEq (TyPort xl xd xs xw xn xt) (TyPort xl yd ys yw yn yt) Refl
+  = case decEq (xd,xs,xw,xn) (yd,ys,yw,yn) of
+      No contra => No (\(Same Refl Refl) => contra Refl)
+      Yes Refl =>
+        case decEq xt yt Refl of
+          No contra => No (\(Same Refl Refl) => contra (Same Refl Refl))
 
-decEq (TyModule xs) (TyModule ys) Refl with (Ports.decEq xs ys)
-  decEq (TyModule xs) (TyModule xs) Refl | (Yes Refl) = Yes (Same Refl Refl)
-  decEq (TyModule xs) (TyModule ys) Refl | (No contra) = No (modBodyDiffer contra)
+          Yes (Same Refl Refl) => Yes (Same Refl Refl)
 
+decEq (TyModule x) (TyModule y) Refl with (ports x y)
+
+  decEq (TyModule x) (TyModule x) Refl | (Yes Refl)
+    = Yes (Same Refl Refl)
+
+  decEq (TyModule x) (TyModule y) Refl | (No contra)
+    = No (\(Same Refl Refl) => contra Refl)
 
 
 DecEqIdx MTy Ty where
   decEq x y prf = Equality.decEq x y prf
-
 
 -- [ EOF ]

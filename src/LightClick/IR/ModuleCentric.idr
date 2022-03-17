@@ -11,6 +11,7 @@ import Language.SystemVerilog.Gates
 import LightClick.Core
 
 import LightClick.Types.Direction
+import LightClick.Types.Necessity
 import LightClick.Values
 
 %default total
@@ -48,6 +49,7 @@ data ModuleIR : TyIR -> Type where
 
   MPort : (label : String)
        -> (dir   : Direction)
+       -> (n     : Necessity)
        -> (type  : ModuleIR DATA) -> ModuleIR PORT
 
   MModule : {n : Nat} -> Vect (S n) (ModuleIR PORT) -> ModuleIR MODULE
@@ -107,7 +109,7 @@ mutual
   convert (VSeq this thenThis) = MSeq (convert this) (convert thenThis)
   convert VEnd = MEnd
 
-  convert (VPort label dir type) = MPort label dir (convert type)
+  convert (VPort label dir n type) = MPort label dir n (convert type)
   convert (VModule x) = MModule $ mapToVect (\p => (convert p)) x
 
   convert VDataLogic = MDataLogic
@@ -164,10 +166,11 @@ mutual
         <+> ")"
   showM MEnd = "(MEnd)"
 
-  showM (MPort x y z) =
+  showM (MPort x y n z) =
       "(MPort "
         <+> show x <+> " "
         <+> show y <+> " "
+        <+> show n <+> " "
         <+> showM z <+> " "
         <+> ")"
 

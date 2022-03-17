@@ -22,28 +22,8 @@ namespace Port
             -> (sens  : Sensitivity.Compatible sl sr)
             -> (wtype : WireType.Compatible    wl wr)
             -> (dtype : Data.Compatible        tl tr)
-            -> Port.Compatible (TyPort l dl sl wl tl)
-                               (TyPort r dr sr wr tr)
-
-  directionUnsafe : (Safe dir x -> Void)
-                 -> Compatible (TyPort l dir sense wty type) (TyPort r x y z t)
-                 -> Void
-  directionUnsafe contra (IsSafe flow sens wtype dtype) = contra flow
-
-  sensitivityInCompatible : (Compatible sense y -> Void)
-                         -> Compatible (TyPort l dir sense wty type) (TyPort r x y z t)
-                         -> Void
-  sensitivityInCompatible contra (IsSafe flow sens wtype dtype) = contra sens
-
-  wireTypesInCompatible : (Compatible wty z -> Void)
-                       -> Compatible (TyPort l dir sense wty type) (TyPort r x y z t )
-                       -> Void
-  wireTypesInCompatible contra (IsSafe flow sens wtype dtype) = contra wtype
-
-  dataTypeInCompatible : (Compatible type t -> Void)
-                    -> Compatible (TyPort l dir sense wty type)
-                                  (TyPort r x y z t) -> Void
-  dataTypeInCompatible contra (IsSafe flow sens wtype dtype) = contra dtype
+            -> Port.Compatible (TyPort l dl sl wl nl tl)
+                               (TyPort r dr sr wr nr tr)
 
   public export
   data Error = InCompatSensitivity Sensitivity.Error
@@ -58,21 +38,12 @@ namespace Port
             -> (right : Ty (PORT r))
                      -> DecInfo Port.Error
                                (Compatible left right)
-  compatible (TyPort l dx sx wx tx ) (TyPort r dy sy wy ty ) with (safe dx dy)
-    compatible (TyPort l dx sx wx tx ) (TyPort r dy sy wy ty ) | (Yes prfD) with (compatible sx sy)
-      compatible (TyPort l dx sx wx tx ) (TyPort r dy sy wy ty ) | (Yes prfD) | (Yes prfS) with (compatible wx wy)
-        compatible (TyPort l dx sx wx tx ) (TyPort r dy sy wy ty ) | (Yes prfD) | (Yes prfS) | (Yes prfW) with (compatible tx ty)
-          compatible (TyPort l dx sx wx tx ) (TyPort r dy sy wy ty ) | (Yes prfD) | (Yes prfS) | (Yes prfW) | (Yes prfT)
-            = Yes (IsSafe prfD prfS prfW prfT)
-
-          compatible (TyPort l dx sx wx tx ) (TyPort r dy sy wy ty ) | (Yes prfD) | (Yes prfS) | (Yes prfW) | (No msg contra)
-            = No (InCompatDTypes msg) (dataTypeInCompatible contra)
-        compatible (TyPort l dx sx wx tx ) (TyPort r dy sy wy ty ) | (Yes prfD) | (Yes prfS) | (No msg contra)
-          = No (InCompatWTypes msg) (wireTypesInCompatible contra)
-      compatible (TyPort l dx sx wx tx ) (TyPort r dy sy wy ty ) | (Yes prfD) | (No msg contra)
-        = No (InCompatSensitivity msg) (sensitivityInCompatible contra)
-    compatible (TyPort l dx sx wx tx ) (TyPort r dy sy wy ty ) | (No msg contra)
-      = No (InCompatDirection msg) (directionUnsafe contra)
+  compatible (TyPort _ xd xs xw _ xt) (TyPort _ yd ys yw _ yt)
+    = decInfoDo $ do prfD <- try (safe xd yd)       InCompatDirection   (\(IsSafe flow sens wtype dtype) => flow)
+                     prfS <- try (compatible xs ys) InCompatSensitivity (\(IsSafe flow sens wtype dtype) => sens)
+                     prfW <- try (compatible xw yw) InCompatWTypes      (\(IsSafe flow sens wtype dtype) => wtype)
+                     prfT <- try (compatible xt yt) InCompatDTypes      (\(IsSafe flow sens wtype dtype) => dtype)
+                     pure (IsSafe prfD prfS prfW prfT)
 
 namespace Fanout
 

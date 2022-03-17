@@ -7,6 +7,7 @@ import Toolkit.Data.Location
 import Language.SystemVerilog.Gates
 
 import LightClick.Types.Direction
+import LightClick.Types.Necessity
 import LightClick.Types.Sensitivity
 import LightClick.Types.WireType
 
@@ -28,6 +29,7 @@ data AST : Type where
        -> (dir : Direction)
        -> (sense: Sensitivity)
        -> (wty : Wire)
+       -> (n    : Necessity)
        -> (type : AST)
        -> AST
 
@@ -76,8 +78,8 @@ mutual
   setFileName fn (DataUnion x kvs)
     = DataUnion (setSource fn x) (setKvsFS fn kvs)
 
-  setFileName fn (Port x label dir sense wty type)
-    = (Port (setSource fn x) label dir sense wty (setFileName fn type))
+  setFileName fn (Port x label dir sense wty n type)
+    = (Port (setSource fn x) label dir sense wty n (setFileName fn type))
 
   setFileName fn (ModuleDef x kvs)
     = ModuleDef (setSource fn x) (setFSs fn kvs)

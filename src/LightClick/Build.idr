@@ -157,7 +157,7 @@ namespace GetModule
   Uninhabited (IsModule str (I x (I (TyUnion kvs) u))) where
     uninhabited (IM prf) impossible
 
-  Uninhabited (IsModule str (I x (I (TyPort label dir sense wty type) u))) where
+  Uninhabited (IsModule str (I x (I (TyPort label dir sense wty n type) u))) where
     uninhabited (IM prf) impossible
 
   isModule : (str  : String)
@@ -180,7 +180,7 @@ namespace GetModule
         = No NotAModule absurd
       isModule str (I str i) | (Yes Refl) | (I TyGate y)
         = No NotAModule absurd
-      isModule str (I str i) | (Yes Refl) | (I (TyPort label dir sense wty type) y)
+      isModule str (I str i) | (Yes Refl) | (I (TyPort label dir sense wty n type) y)
         = No NotAModule absurd
       isModule str (I str i) | (Yes Refl) | (I (TyModule x) y)
         = Yes (IM Refl)
@@ -450,9 +450,9 @@ namespace FindFree
                  -> (u : DVect String (Usage . PORT) n names)
                       -> List String
   freeModulePorts [] [] = []
-  freeModulePorts ((TyPort x dir sense wty type) :: y) ((TyPort FREE) :: rest)
+  freeModulePorts ((TyPort x dir sense wty n type) :: y) ((TyPort FREE) :: rest)
     = x :: freeModulePorts y rest
-  freeModulePorts ((TyPort x dir sense wty type) :: y) ((TyPort USED) :: rest)
+  freeModulePorts ((TyPort x dir sense wty n type) :: y) ((TyPort USED) :: rest)
     = freeModulePorts y rest
 
   %inline
@@ -460,7 +460,7 @@ namespace FindFree
          -> List String
 
 
-  getFree (I (TyPort label dir sense wty type) (TyPort FREE))
+  getFree (I (TyPort label dir sense wty n type) (TyPort FREE))
     = [label]
   getFree (I x (TyPort USED))
     = Nil
@@ -506,8 +506,8 @@ mutual
          -> (ctxt : Context old)
          -> (port : AST)
                  -> LightClick (ResultPort old)
-  portVal ctxt (Port fc l d s w t)
-    = do R (PORT l) type new p <- build ctxt (Port fc l d s w t)
+  portVal ctxt (Port fc l d s w n t)
+    = do R (PORT l) type new p <- build ctxt (Port fc l d s w n t)
            | R m _ _ tm => throw (MetaTypeConstructionError (Terms.getFC tm) (PORT "") m)
          pure (Rp l type new p)
 
@@ -653,10 +653,10 @@ mutual
 
   -- [ Ports & Modules ]
 
-  build curr (Port fc label dir sense wty type)
+  build curr (Port fc label dir sense wty n type)
     = do RD t outE type' <- datatype curr type
 
-         pure (R _ _ outE (Port fc label dir sense wty type'))
+         pure (R _ _ outE (Port fc label dir sense wty n type'))
 
   build curr (ModuleDef fc kvs)
     = do RP types newA ports <- ports curr kvs

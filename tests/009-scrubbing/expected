@@ -4,9 +4,9 @@ Error Happened
 swap-bad.click:22:0-26:
 Connection mismatch when trying to connect:
 	this:
-		clk : port ( OUT high clock logic )
+		clk : port ( OUT high clock REQ logic )
 	that:
-		ready : port ( IN high control logic )
+		ready : port ( IN high control REQ logic )
 
 Specifically:
 swap-bad.click:22:0-26:

@@ -368,11 +368,11 @@ namespace Context
       uninhabited (FE _ (Here prf)) impossible
       uninhabited (FE _ (There rest)) impossible
 
-    notFreeHereThere : (FreeElem label ps us -> Void) -> (IsFree u -> Void) -> FreeElem label (TyPort label dir sense wty type :: ps) (u :: us) -> Void
+    notFreeHereThere : (FreeElem label ps us -> Void) -> (IsFree u -> Void) -> FreeElem label (TyPort label dir sense wty n type :: ps) (u :: us) -> Void
     notFreeHereThere f g (FE Here (Here prf)) = g prf
     notFreeHereThere f g (FE (There later) (There rest)) = f (FE later rest)
 
-    notFreeLater : (FreeElem label ps us -> Void) -> (label = x -> Void) -> FreeElem label (TyPort x dir sense wty type :: ps) (u :: us) -> Void
+    notFreeLater : (FreeElem label ps us -> Void) -> (label = x -> Void) -> FreeElem label (TyPort x dir sense wty n type :: ps) (u :: us) -> Void
     notFreeLater f g (FE Here prf) = g Refl
     notFreeLater f g (FE (There later) (There rest)) = f (FE later rest)
 
@@ -384,20 +384,20 @@ namespace Context
     isFreeElem label Nil Nil
       = No absurd
 
-    isFreeElem label ((TyPort x dir sense wty type)::ps) (u::us) with (decEq label x)
-      isFreeElem label ((TyPort label dir sense wty type)::ps) (u::us) | (Yes Refl) with (isFree u)
-        isFreeElem label ((TyPort label dir sense wty type)::ps) ((TyPort FREE)::us) | (Yes Refl) | (Yes P)
+    isFreeElem label ((TyPort x dir sense wty n type)::ps) (u::us) with (decEq label x)
+      isFreeElem label ((TyPort label dir sense wty n type)::ps) (u::us) | (Yes Refl) with (isFree u)
+        isFreeElem label ((TyPort label dir sense wty n type)::ps) ((TyPort FREE)::us) | (Yes Refl) | (Yes P)
           = Yes (FE Here (Here P))
-        isFreeElem label ((TyPort label dir sense wty type)::ps) (u::us) | (Yes Refl) | (No contra) with (isFreeElem label ps us)
-          isFreeElem label ((TyPort label dir sense wty type)::ps) (u::us) | (Yes Refl) | (No contra) | (Yes (FE idx prf))
+        isFreeElem label ((TyPort label dir sense wty n type)::ps) (u::us) | (Yes Refl) | (No contra) with (isFreeElem label ps us)
+          isFreeElem label ((TyPort label dir sense wty n type)::ps) (u::us) | (Yes Refl) | (No contra) | (Yes (FE idx prf))
             = Yes (FE (There idx) (There prf))
-          isFreeElem label ((TyPort label dir sense wty type)::ps) (u::us) | (Yes Refl) | (No contra) | (No f)
+          isFreeElem label ((TyPort label dir sense wty n type)::ps) (u::us) | (Yes Refl) | (No contra) | (No f)
             = No (notFreeHereThere f contra)
 
-      isFreeElem label ((TyPort x dir sense wty type)::ps) (u::us) | (No contra) with (isFreeElem label ps us)
-        isFreeElem label ((TyPort x dir sense wty type)::ps) (u::us) | (No contra) | (Yes (FE idx prf))
+      isFreeElem label ((TyPort x dir sense wty n type)::ps) (u::us) | (No contra) with (isFreeElem label ps us)
+        isFreeElem label ((TyPort x dir sense wty n type)::ps) (u::us) | (No contra) | (Yes (FE idx prf))
           = Yes (FE (There idx) (There prf))
-        isFreeElem label ((TyPort x dir sense wty type)::ps) (u::us) | (No contra) | (No f)
+        isFreeElem label ((TyPort x dir sense wty n type)::ps) (u::us) | (No contra) | (No f)
           = No (notFreeLater f contra)
 
 
@@ -432,7 +432,7 @@ namespace Context
     Uninhabited (IsFreePort label (I TyGate u)) where
       uninhabited (IFP prf) impossible
 
-    Uninhabited (IsFreePort label (I (TyPort x d s w t) u)) where
+    Uninhabited (IsFreePort label (I (TyPort x d s w n t) u)) where
       uninhabited (IFP prf) impossible
 
     export
@@ -456,7 +456,7 @@ namespace Context
     isFreePort label (I TyConn u) = No absurd
     isFreePort label (I TyGate u) = No absurd
 
-    isFreePort label (I (TyPort x dir sense wty type) u)
+    isFreePort label (I (TyPort x dir sense wty n type) u)
       = No absurd
 
     isFreePort label (I (TyModule ps) (TyModule us)) with (isFreeElem label ps us)
@@ -630,8 +630,9 @@ mutual
            -> (d  : Direction)
            -> (s  : Sensitivity)
            -> (w  : Wire)
-           -> (i  : Term a                 dtype  b)
-                 -> Term a (TyPort l d s w dtype) b
+           -> (n  : Necessity)
+           -> (i  : Term a                   dtype  b)
+                 -> Term a (TyPort l d s w n dtype) b
 
        Module : {n     : Nat}
              -> {names : Vect (S n) String}
@@ -735,15 +736,15 @@ mutual
 export
 getFC : Term old type new -> FileContext
 getFC (Ref fc l prf use)                = fc
-getFC (Let fc label this prf o inThis)    = fc
+getFC (Let fc label this prf o inThis)  = fc
 getFC (Seq this prf that)               = getFC this
 getFC (DataLogic fc)                    = fc
 getFC (DataArray fc size x)             = fc
 getFC (DataStruct fc xs)                = fc
 getFC (DataUnion fc xs)                 = fc
-getFC (Port fc l d s w i)               = fc
+getFC (Port fc l d s w n i)             = fc
 getFC (Module fc ports)                 = fc
-getFC (Index fc _ _ _ _ _)     = fc
+getFC (Index fc _ _ _ _ _)              = fc
 getFC (Connect fc left right prf)       = fc
 getFC (FanOut fc input fan prf)         = fc
 getFC (Mux fc fan ctrl output prf)      = fc

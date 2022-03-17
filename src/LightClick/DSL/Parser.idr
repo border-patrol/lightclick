@@ -23,6 +23,7 @@ import        LightClick.Core
 import        LightClick.Types.Direction
 import        LightClick.Types.Sensitivity
 import        LightClick.Types.WireType
+import        LightClick.Types.Necessity
 
 import        LightClick.DSL.AST
 
@@ -95,6 +96,11 @@ typeDef = do
   e <- Toolkit.location
   pure (newFC s e, n, decl)
 
+necessity : Rule Necessity
+necessity
+    = do {keyword "required"; pure Required}
+  <|> do {keyword "opt";      pure Optional}
+
 direction : Rule Direction
 direction = do {keyword "inout";  pure INOUT}
         <|> do {keyword "output"; pure OUT}
@@ -128,20 +134,22 @@ portHaskellStyle
        c <- option General wireType
        d <- direction
        s <- option Insensitive sensitivity
+       n <- option Required    necessity
        e <- Toolkit.location
-       pure (Port (newFC st e) label d s c t)
+       pure (Port (newFC st e) label d s c n t)
 
 portSystemVerilogStyle : Rule AST
 portSystemVerilogStyle
   = do st <- Toolkit.location
        com <- optional doc
+       n <- option Required necessity
        d <- direction
        s <- option Insensitive sensitivity
        c <- option General wireType
        t <- type_
        label <- name
        e <- Toolkit.location
-       pure (Port (newFC st e) label d s c t)
+       pure (Port (newFC st e) label d s c n t)
 
 port : TypeStyle -> Rule AST
 port HASKELL = portHaskellStyle

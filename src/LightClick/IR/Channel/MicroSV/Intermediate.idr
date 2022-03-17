@@ -135,11 +135,11 @@ data TRes : (local : Context) -> (type : TyIR) -> Type where
         -> TRes ctxt tyIR
 
 Eq (ChannelIR PORT) where
-  (==) (CPort x f d) (CPort y g e) = x == y
+  (==) (CPort x f n d) (CPort y g m e) = x == y
   (==) _ _ = False
 
 Ord (ChannelIR PORT) where
-  compare (CPort x f d) (CPort y g e) = compare x y
+  compare (CPort x f n d) (CPort y g m e) = compare x y
   compare _ _ = LT
 
 
@@ -326,7 +326,7 @@ mutual
 
   -- [ Module Declarations ]
 
-  convert e (CPort l dir type)
+  convert e (CPort l dir n type)
     = do MkTRes d t' DD <- convert e type
          pure (MkTRes d (Port l (interpDir dir) t') (PP l))
 

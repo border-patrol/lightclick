@@ -10,6 +10,7 @@ import Toolkit.Data.DVect
 import Language.SystemVerilog.Gates
 
 import LightClick.Core
+import LightClick.Types.Necessity
 import LightClick.Types.Direction
 import LightClick.Error
 
@@ -35,6 +36,7 @@ data ChannelIR : TyIR -> Type where
 
   CPort : String
        -> Direction
+       -> Necessity
        -> ChannelIR DATA
        -> ChannelIR PORT
 
@@ -100,10 +102,11 @@ mutual
         <+> "\n)"
   showC CEnd = "(CEnd)"
 
-  showC (CPort x y z) =
+  showC (CPort x y n z) =
       "(CPort "
         <+> show x <+> " "
         <+> show y <+> " "
+        <+> show n <+> " "
         <+> showC z <+> " "
         <+> ")"
 
@@ -178,7 +181,9 @@ mutual
       = throw (NotSupposedToHappen (Just "convPort CIR Let"))
     convert (MSeq doThis thenThis)
       = throw (NotSupposedToHappen (Just "convPort CIR Seq"))
-    convert (MPort label dir type) = throw (NotSupposedToHappen (Just "convPort CIR Port"))
+    convert (MPort label dir n type) =
+       throw (NotSupposedToHappen (Just "convPort CIR Port"))
+
     convert (MIDX label x)
         = do m' <- convert x
              m'' <- convModule m'
@@ -222,9 +227,9 @@ mutual
        pure $ CSeq x' y'
   convert MEnd = pure CEnd
 
-  convert (MPort x y z) =
+  convert (MPort x y n z) =
     do z' <- convert z
-       pure $ CPort x y z'
+       pure $ CPort x y n z'
 
   convert (MModule {n} x) =
       do xs <- traverse convert x

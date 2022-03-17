@@ -223,9 +223,9 @@ term env (DataUnion fc xs)
        pure (R b (VDataUnion xs))
 
 -- [ Module Structures ]
-term env (Port fc l d _ _ dtype)
+term env (Port fc l d _ _ n dtype)
   = do R b dtype <- term env dtype
-       pure (R b (VPort l d dtype))
+       pure (R b (VPort l d n dtype))
 
 term env (Module fc ps)
   = do P b ports <- ports env ps

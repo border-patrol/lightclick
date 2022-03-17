@@ -3,9 +3,9 @@ Error Happened
 example.click:47:0-36:
 Connection mismatch when trying to connect:
 	this:
-		ctrl : port ( OUT high control logic )
+		ctrl : port ( OUT high control REQ logic )
 	that:
-		ctrl : port ( IN high control logic )
+		ctrl : port ( IN high control REQ logic )
 
 Specifically:
 example.click:47:17-26:

@@ -8,6 +8,7 @@ import public Toolkit.Data.Rig
 import public LightClick.Types.Meta
 import public LightClick.Types.Direction
 import public LightClick.Types.Sensitivity
+import public LightClick.Types.Necessity
 import public LightClick.Types.WireType
 
 
@@ -25,11 +26,12 @@ data Ty : MTy -> Type where
   TyGate : Ty GATE
 
   TyPort : (label : String)
-        -> (dir : Direction)
-        -> (sense: Sensitivity)
-        -> (wty : Wire)
-        -> (type : Ty DATA)
-        -> Ty (PORT label)
+        -> (dir   : Direction)
+        -> (sense : Sensitivity)
+        -> (wty   : Wire)
+        -> (n     : Necessity)
+        -> (type  : Ty DATA)
+                 -> Ty (PORT label)
 
 
   TyModule : {n : Nat}
@@ -41,16 +43,16 @@ public export
 data PortHasName : (label : String) -> (Ty (PORT str)) -> Type
   where
     HasName : (label = str)
-           -> PortHasName label (TyPort str d s w t)
+           -> PortHasName label (TyPort str d s w n t)
 
 export
 portHasName : (label : String)
            -> (port  : Ty (PORT str))
                     -> Dec (PortHasName label port)
-portHasName label (TyPort str dir sense wty type) with (decEq label str)
-  portHasName label (TyPort str dir sense wty type) | (Yes prf)
+portHasName label (TyPort str dir sense wty n type) with (decEq label str)
+  portHasName label (TyPort str dir sense wty n type) | (Yes prf)
     = Yes (HasName prf)
-  portHasName label (TyPort str dir sense wty type) | (No contra)
+  portHasName label (TyPort str dir sense wty n type) | (No contra)
     = No (\(HasName Refl) => contra Refl)
 
 namespace DVect
@@ -75,9 +77,10 @@ namespace DVect
               -> (PortHasName label ex -> Void)
               -> DPair (Ty (PORT label)) (HasPortNamed label (ex :: rest))
               -> Void
-  notPortNamed f g (MkDPair (TyPort label d s w t) (Here (HasName Refl)))
+  notPortNamed f g (MkDPair (TyPort label d s w n t) (Here (HasName Refl)))
     = g (HasName Refl)
-  notPortNamed f g (MkDPair fst (There x)) = f (MkDPair fst x)
+  notPortNamed f g (MkDPair fst (There x))
+    = f (MkDPair fst x)
 
 
   export
@@ -87,8 +90,8 @@ namespace DVect
   hasPortNamed label []
     = No absurd
   hasPortNamed label (ex :: rest) with (portHasName label ex)
-    hasPortNamed x ((TyPort x d s w t) :: rest) | (Yes (HasName Refl))
-      = Yes (MkDPair (TyPort x d s w t) (Here (HasName Refl)))
+    hasPortNamed x ((TyPort x d s w o t) :: rest) | (Yes (HasName Refl))
+      = Yes (MkDPair (TyPort x d s w o t) (Here (HasName Refl)))
     hasPortNamed label (ex :: rest) | (No contra) with (hasPortNamed label rest)
       hasPortNamed label (ex :: rest) | (No contra) | (Yes (MkDPair fst snd))
         = Yes (MkDPair fst (There snd))
@@ -127,34 +130,21 @@ data Seqable : MTy -> Type where
   IsGate : Seqable GATE
   IsConn : Seqable CONN
 
--- [ Accessors and ]
+-- [ Duals ]
+
 public export
 mkDual : Ty (PORT label) -> Ty (PORT label)
-mkDual (TyPort l d s w t) with (d)
-  mkDual (TyPort l d s w t)  | IN = TyPort l OUT s w t
-  mkDual (TyPort l d s w t) | OUT = TyPort l IN s w t
-  mkDual (TyPort l d s w t) | INOUT = TyPort l INOUT s w t
+mkDual (TyPort l d s w n t) with (d)
+  mkDual (TyPort l d s w n t) | IN    = TyPort l OUT   s w n t
+  mkDual (TyPort l d s w n t) | OUT   = TyPort l IN    s w n t
+  mkDual (TyPort l d s w n t) | INOUT = TyPort l INOUT s w n t
 
 namespace Control
   public export
   mkDual : Ty (PORT label) -> Ty (PORT label)
-  mkDual (TyPort l d s w t) with (d)
-    mkDual (TyPort l d s w t) | IN = TyPort l OUT s Control t
-    mkDual (TyPort l d s w t) | OUT = TyPort l IN s Control t
-    mkDual (TyPort l d s w t) | INOUT = TyPort l INOUT s Control t
-
---getPortLabel : {label : String} -> Ty (PORT label) -> String
---getPortLabel {label} p = label
-
-{-
-export
-getUsage : Ty (PORT s) -> TyRig
-getUsage (TyPort label dir sense wty type usage) = usage
-
-export
-setUsage : Ty (PORT s) -> TyRig -> Ty (PORT s)
-setUsage (TyPort label dir sense wty type _) = TyPort label dir sense wty type
--}
-
+  mkDual (TyPort l d s w n t) with (d)
+    mkDual (TyPort l d s w n t) | IN    = TyPort l OUT   s Control n t
+    mkDual (TyPort l d s w n t) | OUT   = TyPort l IN    s Control n t
+    mkDual (TyPort l d s w n t) | INOUT = TyPort l INOUT s Control n t
 
 -- [ EOF ]

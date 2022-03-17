@@ -51,6 +51,7 @@ data Value : TyValue -> Type where
 
   VPort : (label : String)
        -> (dir   : Direction)
+       -> (n     : Necessity)
        -> (type  : Value DATA)
                 -> Value (PORT label)
 
@@ -134,11 +135,12 @@ showV (VSeq x y) =
       <+> ")"
 showV VEnd = "(VEnd)"
 
-showV (VPort x y z) =
+showV (VPort x y z w) =
     "(VPort "
       <+> show x <+> " "
       <+> show y <+> " "
-      <+> showV z <+> " "
+      <+> show z
+      <+> showV w <+> " "
       <+> ")"
 
 showV (VModule x) =
@@ -226,20 +228,40 @@ interpTy {ty} _ = interp ty
 
 export
 getData : Value (PORT s) -> LightClick (Value DATA)
-getData (VRef x (PORT s)) = throw (NotSupposedToHappen (Just "getData"))
-getData (VLet x y z)      = throw (NotSupposedToHappen (Just "getData"))
-getData (VSeq x y)        = throw (NotSupposedToHappen (Just "getData"))
-getData (VPort x y z) = pure z
-getData (VIDX x y z) = getData z
+getData (VRef x (PORT s))
+  = throw (NotSupposedToHappen (Just "getData"))
+
+getData (VLet x y z)
+  = throw (NotSupposedToHappen (Just "getData"))
+
+getData (VSeq x y)
+  = throw (NotSupposedToHappen (Just "getData"))
+
+getData (VPort x y w z)
+  = pure z
+
+getData (VIDX x y z)
+  = getData z
 
 export
 genNameConn : Value (PORT s) -> LightClick String
-genNameConn (VRef name (PORT s)) = throw $ NotSupposedToHappen (Just "genNameConn ref")
-genNameConn (VLet x y z)         = throw $ NotSupposedToHappen (Just "genNameConn let")
-genNameConn (VSeq x y)           = throw $ NotSupposedToHappen (Just "genNameConn seq")
-genNameConn (VPort x y z) = pure x
-genNameConn (VIDX x (VRef m (MODULE names)) z) = pure (newName [m,x])
-genNameConn (VIDX x y z) = throw $ NotSupposedToHappen (Just $ "genNameConn idx non-ref" <+> show y)
+genNameConn (VRef name (PORT s))
+  = throw $ NotSupposedToHappen (Just "genNameConn ref")
+
+genNameConn (VLet x y z)
+  = throw $ NotSupposedToHappen (Just "genNameConn let")
+
+genNameConn (VSeq x y)
+  = throw $ NotSupposedToHappen (Just "genNameConn seq")
+
+genNameConn (VPort x y w z)
+  = pure x
+
+genNameConn (VIDX x (VRef m (MODULE names)) z)
+  = pure (newName [m,x])
+
+genNameConn (VIDX x y z)
+  = throw $ NotSupposedToHappen (Just $ "genNameConn idx non-ref" <+> show y)
 
 
 export
@@ -248,9 +270,9 @@ mkDual n (VLet _ _ _)  = throw $ NotSupposedToHappen (Just "mkDual")
 mkDual n (VSeq  _ _)   = throw $ NotSupposedToHappen (Just "mkDual")
 mkDual n (VRef _ _)    = throw $ NotSupposedToHappen (Just "mkDual")
 mkDual n (VIDX x y z)  = mkDual n z
-mkDual n (VPort x IN    t) = pure (VPort (n <+> x) OUT t)
-mkDual n (VPort x OUT   t) = pure (VPort (n <+> x) IN t)
-mkDual n (VPort x INOUT t) = pure (VPort (n <+> x) INOUT t)
+mkDual n (VPort x IN    w t) = pure (VPort (n <+> x) OUT   w t)
+mkDual n (VPort x OUT   w t) = pure (VPort (n <+> x) IN    w t)
+mkDual n (VPort x INOUT w t) = pure (VPort (n <+> x) INOUT w t)
 
 export
 genNameFan : DVect String (Value . PORT) k names -> LightClick String

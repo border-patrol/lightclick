@@ -3,9 +3,9 @@ Error Happened
 example-conn-direct-bad-1.click:10:0-30:
 Connection mismatch when trying to connect:
 	this:
-		ready : port ( IN high control logic )
+		ready : port ( IN high control REQ logic )
 	that:
-		ready : port ( OUT high control logic )
+		ready : port ( OUT high control REQ logic )
 
 Specifically:
 example-conn-direct-bad-1.click:10:0-30:
@@ -16,9 +16,9 @@ Error Happened
 example-conn-direct-bad.click:10:0-29:
 Connection mismatch when trying to connect:
 	this:
-		clk : port ( OUT high clock logic )
+		clk : port ( OUT high clock REQ logic )
 	that:
-		ready : port ( IN high control logic )
+		ready : port ( IN high control REQ logic )
 
 Specifically:
 example-conn-direct-bad.click:10:0-29:
@@ -38,9 +38,9 @@ Error Happened
 example-conn-fanout-type-err.click:10:0-44:
 Connection mismatch when trying to connect:
 	this:
-		clk : port ( OUT high clock logic )
+		clk : port ( OUT high clock REQ logic )
 	that:
-		ready : port ( OUT high control logic )
+		ready : port ( OUT high control REQ logic )
 
 Specifically:
 example-conn-fanout-type-err.click:10:0-44:
