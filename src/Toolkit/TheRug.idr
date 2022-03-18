@@ -8,6 +8,7 @@ import System
 import System.File
 import System.Clock
 import Data.Vect
+import Data.String
 
 import Decidable.Equality
 
@@ -291,19 +292,18 @@ namespace Cheap
       = do start <- (embed $ clockTime UTC)
            res   <- embed  (run (\err => do stop <- clockTime UTC
                                             putStrLn "Error Happened"
-                                            printLn err
                                             let d = timeDifference stop start
                                             if showTime
-                                              then do print d
-                                                      putStrLn msg
+                                              then do putStrLn (unwords [msg, show d])
+                                                      printLn err
                                                       exitFailure
                                               else do putStrLn msg
+                                                      printLn err
                                                       exitFailure)
                                 (\res => do stop <- clockTime UTC
                                             let d = timeDifference stop start
                                             if showTime
-                                              then do print d
-                                                      putStrLn msg
+                                              then do putStrLn (unwords [msg, show d])
                                                       pure res
                                               else do putStrLn msg
                                                       pure res)
