@@ -15,7 +15,8 @@ keywords = [ "input", "output", "inout"
            , "high", "low", "rising", "falling", "insensitive"
            , "control", "clock", "data", "address", "reset", "info", "interrupt", "general"
            , "types", "modules", "connections", "module"
-           , "logic", "typedef", "struct", "union", "lightclick", "model", "verilog"
+           , "logic", "typedef", "struct", "union", "enum"
+           , "lightclick", "model", "verilog"
            , "required", "optional"
            ]
 

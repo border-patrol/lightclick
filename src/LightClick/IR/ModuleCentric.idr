@@ -55,6 +55,7 @@ data ModuleIR : TyIR -> Type where
   MModule : {n : Nat} -> Vect (S n) (ModuleIR PORT) -> ModuleIR MODULE
 
   MDataLogic : ModuleIR DATA
+  MDataEnum : {n : Nat} -> Vect (S n) String -> ModuleIR DATA
   MDataArray : ModuleIR DATA -> Nat -> ModuleIR DATA
   MDataStruct : {n : Nat} -> Vect (S n) (Pair String (ModuleIR DATA)) -> ModuleIR DATA
   MDataUnion  : {n : Nat} -> Vect (S n) (Pair String (ModuleIR DATA)) -> ModuleIR DATA
@@ -114,6 +115,7 @@ mutual
   convert (VModule x) = MModule $ mapToVect (\p => (convert p)) x
 
   convert VDataLogic = MDataLogic
+  convert (VDataEnum vs) = MDataEnum vs
   convert (VDataArray x k) = MDataArray (convert x) k
 
   convert (VDataStruct xs) = MDataStruct (convert xs)
@@ -133,97 +135,5 @@ mutual
 export
 modularise : (v : Value type) -> LightClick (ModuleIR (interp type))
 modularise = (pure . convert)
-
-
-mutual
-  namespace Vect
-    export
-    showM :  (kvs : Vect n (String, ModuleIR DATA))
-                 -> Vect n String
-    showM = map (\(l,c) => "(" <+> show l <+> " " <+> showM c <+> ")")
-
-  namespace Data
-    export
-    showM : (kvs : Vect n (ModuleIR CHAN))
-                -> Vect n String
-
-    showM =  map (\c => "(" <+> showM c <+> ")")
-
-
-  showM : ModuleIR type -> String
-  showM (MRef name type) =
-    "(MRef " <+> show name <+> ")"
-
-  showM (MLet x y z) =
-     "(MLet "
-       <+> show x <+> " "
-       <+> showM y <+> " "
-       <+> showM z
-       <+> ")"
-
-  showM (MSeq x y) =
-      "(MSeq "
-        <+> showM x <+> " "
-        <+> showM y
-        <+> ")"
-  showM MEnd = "(MEnd)"
-
-  showM (MPort x y n z) =
-      "(MPort "
-        <+> show x <+> " "
-        <+> show y <+> " "
-        <+> show n <+> " "
-        <+> showM z <+> " "
-        <+> ")"
-
-  showM (MModule x) =
-      "(MModule "
-        <+> show (map showM x)
-        <+> ")"
-
-  showM MDataLogic = "(MTyLogic)"
-
-  showM (MDataArray x k) =
-    "(MTyArray "
-      <+> showM x <+> " "
-      <+> show k
-      <+> ")"
-
-  showM (MDataStruct {n} xs) = "(MTyStruct " <+> (show (showM xs)) <+> ")"
-
-
-  showM (MDataUnion {n} xs) = "(TyUnion " <+> (show (showM xs)) <+> ")"
-
-  showM (MChan x) = "(MChan " <+> showM x <+> ")"
-
-  showM (MIDX x y) =
-      "(MIndex "
-         <+> show x <+> " "
-         <+> showM y
-         <+> ")"
-
-  showM (MConn x y ps) =
-      "(MDConn "
-        <+> showM x <+> " "
-        <+> showM y <+> " "
-        <+> show (map showM ps)
-        <+> ")"
-
-  showM (MNot o i)
-    = unwords ["(MNot", showM o, showM i, ")"]
-
-  showM (MGate ty o ins)
-      = unwords ["(MGate", show ty, showM o, show (showM ins), ")"]
-
-  showM (MConnG c idx)
-    = unwords ["(MConnG", showM c, showM idx, ")"]
-
-  showM (MNoOp p)
-    = unwords ["(MNoOp", showM p, ")"]
-
-export
-Show (ModuleIR type) where
-  show = showM
-
 
 -- [ EOF ]

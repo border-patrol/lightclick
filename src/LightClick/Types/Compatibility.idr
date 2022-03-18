@@ -36,6 +36,7 @@ namespace Data
     public export
     data Compatible : (x,y : Ty DATA) -> Type where
       CompatLogic : Data.Compatible TyLogic TyLogic
+      CompatEnum  : (prf : xs = ys) -> Data.Compatible (TyEnum xs) (TyEnum ys)
       CompatArray : (sameLength : i = j)
                  -> (types      : Data.Compatible a b)
                                -> Data.Compatible (TyArray a i)
@@ -51,6 +52,7 @@ namespace Data
     posFlip (CompatArray Refl prf) = CompatArray Refl (posFlip prf)
     posFlip (CompatStruct prfs) = CompatStruct (posFlips prfs)
     posFlip (CompatUnion  prfs) = CompatUnion (posFlips prfs)
+    posFlip (CompatEnum Refl) = CompatEnum Refl
     posFlip CompatLogic = CompatLogic
 
 
@@ -60,6 +62,7 @@ namespace Data
     negFlip f (CompatStruct prfs) = f (CompatStruct (posFlips prfs))
     negFlip f (CompatUnion  prfs) = f (CompatUnion (posFlips prfs))
     negFlip f CompatLogic = f CompatLogic
+    negFlip f (CompatEnum Refl) = f (CompatEnum Refl)
 
     export
     posFlips : (Fields.Compatible ls rs) -> Fields.Compatible rs ls
@@ -67,76 +70,7 @@ namespace Data
     posFlips (Cons Refl prf rest) = Cons Refl (posFlip prf) (posFlips rest)
 
 
-
-namespace Logic
-  export
-  logicNotCompatWithArray : Data.Compatible TyLogic (TyArray l t) -> Void
-  logicNotCompatWithArray (CompatArray _ _) impossible
-  logicNotCompatWithArray (CompatStruct _) impossible
-  logicNotCompatWithArray (CompatUnion _) impossible
-  logicNotCompatWithArray CompatLogic impossible
-
-  export
-  logicNotCompatWithStruct : Data.Compatible TyLogic (TyStruct xs) -> Void
-  logicNotCompatWithStruct (CompatArray _ _) impossible
-  logicNotCompatWithStruct (CompatStruct _) impossible
-  logicNotCompatWithStruct (CompatUnion _) impossible
-  logicNotCompatWithStruct CompatLogic impossible
-
-
-  export
-  logicNotCompatWithUnion : Data.Compatible TyLogic (TyUnion xs) -> Void
-  logicNotCompatWithUnion (CompatArray _ _) impossible
-  logicNotCompatWithUnion (CompatStruct _) impossible
-  logicNotCompatWithUnion (CompatUnion _) impossible
-  logicNotCompatWithUnion CompatLogic impossible
-
-namespace Array
-
-  export
-  arraysNotSameLength : (contra : (k = j) -> Void)
-                     -> Data.Compatible (TyArray x k) (TyArray y j)
-                     -> Void
-  arraysNotSameLength contra (CompatArray prf x) = contra prf
-
-  export
-  arraysNotSameType : (f : Data.Compatible x y -> Void)
-                   -> Data.Compatible (TyArray x j) (TyArray y j)
-                   -> Void
-  arraysNotSameType f (CompatArray Refl x) = f x
-
-  export
-  arrayNotCompatWithStruct : Data.Compatible (TyArray x k) (TyStruct xs) -> Void
-  arrayNotCompatWithStruct (CompatArray _ _) impossible
-  arrayNotCompatWithStruct (CompatStruct _) impossible
-  arrayNotCompatWithStruct (CompatUnion _) impossible
-  arrayNotCompatWithStruct CompatLogic impossible
-
-  export
-  arrayNotCompatWithUnion : Data.Compatible (TyArray x k) (TyUnion xs) -> Void
-  arrayNotCompatWithUnion (CompatArray _ _) impossible
-  arrayNotCompatWithUnion (CompatStruct _) impossible
-  arrayNotCompatWithUnion (CompatUnion _ ) impossible
-  arrayNotCompatWithUnion CompatLogic impossible
-
-namespace Struct
-
-  export
-  structNotCompatWithUnion : Data.Compatible (TyStruct xs) (TyUnion ys) -> Void
-  structNotCompatWithUnion (CompatArray _ _) impossible
-  structNotCompatWithUnion (CompatStruct _) impossible
-  structNotCompatWithUnion (CompatUnion _ ) impossible
-  structNotCompatWithUnion CompatLogic impossible
-
-  export
-  structsAreNotCompat : (Compatible xs ys -> Void) -> Compatible (TyStruct xs) (TyStruct ys) -> Void
-  structsAreNotCompat contra (CompatStruct prf) = contra prf
-
-namespace Union
-
-  export
-  unionsAreNotCompat : (Compatible xs ys -> Void) -> Compatible (TyUnion xs) (TyUnion ys) -> Void
-  unionsAreNotCompat contra (CompatUnion prf) = contra prf
+-- [ Function Declaration & Error ]
 
 namespace Data
   public export
@@ -148,7 +82,7 @@ namespace Data
     MismatchStructureFieldLabel  : (position : Nat) -> (x,y : String) -> Data.Error
     MismatchStructureLength : Data.Error
 
--- [ Function Declaration ]
+
 
 export
 compatible : (x : Ty DATA)
@@ -157,116 +91,154 @@ compatible : (x : Ty DATA)
                             (Data.Compatible x y)
 
 
-namespace Fields
-  fieldMismatchLabel : (xl = yl -> Void)
-                    -> Fields.Compatible ((xl, xt) :: xs) ((yl, yt) :: ys)
-                    -> Void
-  fieldMismatchLabel contra (Cons Refl prf rest) = contra Refl
+fields : (kxs : Vect n (Pair String (Ty DATA)))
+      -> (kys : Vect m (Pair String (Ty DATA)))
+             -> DecInfo Compatibility.Data.Error
+                        (Fields.Compatible kxs kys)
 
-  fieldMismatchType : (Compatible xt yt -> Void)
-                   -> Compatible ((xl, xt) :: xs) ((xl, yt) :: ys)
-                   -> Void
-  fieldMismatchType contra (Cons Refl prf rest) = contra prf
+Uninhabited (Data.Compatible TyLogic (TyArray l t)) where
+  uninhabited CompatLogic impossible
 
-  restNotCompatible : (Compatible xs ys -> Void)
-                   -> Compatible ((xl, xt) :: xs) ((xl, yt) :: ys)
-                   -> Void
-  restNotCompatible contra (Cons Refl prf rest) = contra rest
+Uninhabited (Data.Compatible TyLogic (TyEnum xs)) where
+  uninhabited CompatLogic impossible
 
-  fieldsLeftIsLarger : Compatible (x :: xs) [] -> Void
-  fieldsLeftIsLarger _ impossible
+Uninhabited (Data.Compatible TyLogic (TyStruct xs)) where
+  uninhabited CompatLogic impossible
 
-  fieldsRightIsLarger : Compatible [] (y :: ys) -> Void
-  fieldsRightIsLarger _ impossible
+Uninhabited (Data.Compatible TyLogic (TyUnion xs)) where
+  uninhabited CompatLogic impossible
 
-  export
-  compatible : (kxs : Vect n (Pair String (Ty DATA)))
-            -> (kys : Vect m (Pair String (Ty DATA)))
-                        -> DecInfo Compatibility.Data.Error
-                                   (Fields.Compatible kxs kys)
+Uninhabited (Data.Compatible (TyEnum xs) (TyArray l t)) where
+  uninhabited CompatLogic impossible
 
-  compatible {n} xs {m} ys with (shape xs ys)
-    compatible {n = 0} [] {m = 0} [] | Empty = Yes Empty
+Uninhabited (Data.Compatible (TyEnum xs) (TyStruct kvs)) where
+  uninhabited CompatLogic impossible
+
+Uninhabited (Data.Compatible (TyEnum xs) (TyUnion kvs)) where
+  uninhabited CompatLogic impossible
+
+Uninhabited (Data.Compatible a b) => Uninhabited (Data.Compatible (TyArray a l) (TyArray b j)) where
+  uninhabited (CompatArray sameLength types) = absurd types
 
 
-    compatible {n = (S len)} (x :: xs) {m = 0} [] | LH = No MismatchStructureLength fieldsLeftIsLarger
-    compatible {n = 0} [] {m = (S len)} (y :: ys) | RH = No MismatchStructureLength fieldsRightIsLarger
+Uninhabited (Data.Compatible (TyArray l ty) (TyStruct xs)) where
+  uninhabited CompatLogic impossible
 
-    compatible {n = (S len)} ((xl, xt) :: xs) {m = (S len)} ((yl, yt) :: ys) | Both with (decEq xl yl)
-      compatible {n = (S len)} ((xl, xt) :: xs) {m = (S len)} ((xl, yt) :: ys) | Both | (Yes Refl) with (compatible xt yt)
-        compatible {n = (S len)} ((xl, xt) :: xs) {m = (S len)} ((xl, yt) :: ys) | Both | (Yes Refl) | (Yes prf) with (compatible xs ys)
-          compatible {n = (S len)} ((xl, xt) :: xs) {m = (S len)} ((xl, yt) :: ys) | Both | (Yes Refl) | (Yes prf) | (Yes rest)
-            = Yes (Cons Refl prf rest)
-            -- End of happy path
+Uninhabited (Data.Compatible (TyArray l ty) (TyUnion xs)) where
+  uninhabited CompatLogic impossible
 
-          -- Rest not happy somewhere, and need to update position when it is recorded.
-          compatible {n = (S len)} ((xl, xt) :: xs) {m = (S len)} ((xl, yt) :: ys) | Both | (Yes Refl) | (Yes prf) | (No (MismatchStructureFieldType position error) contra)
-            = No (MismatchStructureFieldType (S position) error) (restNotCompatible contra)
-          compatible {n = (S len)} ((xl, xt) :: xs) {m = (S len)} ((xl, yt) :: ys) | Both | (Yes Refl) | (Yes prf) | (No (MismatchStructureFieldLabel position x y) contra)
-            = No (MismatchStructureFieldLabel (S position) x y) (restNotCompatible contra)
-          compatible {n = (S len)} ((xl, xt) :: xs) {m = (S len)} ((xl, yt) :: ys) | Both | (Yes Refl) | (Yes prf) | (No msg contra)
-            = No msg (restNotCompatible contra)
+Uninhabited (Data.Compatible (TyStruct kvs) (TyUnion xs)) where
+  uninhabited CompatLogic impossible
+
+Uninhabited (Compatible (x :: xs) []) where
+  uninhabited Empty impossible
+
+Uninhabited (Compatible [] (x :: xs)) where
+  uninhabited Empty impossible
 
 
-        -- Type mismatch
-        compatible {n = (S len)} ((xl, xt) :: xs) {m = (S len)} ((xl, yt) :: ys) | Both | (Yes Refl) | (No msg contra)
-          = No (MismatchStructureFieldType Z msg) (fieldMismatchType contra)
-      -- Label mismatch
-      compatible {n = (S len)} ((xl, xt) :: xs) {m = (S len)} ((yl, yt) :: ys) | Both | (No contra)
-        = No (MismatchStructureFieldLabel Z xl yl) (fieldMismatchLabel contra)
+fields {n} {m} kxs kys with (shape kxs kys)
+  fields {n = 0} {m = 0} [] [] | Empty
+    = Yes Empty
 
--- [ Definition Starts Here]
+  fields {n = (S len)} {m = 0} (x :: xs) [] | LH
+    = No MismatchStructureLength absurd
+  fields {n = 0} {m = (S len)} [] (y :: ys) | RH
+    = No MismatchStructureLength absurd
 
--- [ Logic vs X ]
+  fields {n = (S len)} {m = (S len)} ((kx,vx) :: xs) ((ky,vy) :: ys) | Both
+    = case decEq kx ky of
+        No contra => No (MismatchStructureFieldLabel Z kx ky) (\(Cons Refl prf rest) => contra Refl)
+        Yes Refl =>
+          case compatible vx vy of
+            No msg contra => No (MismatchStructureFieldType Z msg)
+                                (\(Cons Refl prf rest) => contra prf)
+            Yes prfH =>
+              case fields xs ys of
+                Yes prfT
+                  => Yes (Cons Refl prfH prfT)
 
-compatible TyLogic TyLogic = Yes CompatLogic
-compatible TyLogic (TyArray l t) = No Mismatch logicNotCompatWithArray
-compatible TyLogic (TyStruct kvs) = No Mismatch logicNotCompatWithStruct
-compatible TyLogic (TyUnion kvs) = No Mismatch logicNotCompatWithUnion
+                No (MismatchStructureFieldType position error) contra
+                  => No (MismatchStructureFieldType (S position) error)
+                        (\(Cons Refl prf rest) => contra rest)
+                No (MismatchStructureFieldLabel position x y) contra
+                  => No (MismatchStructureFieldLabel (S position) x y)
+                        (\(Cons Refl prf rest) => contra rest)
+                No msg contra
+                  => No msg (\(Cons Refl prf rest) => contra rest)
 
--- [ Array vs X ]
+compatible TyLogic TyLogic
+  = Yes CompatLogic
+compatible TyLogic (TyEnum xs)
+  = No Mismatch absurd
+compatible TyLogic (TyArray type length)
+  = No Mismatch absurd
+compatible TyLogic (TyStruct kvs)
+  = No Mismatch absurd
+compatible TyLogic (TyUnion kvs)
+  = No Mismatch absurd
 
-compatible (TyArray type length) TyLogic = No Mismatch (negFlip logicNotCompatWithArray)
+compatible (TyEnum xs) TyLogic
+  = No Mismatch (negFlip absurd)
+compatible (TyEnum xs) (TyEnum ys)
+  = case decEq xs ys of
+      No c => No Mismatch (\(CompatEnum Refl) => c Refl)
+      Yes Refl => Yes (CompatEnum Refl)
 
-compatible (TyArray typeA lengthA) (TyArray typeB lengthB) with (decEq lengthA lengthB)
-  compatible (TyArray typeA lengthA) (TyArray typeB lengthA) | Yes Refl with (compatible typeA typeB)
-    compatible (TyArray typeA lengthA) (TyArray typeB lengthA) | Yes Refl | Yes prf
-      = Yes (CompatArray Refl prf)
+compatible (TyEnum xs) (TyArray type length)
+  = No Mismatch absurd
+compatible (TyEnum xs) (TyStruct kvs)
+  = No Mismatch absurd
+compatible (TyEnum xs) (TyUnion kvs)
+  = No Mismatch absurd
 
-    compatible (TyArray typeA lengthA) (TyArray typeB lengthA) | Yes Refl | No msg contra
-      = No (MismatchArrayType msg) (arraysNotSameType contra)
-  compatible (TyArray typeA lengthA) (TyArray typeB lengthB) | No contra
-    = No MismatchArrayLength (arraysNotSameLength contra)
+compatible (TyArray type length) TyLogic
+  = No Mismatch (negFlip absurd)
+compatible (TyArray type length) (TyEnum xs)
+  = No Mismatch (negFlip absurd)
+compatible (TyArray type length) (TyArray x k)
+  = case compatible type x of
+      No msg contra => No (MismatchArrayType msg)
+                          (\(CompatArray Refl prf) => contra prf)
+      Yes prf =>
+        case decEq length k of
+          No contra => No (MismatchArrayLength)
+                          (\(CompatArray Refl prf) => contra Refl)
 
-compatible (TyArray type length) (TyStruct kvs) = No Mismatch arrayNotCompatWithStruct
-compatible (TyArray type length) (TyUnion kvs) = No Mismatch arrayNotCompatWithUnion
+          Yes Refl => Yes (CompatArray Refl prf)
 
--- [ Struct vs X ]
+compatible (TyArray type length) (TyStruct kvs)
+  = No Mismatch absurd
+compatible (TyArray type length) (TyUnion kvs)
+  = No Mismatch absurd
 
 compatible (TyStruct kvs) TyLogic
-  = No Mismatch (negFlip logicNotCompatWithStruct)
-
+  = No Mismatch (negFlip absurd)
+compatible (TyStruct kvs) (TyEnum xs)
+  = No Mismatch (negFlip absurd)
 compatible (TyStruct kvs) (TyArray type length)
-  = No Mismatch (negFlip arrayNotCompatWithStruct)
+  = No Mismatch (negFlip absurd)
 
-compatible (TyStruct xs) (TyStruct ys) with (Fields.compatible xs ys)
-  compatible (TyStruct xs) (TyStruct ys) | (Yes prf) = Yes (CompatStruct prf)
-  compatible (TyStruct xs) (TyStruct ys) | (No msg contra) = No msg (structsAreNotCompat contra)
+compatible (TyStruct kvs) (TyStruct xs)
+  = case fields kvs xs of
+      No msg contra => No msg (\(CompatStruct prf) => contra prf)
+      Yes prf => Yes (CompatStruct prf)
 
+compatible (TyStruct kvs) (TyUnion xs)
+  = No Mismatch absurd
 
-compatible (TyStruct kvs) (TyUnion xs) = No Mismatch structNotCompatWithUnion
+compatible (TyUnion kvs) TyLogic
+  = No Mismatch (negFlip absurd)
+compatible (TyUnion kvs) (TyEnum xs)
+  = No Mismatch (negFlip absurd)
+compatible (TyUnion kvs) (TyArray type length)
+  = No Mismatch (negFlip absurd)
+compatible (TyUnion kvs) (TyStruct xs)
+  = No Mismatch (negFlip absurd)
 
--- [ Union vs X ]
-
-compatible (TyUnion kvs) TyLogic = No Mismatch (negFlip logicNotCompatWithUnion)
-
-compatible (TyUnion kvs) (TyArray type length) = No Mismatch (negFlip arrayNotCompatWithUnion)
-
-compatible (TyUnion xs) (TyStruct ys) = No Mismatch (negFlip structNotCompatWithUnion)
-
-compatible (TyUnion xs) (TyUnion ys) with (Fields.compatible xs ys)
-  compatible (TyUnion xs) (TyUnion ys) | (Yes prf) = Yes (CompatUnion prf)
-  compatible (TyUnion xs) (TyUnion ys) | (No msg contra) = No msg (unionsAreNotCompat contra)
-
+compatible (TyUnion kvs) (TyUnion xs)
+  = case fields kvs xs of
+      No msg contra => No msg (\(CompatUnion prf) => contra prf)
+      Yes prf => Yes (CompatUnion prf)
 
 -- [ EOF ]

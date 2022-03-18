@@ -142,6 +142,9 @@ namespace Types
     toString (TyArray type length)
      = toString type <+> "[" <+> show length <+> "]"
 
+    toString (TyEnum kvs)
+      = "enum {" <+> (unwords $ intersperse "," (toList kvs)) <+> "}"
+
     toString (TyStruct kvs)
       = "struct {" <+> kvsToString kvs <+> "}"
 

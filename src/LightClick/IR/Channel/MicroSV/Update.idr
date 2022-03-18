@@ -84,7 +84,12 @@ update newGlobal (Seq x y) =
 update newGlobal TYPE = pure TYPE
 update newGlobal GATE = pure GATE
 
-update newGlobal DataLogic = pure DataLogic
+update newGlobal DataLogic
+  = pure DataLogic
+
+update newGlobal (DataEnum xs)
+  = pure (DataEnum xs)
+
 update newGlobal (DataArray type size) =
     do type' <- update newGlobal type
        pure (DataArray type' size)

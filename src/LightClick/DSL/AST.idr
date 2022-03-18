@@ -21,6 +21,7 @@ data AST : Type where
 
   DataLogic  : FileContext -> AST
   DataArray  : FileContext -> AST -> Nat -> AST
+  DataEnum   : {n : Nat} -> FileContext -> Vect (S n) String -> AST
   DataStruct : {n : Nat} -> FileContext -> (kvs : Vect (S n) (String, AST)) -> AST
   DataUnion  : {n : Nat} -> FileContext -> (kvs : Vect (S n) (String, AST)) -> AST
 
@@ -71,6 +72,9 @@ mutual
 
   setFileName fn (DataLogic x)
     = DataLogic (setSource fn x)
+
+  setFileName fn (DataEnum fc xs)
+    = DataEnum (setSource fn fc) xs
 
   setFileName fn (DataArray x y k)
     = DataArray (setSource fn x) (setFileName fn y) k

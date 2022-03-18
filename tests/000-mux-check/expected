@@ -1,5 +1,6 @@
 LOG : Parsing Complete
 Error Happened
+LOG : Type Checking Complete
 example.click:47:0-36:
 Connection mismatch when trying to connect:
 	this:
@@ -11,4 +12,3 @@ Specifically:
 example.click:47:17-26:
 Mux control wire is unsafe :
 	Input cannot send
-LOG : Type Checking Complete

@@ -56,6 +56,7 @@ endmodule;
 LOG : BYE
 LOG : Parsing Complete
 Error Happened
+LOG : Type Checking Complete
 example-fine-but-not-fine-annotated.click:25:0-27:
 Connection mismatch when trying to connect:
 	this:
@@ -70,18 +71,17 @@ Unsafe connection with Incompatible intentions:
 		clock
 	Given:
 		reset
-LOG : Type Checking Complete
 LOG : Parsing Complete
 Error Happened
+LOG : Type Checking Complete
 Unused ports:
 	 - stepUp ["clk"]
 	 - stepDown ["clk"]
-LOG : Type Checking Complete
 LOG : Parsing Complete
 Error Happened
+LOG : Type Checking Complete
 example-linear-1.click:46:0-14:
 The port "clk" is already in use.
-LOG : Type Checking Complete
 LOG : Parsing Complete
 LOG : Type Checking Complete
 LOG : Synth-lification Complete

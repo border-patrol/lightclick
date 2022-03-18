@@ -1,5 +1,5 @@
 LOG : Parsing Complete
 Error Happened
+LOG : Type Checking Complete
 Unused port:
 	 - charlie ["active"]
-LOG : Type Checking Complete

@@ -470,6 +470,9 @@ namespace Context
     Uninhabited (IsFreePort label (I TyLogic u)) where
       uninhabited (IFP prf) impossible
 
+    Uninhabited (IsFreePort label (I (TyEnum as) u)) where
+      uninhabited (IFP prf) impossible
+
     Uninhabited (IsFreePort label (I (TyArray ty l) u)) where
       uninhabited (IFP prf) impossible
 
@@ -497,6 +500,9 @@ namespace Context
                        -> Dec (IsFreePort label item)
 
     isFreePort label (I TyLogic u)
+      = No absurd
+
+    isFreePort label (I (TyEnum c) u)
       = No absurd
 
     isFreePort label (I (TyArray type l) u)
@@ -663,6 +669,11 @@ mutual
        DataLogic : (fc : FileContext)
                       -> Term ctxt TyLogic ctxt
 
+       DataEnum : {n : Nat}
+               -> (fc : FileContext)
+               -> (xs : Vect (S n) String)
+                     -> Term ctxt (TyEnum xs) ctxt
+
        DataArray : (fc   : FileContext)
                 -> (size : Nat)
                 -> (type : Term a          dtype       b)
@@ -803,6 +814,7 @@ getFC (Ref fc l prf use)                = fc
 getFC (Let fc label this prf o inThis)  = fc
 getFC (Seq this prf that)               = getFC this
 getFC (DataLogic fc)                    = fc
+getFC (DataEnum fc _)                   = fc
 getFC (DataArray fc size x)             = fc
 getFC (DataStruct fc xs)                = fc
 getFC (DataUnion fc xs)                 = fc

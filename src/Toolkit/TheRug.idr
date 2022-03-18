@@ -161,6 +161,26 @@ namespace Decidable
   embed err (No prfWhyNot)
     = throw err
 
+  export
+  %inline
+  when : (result : Dec      a)
+      -> (this   : Lazy (TheRug e ()))
+                   -> TheRug e ()
+  when (Yes _) this
+    = this
+  when (No _) _
+    = pure ()
+
+  export
+  %inline
+  whenNot : (result : Dec      r)
+         -> (this   : Lazy (TheRug e ()))
+                   -> TheRug e ()
+  whenNot (Yes _) _
+    = pure ()
+  whenNot (No _) this
+    = this
+
   namespace Informative
     export
     %inline

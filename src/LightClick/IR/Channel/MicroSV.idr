@@ -136,6 +136,9 @@ mutual
   convert env DataLogic
     = pure DataLogic
 
+  convert env (DataEnum xs)
+    = pure (DataEnum xs)
+
   convert env (DataArray x size)
     = do t <- convert env x
          pure (DataArray t size)

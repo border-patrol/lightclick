@@ -3,6 +3,7 @@ module LightClick.Build
 import Decidable.Equality
 
 import Data.List
+import Data.List.Elem
 import Data.List.Quantifiers
 import Data.Vect
 
@@ -148,6 +149,9 @@ namespace GetModule
   Uninhabited (IsModule str (I x (I TyGate u))) where
     uninhabited (IM prf) impossible
 
+  Uninhabited (IsModule str (I x (I (TyEnum xs) u))) where
+    uninhabited (IM prf) impossible
+
   Uninhabited (IsModule str (I x (I (TyArray ty l) u))) where
     uninhabited (IM prf) impossible
 
@@ -167,6 +171,8 @@ namespace GetModule
   isModule str (I name i) with (decEq str name)
     isModule str (I str i) | (Yes Refl) with (i)
       isModule str (I str i) | (Yes Refl) | (I TyLogic y)
+        = No NotAModule absurd
+      isModule str (I str i) | (Yes Refl) | (I (TyEnum kvs) y)
         = No NotAModule absurd
       isModule str (I str i) | (Yes Refl) | (I (TyArray type length) y)
         = No NotAModule absurd
@@ -586,18 +592,25 @@ mutual
 
   ports : {old   : Context}
        -> (ctxt  : Context old)
+       -> (seen  : List String)
        -> (ports : Vect (S n) AST)
                 -> LightClick (ResultPorts old (S n))
 
-  ports ctxt (x :: [])
+  ports ctxt st (x :: [])
     = do Rp l type new p <- portVal ctxt x
+         when (isElem l st) $ do
+           throw (IdentifierAlreadyExists (getFC p) l)
 
          pure (RP [type] new (Extend p Empty))
 
-  ports ctxt (x :: (y :: xs))
+  ports ctxt st (x :: (y :: xs))
     = do Rp l type newA p <- portVal ctxt x
 
-         RP types newB ps <- ports newA (y::xs)
+         when (isElem l st) $ do
+           throw (IdentifierAlreadyExists (getFC p) l)
+
+
+         RP types newB ps <- ports newA (l::st) (y::xs)
 
          pure (RP (type::types)
                   newB
@@ -635,18 +648,24 @@ mutual
   fields : {n      : Nat}
         -> {old    : Context}
         -> (env    : Context old)
+        -> (seen   : List String)
         -> (fields : Vect (S n) (String, AST))
                   -> LightClick (ResultFields old (S n))
 
-  fields env ((s, f) :: [])
+  fields env st ((s, f) :: [])
     = do RD type newE tm <- datatype env f
+         when (isElem s st) $ do
+           throw (IdentifierAlreadyExists (getFC tm) s)
 
          pure (RF [(s,type)] newE (Extend s tm Empty))
 
-  fields env ((s, f) :: (x :: xs))
+  fields env st ((s, f) :: (x :: xs))
     = do RD ty newE tm <- datatype env f
 
-         RF tys newEE rest <- fields newE (x::xs)
+         when (isElem s st) $ do
+           throw (IdentifierAlreadyExists (getFC tm) s)
+
+         RF tys newEE rest <- fields newE (s::st) (x::xs)
 
          pure (RF ((s,ty)::tys) newEE (Extend s tm rest))
 
@@ -710,16 +729,31 @@ mutual
   build curr (DataLogic fc)
     = pure (R _ _ curr (DataLogic fc))
 
+  build curr (DataEnum fc xs)
+      = do xs' <- checkUnique Nil xs
+           pure (R _ _ curr (DataEnum fc xs'))
+    where
+      checkUnique : List String
+                 -> Vect m String
+                 -> LightClick (Vect m String)
+      checkUnique _ Nil
+        = pure Nil
+      checkUnique st (y::ys)
+        = do when (isElem y st) $ do
+               throw (IdentifierAlreadyExists fc y)
+             ys <- checkUnique (y::st) ys
+             pure (y::ys)
+
   build curr (DataArray fc type s)
     = do RD t outE type' <- datatype curr type
          pure (R _ _ outE (DataArray fc s type'))
 
   build curr (DataStruct fc kvs)
-    = do RF tys end kvs' <- fields curr kvs
+    = do RF tys end kvs' <- fields curr Nil kvs
          pure (R _ _ end (DataStruct fc kvs'))
 
   build curr (DataUnion fc kvs)
-    = do RF tys end kvs' <- fields curr kvs
+    = do RF tys end kvs' <- fields curr Nil kvs
          pure (R _ _ end (DataUnion fc kvs'))
 
   -- [ Ports & Modules ]
@@ -730,7 +764,7 @@ mutual
          pure (R _ _ outE (Port fc label dir sense wty n type'))
 
   build curr (ModuleDef fc kvs)
-    = do RP types newA ports <- ports curr kvs
+    = do RP types newA ports <- ports curr Nil kvs
          pure (R _ _ newA (Module fc ports))
 
   build curr (Index fc mref label)

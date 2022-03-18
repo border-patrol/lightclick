@@ -1,5 +1,5 @@
 LOG : Parsing Complete
 Error Happened
+LOG : Type Checking Complete
 Unused port:
 	 - c ["outb"]
-LOG : Type Checking Complete

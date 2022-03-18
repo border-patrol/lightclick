@@ -29,6 +29,9 @@ Equals = Equals MTy Ty
 
 -- [ Uninhabited ]
 
+Uninhabited (Equals TyLogic (TyEnum xs)) where
+  uninhabited (Same Refl Refl) impossible
+
 Uninhabited (Equals TyLogic (TyArray ty l)) where
   uninhabited (Same Refl Refl) impossible
 
@@ -36,6 +39,15 @@ Uninhabited (Equals TyLogic (TyStruct kvs)) where
   uninhabited (Same Refl Refl) impossible
 
 Uninhabited (Equals TyLogic (TyUnion kvs)) where
+  uninhabited (Same Refl Refl) impossible
+
+Uninhabited (Equals (TyEnum xs) (TyArray ty l)) where
+  uninhabited (Same Refl Refl) impossible
+
+Uninhabited (Equals (TyEnum xs) (TyStruct kvs)) where
+  uninhabited (Same Refl Refl) impossible
+
+Uninhabited (Equals (TyEnum xs) (TyUnion kvs)) where
   uninhabited (Same Refl Refl) impossible
 
 Uninhabited (Equals (TyArray ty l) (TyUnion kvs)) where
@@ -140,6 +152,9 @@ decEq TyLogic y Refl with (y)
   decEq TyLogic y Refl | TyLogic
     = Yes (Same Refl Refl)
 
+  decEq TyLogic y Refl | (TyEnum xs)
+    = No absurd
+
   decEq TyLogic y Refl | (TyArray type length)
     = No absurd
 
@@ -149,8 +164,28 @@ decEq TyLogic y Refl with (y)
   decEq TyLogic y Refl | (TyUnion kvs)
     = No absurd
 
+decEq (TyEnum xs) y Refl with (y)
+  decEq (TyEnum xs) y Refl | TyLogic
+    = No (negEqSym absurd)
+
+  decEq (TyEnum xs) y Refl | (TyEnum ys)
+    = case decEq xs ys of
+        Yes Refl => Yes (Same Refl Refl)
+        No contra => No (\(Same Refl Refl) => contra Refl)
+
+  decEq (TyEnum xs) y Refl | (TyArray type length)
+    = No absurd
+  decEq (TyEnum xs) y Refl | (TyStruct kvs)
+    = No absurd
+
+  decEq (TyEnum xs) y Refl | (TyUnion kvs)
+    = No absurd
+
 decEq (TyArray type length) y Refl with (y)
   decEq (TyArray type length) y Refl | TyLogic
+    = No (negEqSym absurd)
+
+  decEq (TyArray type length) y Refl | (TyEnum xs)
     = No (negEqSym absurd)
 
   decEq (TyArray type length) y Refl | (TyArray typeB lengthB) with (decEq type typeB Refl)
@@ -173,6 +208,9 @@ decEq (TyStruct kvs) y Refl with (y)
   decEq (TyStruct kvs) y Refl | TyLogic
     = No (negEqSym absurd)
 
+  decEq (TyStruct kvs) y Refl | (TyEnum xs)
+    = No (negEqSym absurd)
+
   decEq (TyStruct kvs) y Refl | (TyArray type length)
    = No (negEqSym absurd)
 
@@ -188,6 +226,9 @@ decEq (TyStruct kvs) y Refl with (y)
 
 decEq (TyUnion kvs) y Refl with (y)
   decEq (TyUnion kvs) y Refl | TyLogic
+    = No (negEqSym absurd)
+
+  decEq (TyUnion kvs) y Refl | (TyEnum xs)
     = No (negEqSym absurd)
 
   decEq (TyUnion kvs) y Refl | (TyArray type length)

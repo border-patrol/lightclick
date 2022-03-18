@@ -214,6 +214,9 @@ term env (DataArray fc size dtype)
   = do R b dtype <- term env dtype
        pure (R b (VDataArray dtype size))
 
+term env (DataEnum fc xs)
+  = pure (R env (VDataEnum xs))
+
 term env (DataStruct fc xs)
   = do F b xs <- fields env xs
        pure (R b (VDataStruct xs))

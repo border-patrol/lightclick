@@ -43,6 +43,7 @@ data ChannelIR : TyIR -> Type where
   CModule : {n : Nat} -> Vect (S n) (ChannelIR PORT) -> ChannelIR MODULE
 
   CDataLogic : ChannelIR DATA
+  CDataEnum : {n : Nat} -> Vect (S n) String -> ChannelIR DATA
   CDataArray : ChannelIR DATA -> Nat -> ChannelIR DATA
   CDataStruct : {n : Nat} -> Vect (S n) (Pair String (ChannelIR DATA)) -> ChannelIR DATA
   CDataUnion  : {n : Nat} -> Vect (S n) (Pair String (ChannelIR DATA)) -> ChannelIR DATA
@@ -69,93 +70,6 @@ data ChannelIR : TyIR -> Type where
        -> ChannelIR CHAN
        -> Vect (S (S n)) (ChannelIR CHAN)
        -> ChannelIR GATE
-
-mutual
-
-  namespace Vect
-    export
-    showC :  (kvs : Vect n (String, ChannelIR DATA))
-                 -> Vect n String
-    showC = map (\(l,c) => "(" <+> show l <+> " " <+> showC c <+> ")")
-
-  namespace Data
-    export
-    showC : (kvs : Vect n (ChannelIR CHAN))
-                -> Vect n String
-
-    showC =  map (\c => "(" <+> showC c <+> ")")
-
-  showC : ChannelIR type -> String
-  showC (CRef name type) =
-    "(CRef " <+> show name <+> " " <+> show type <+> ")"
-
-  showC (CLet x y z) =
-     "(CLet "
-       <+> show x <+> " "
-       <+> showC y <+> "\n"
-       <+> showC z
-       <+> "\n)"
-
-  showC (CSeq x y) =
-      "(CSeq "
-        <+> showC x <+> " "
-        <+> showC y
-        <+> "\n)"
-  showC CEnd = "(CEnd)"
-
-  showC (CPort x y n z) =
-      "(CPort "
-        <+> show x <+> " "
-        <+> show y <+> " "
-        <+> show n <+> " "
-        <+> showC z <+> " "
-        <+> ")"
-
-  showC (CModule x) =
-      "(CModule "
-        <+> show (map showC x)
-        <+> ")"
-
-  showC CDataLogic = "(CTyLogic)"
-
-  showC (CDataArray x k) =
-    "(CTyArray "
-      <+> showC x <+> " "
-      <+> show k
-      <+> ")"
-
-  showC (CDataStruct {n} xs) = "(CTyStruct " <+> show (showC xs) <+> ")"
-
-  showC (CDataUnion {n} xs) = "(TyUnion " <+> show (showC xs) <+> ")"
-
-  showC (CChan x) = "(CChan " <+> showC x <+> ")"
-  showC (CNoOp) = "(CNoOp)"
-
-  showC (CIDX l m) =
-    "(CIDX "
-       <+> show l  <+> " "
-       <+> showC m <+> " "
-       <+> ")"
-
-  showC (CModuleInst m {n} params) =
-      "(CModuleInst "
-        <+> showC m <+> " "
-        <+> show ps
-        <+> ")"
-    where
-
-      ps : Vect (S n) String
-      ps = map (\(l,c) => show l <+> " " <+> showC c) params
-
-  showC (CNot o i)
-    = unwords ["(CNot", showC o, showC i, ")"]
-
-  showC (CGate ty o ins)
-      = unwords ["(CGate", show ty, showC o, show (showC ins), ")"]
-
-export
-Show (ChannelIR type) where
-  show expr = showC expr
 
 mutual
   namespace Port
@@ -238,6 +152,7 @@ mutual
          pure $ CModule xs
 
   convert MDataLogic = pure CDataLogic
+  convert (MDataEnum xs) = pure (CDataEnum xs)
 
   convert (MDataArray x k) =
     do x' <- convert x

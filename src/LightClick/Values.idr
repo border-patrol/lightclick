@@ -65,6 +65,8 @@ data Value : TyValue -> Type where
 
   VDataLogic : Value DATA
 
+  VDataEnum : {n : Nat} -> Vect (S n) String -> Value DATA
+
   VDataArray : Value DATA
             -> Nat
             -> Value DATA
@@ -150,6 +152,8 @@ showV (VModule x) =
       <+> ")"
 
 showV VDataLogic = "(VTyLogic)"
+
+showV (VDataEnum xs) = "(VTyDataEum " <+> show xs <+> ")"
 
 showV (VDataArray x k) =
   "(VTyArray "

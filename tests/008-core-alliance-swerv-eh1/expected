@@ -1,6 +1,6 @@
 LOG : Parsing Complete
 Error Happened
+LOG : Type Checking Complete
 Unused ports:
 	 - dmi_wrapper ["tdoEnable"]
 	 - world ["mbist_mode"]
-LOG : Type Checking Complete

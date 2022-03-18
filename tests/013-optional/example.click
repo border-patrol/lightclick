@@ -1,5 +1,9 @@
 model lightclick
 
+types
+
+ty = enum {a,b,c};
+
 modules
 
 a = module

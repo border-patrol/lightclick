@@ -83,8 +83,16 @@ mutual
     e <- Toolkit.location
     pure (DataUnion (newFC s e) (snd kvs))
 
+  enum : Rule AST
+  enum
+    = do s <- Toolkit.location
+         keyword "enum"
+         kvs <- brackets $ commaSepBy1V name
+         e <- Toolkit.location
+         pure (DataEnum (newFC s e) (snd kvs))
+
   type_ : Rule AST
-  type_ = array <|> struct <|> union <|> type__
+  type_ = array <|> struct <|> union <|> enum <|> type__
 
 typeDef : Rule (FileContext, String, AST)
 typeDef = do

@@ -17,6 +17,7 @@ import public LightClick.Types.WireType
 public export
 data Ty : MTy -> Type where
   TyLogic : Ty DATA
+  TyEnum : {n : Nat} -> Vect (S n) String -> Ty DATA
   TyArray : (type : Ty DATA) -> (length : Nat) -> Ty DATA
   TyStruct : {n : Nat} -> (kvs : Vect (S n) (Pair String (Ty DATA))) -> Ty DATA
   TyUnion  : {n : Nat} -> (kvs : Vect (S n) (Pair String (Ty DATA))) -> Ty DATA

@@ -59,6 +59,10 @@ data MicroSvIR : (lctxt : Context)
     -- Decls
     DataLogic : MicroSvIR ctxt DATA
 
+    DataEnum : {n : Nat} -> (xs : Vect (S n) String)
+              -> MicroSvIR ctxt DATA
+
+
     DataArray : (type : MicroSvIR ctxt DATA) -> (size : Nat) -> MicroSvIR ctxt DATA
 
     DataStruct : {n : Nat} -> (xs : Vect (S n) (Pair String (MicroSvIR ctxt DATA)))
@@ -342,6 +346,9 @@ mutual
   -- [ Data Declarations ]
 
   convert (MkTEnv decls local) CDataLogic = pure (MkTRes decls DataLogic DD)
+
+  convert (MkTEnv decls local) (CDataEnum xs)
+    = pure (MkTRes decls (DataEnum xs) DD)
 
   convert e (CDataArray type k)
     = do MkTRes decls type' DD <- convert e type

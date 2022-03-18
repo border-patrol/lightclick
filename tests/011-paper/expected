@@ -1,5 +1,6 @@
 LOG : Parsing Complete
 Error Happened
+LOG : Type Checking Complete
 example-conn-direct-bad-1.click:10:0-30:
 Connection mismatch when trying to connect:
 	this:
@@ -10,9 +11,9 @@ Connection mismatch when trying to connect:
 Specifically:
 example-conn-direct-bad-1.click:10:0-30:
 Unsafe connection with Input cannot send
-LOG : Type Checking Complete
 LOG : Parsing Complete
 Error Happened
+LOG : Type Checking Complete
 example-conn-direct-bad.click:10:0-29:
 Connection mismatch when trying to connect:
 	this:
@@ -27,14 +28,14 @@ Unsafe connection with Incompatible intentions:
 		clock
 	Given:
 		control
-LOG : Type Checking Complete
 LOG : Parsing Complete
 Error Happened
+LOG : Type Checking Complete
 example-conn-fanout-raw-bad.click:11:0-12:
 The port "clk" is already in use.
-LOG : Type Checking Complete
 LOG : Parsing Complete
 Error Happened
+LOG : Type Checking Complete
 example-conn-fanout-type-err.click:10:0-44:
 Connection mismatch when trying to connect:
 	this:
@@ -47,7 +48,6 @@ example-conn-fanout-type-err.click:10:0-44:
 Unsafe Fan-OUT.
 Wire #1 is unsafe:
 	Directions are the same
-LOG : Type Checking Complete
 LOG : Parsing Complete
 LOG : Type Checking Complete
 LOG : Synth-lification Complete

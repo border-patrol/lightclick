@@ -106,6 +106,18 @@ prettyExpr DataLogic
 prettyExpr (DataArray type Z)
   = prettyExpr type
 
+prettyExpr (DataEnum xs)
+    = pretty "enum" <+> hardline <+> prettyEs
+  where
+    prettyNames : Vect (S n) String -> List (Doc ())
+    prettyNames (x :: []) = [pretty x]
+    prettyNames (x :: (y :: xs))
+      = pretty x <+> comma :: prettyNames (y::xs)
+
+    prettyEs : Doc ()
+    prettyEs
+      = (krStyle lbrace rbrace . prettyNames) xs
+
 prettyExpr (DataArray type (S size))
   = prettyExpr type <+> brackets (pretty size <+> colon <+> pretty "0")
 

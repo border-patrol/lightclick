@@ -51,6 +51,8 @@ data Expr : (lctxt : Context)
     -- Decls
     DataLogic : Expr lctxt gctxt DATA
 
+    DataEnum : Vect (S n) String -> Expr lctxt gctxt DATA
+
     DataArray : (type : Expr lctxt gctxt DATA)
              -> (size : Nat)
              -> Expr lctxt gctxt DATA
