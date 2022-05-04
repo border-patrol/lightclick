@@ -1,5 +1,6 @@
 LOG : Parsing Complete
 LOG : Type Checking Complete
+LOG : Soundness Check Complete
 LOG : Synth-lification Complete
 LOG : Modularisation Complete
 LOG : Channelisation Complete
@@ -84,6 +85,7 @@ example-linear-1.click:46:0-14:
 The port "clk" is already in use.
 LOG : Parsing Complete
 LOG : Type Checking Complete
+LOG : Soundness Check Complete
 LOG : Synth-lification Complete
 LOG : Modularisation Complete
 LOG : Channelisation Complete

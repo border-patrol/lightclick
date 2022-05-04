@@ -50,6 +50,7 @@ Wire #1 is unsafe:
 	Directions are the same
 LOG : Parsing Complete
 LOG : Type Checking Complete
+LOG : Soundness Check Complete
 LOG : Synth-lification Complete
 LOG : Modularisation Complete
 LOG : Channelisation Complete

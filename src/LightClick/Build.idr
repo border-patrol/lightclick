@@ -292,6 +292,7 @@ namespace FreeVar
           = IdentifierNotFound fc s
 
   transform : {s    : String}
+           -> {curr : List Item}
            -> {ctxt : Context curr}
            -> (idx  : Any Item (Item Item) (Holds Item (IsFree s)) ctxt)
                    -> DPair Item (\i => FreeVar i curr)
@@ -707,14 +708,15 @@ mutual
     = do RB type new tm prf <- bind curr tm
 
          let II u = init type prf
-         let newExt = extend curr name (I type u)
+         let newExt = extend new name (I type u)
 
-         R UNIT TyUnit newB scope <- build newExt scope
-           | R m _ _ tm => throw (MetaTypeConstructionError (Terms.getFC tm) UNIT m)
+         R UNIT TyUnit Nil scope <- build newExt scope
+           | R _ _ (x::xs) tm
+             => throw (NotSupposedToHappen Nothing)
+           | R m _ _ tm
+             => throw (MetaTypeConstructionError (Terms.getFC tm) UNIT m)
 
-         case newB of
-           Nil => pure (R _ _ newB (Let fc name tm prf (II u) scope))
-           (x::xs) => throw (NotSupposedToHappen Nothing)
+         pure (R UNIT TyUnit Nil (Let fc name tm prf (II u) scope))
 
   build curr (Seq x y)
     = do RLS type newA x prfLS <- leftSEQ curr x
@@ -858,7 +860,7 @@ mutual
 
   build curr (NoOp fc p)
     = do (Rp l type new p) <- portRef curr p
-         pure (R _ _ new (NoOp fc p))
+         pure (R _ _ new (NoOp fc (fromType type) p))
   -- [ The End ]
 
   build curr (End fc) with (canStop curr)

@@ -27,9 +27,6 @@ import LightClick.Values
 
 %default total
 
-data Erase : Item -> (DPair MTy Ty) -> Type where
-  E : {ty : Ty m} -> Erase (I ty u) (m ** ty)
-
 data Value : Item -> Type where
   V : Erase i (m ** ty) -> Value (interp m) -> Value i
 
@@ -193,7 +190,7 @@ term env (Ref fc l prf use)
 
 term env (Let fc label this prf (II u) scope)
   = do R b this  <- term env this
-       R Nil scope <- term (V E this :: env)
+       R Nil scope <- term (V E this :: b)
                            scope
          | R _ _ => throw (Err fc "oops")
        pure (R Nil (VLet label this scope))
@@ -240,9 +237,9 @@ term env (Index fc {names} {port} mref label prf use getP)
        pure (R b (VIDX label (VRef mref (MODULE names)) p))
 
 -- [ Connections ]
-term env (NoOp fc tm)
+term env (NoOp fc kind tm)
   = do R b tm <- term env tm
-       pure (R b (VNoOp tm))
+       pure (R b (VNoOp kind tm))
 
 term env (Connect fc left right prf)
 

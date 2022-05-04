@@ -242,6 +242,10 @@ namespace Context
   data Item : Type where
     I : {mtype : MTy} -> Ty mtype -> Usage mtype -> Item
 
+  public export
+  data Erase : Item -> (DPair MTy Ty) -> Type where
+    E : {ty : Ty m} -> Erase (I ty u) (m ** ty)
+
 
 
   public export
@@ -371,7 +375,8 @@ namespace Context
   ||| We do not have a corresponding proof as we will derive it durning type-checking
   public export
   data FreeVar : Item -> Context -> Type where
-    Here : (prf : IsFree i)
+    Here : {is : Context}
+        -> (prf : IsFree i)
                -> FreeVar i (i::is)
     There : (rest : FreeVar i is)
                  -> FreeVar i (i'::is)
@@ -539,7 +544,8 @@ namespace Context
                  -> (ctxt  : Context)
                           -> Type
       where
-        Here : (prf   : IsFreePort label i)
+        Here : {rest : Context}
+            -> (prf   : IsFreePort label i)
                      -> FreePort   label i (i :: rest)
 
         There : (later : FreePort label item              rest )
@@ -646,6 +652,7 @@ mutual
 
 
        Let : {mtype  : MTy}
+          -> {old, new: Context}
           -> {typeE  : Ty mtype}
           -> (fc     : FileContext)
           -> (label  : String)
@@ -653,7 +660,7 @@ mutual
           -> (prf    : Bindable mtype)
           -> {u      : Usage mtype}
           -> (newI   : Init typeE prf u)
-          -> (inThis : Term (I typeE u :: old) TyUnit Nil)
+          -> (inThis : Term (I typeE u :: new) TyUnit Nil)
                     -> Term old TyUnit Nil
 
        Seq : {type  : MTy}
@@ -727,6 +734,7 @@ mutual
        NoOp : {a,b   : Context}
            -> {name  : String}
            -> (fc    : FileContext) -- derived from end of spec
+           -> (kind  : EndpointKind)
            -> {type  : Ty (PORT name)}
            -> (term  : Term a type  b)
                     -> Term a TyConn b
@@ -826,7 +834,7 @@ getFC (FanOut fc input fan prf)         = fc
 getFC (Mux fc fan ctrl output prf)      = fc
 getFC (NOT fc left right prf)           = fc
 getFC (GATE fc ty fan output prf)       = fc
-getFC (NoOp fc p)                       = fc
+getFC (NoOp fc k p)                     = fc
 getFC (End fc x)                        = fc
 
 -- [ EOF ]

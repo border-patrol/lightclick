@@ -112,112 +112,11 @@ data Value : TyValue -> Type where
         -> Value (PORT p)
         -> Value CONN
 
-  VNoOp : Value (PORT p) -> Value CONN
+  VNoOp : (kind : EndpointKind) -> Value (PORT p) -> Value CONN
 
 export
 getType : {type : TyValue} -> Value type -> TyValue
 getType {type} _ = type
-
-
-covering
-showV : Value type -> String
-showV (VRef name type)
-  = "(VRef " <+> show name  <+> ")"
-
-showV (VLet x y z) =
-   "(VLet "
-     <+> show x <+> " "
-     <+> showV y <+> " "
-     <+> showV z
-     <+> ")"
-
-showV (VSeq x y) =
-    "(VSeq "
-      <+> showV x <+> " "
-      <+> showV y
-      <+> ")"
-showV VEnd = "(VEnd)"
-
-showV (VPort x y z w) =
-    "(VPort "
-      <+> show x <+> " "
-      <+> show y <+> " "
-      <+> show z
-      <+> showV w <+> " "
-      <+> ")"
-
-showV (VModule x) =
-    "(VModule "
-      <+> showDVect showV x
-      <+> ")"
-
-showV VDataLogic = "(VTyLogic)"
-
-showV (VDataEnum xs) = "(VTyDataEum " <+> show xs <+> ")"
-
-showV (VDataArray x k) =
-  "(VTyArray "
-    <+> showV x <+> " "
-    <+> show k
-    <+> ")"
-
-showV (VDataStruct {n} xs)
-  = "(VTyStruct " <+> show ps <+> ")"
-    where
-      covering
-      ps : Vect (S n) String
-      ps = map (\(l,c) => "(" <+> show l <+> " " <+> showV c <+> ")") xs
-
-showV (VDataUnion {n} xs) = "(TyUnion " <+> show ps <+> ")"
-  where
-    covering
-    ps : Vect (S n) String
-    ps = map (\(l,c) => "(" <+> show l <+> " " <+> showV c <+> ")") xs
-
-
-showV (VChan x) = "(VChan " <+> showV x <+> ")"
-
-showV (VIDX x y z) =
-    "(VIndex "
-       <+> show x <+> " "
-       <+> showV y <+> " "
-       <+> showV z
-       <+> ")"
-
-showV (VConnD x y z) =
-    "(VDConn "
-      <+> showV x <+> " "
-      <+> showV y <+> " "
-      <+> showV z <+> " "
-      <+> ")"
-
-showV (VConnFO x y z) =
-    "(VFConn "
-      <+> showV x <+> " "
-      <+> showV y <+> " "
-      <+> showDVect showV z <+> " "
-      <+> ")"
-
-showV (VNot o i)
-  = unwords ["(VNot", showV o, showV i, ")"]
-
-showV (VGate ty o ins)
-    = unwords ["(VGate", show ty, showV o, ins', ")"]
-
-  where
-    covering
-    ins' : String
-    ins' = unwords $ toList $ map (\c => "(" <+> showV c <+> ")") ins
-
-showV (VConnG c idx)
-  = unwords ["(VConnG", showV c, showV idx, ")"]
-
-showV (VNoOp p)
-  = unwords ["(VNoOp", showV p, ")"]
-export
-Show (Value type) where
-  show = assert_total showV -- TODO
-
 
 public export
 interp : MTy -> TyValue
@@ -267,7 +166,7 @@ genNameConn (VIDX x (VRef m (MODULE names)) z)
   = pure (newName [m,x])
 
 genNameConn (VIDX x y z)
-  = throw $ NotSupposedToHappen (Just $ "genNameConn idx non-ref" <+> show y)
+  = throw $ NotSupposedToHappen (Just $ "genNameConn idx non-ref" <+> show x)
 
 
 export

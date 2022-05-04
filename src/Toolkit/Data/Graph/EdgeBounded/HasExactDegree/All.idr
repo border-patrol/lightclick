@@ -13,7 +13,7 @@ import Toolkit.Decidable.Informative
 import Toolkit.Data.Nat
 import Toolkit.Data.Pair
 import Toolkit.Data.List.Size
-import Toolkit.Data.List.Occurs.Does
+import public Toolkit.Data.List.Occurs.Does
 
 import Toolkit.Data.Graph.EdgeBounded
 

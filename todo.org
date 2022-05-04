@@ -1,7 +1,5 @@
 #+TITLE: SoC Designs of Interest.
 
-A *dump*  of SoC Designs that would be of interest to model.
-
 * OpenTitan
 
 https://docs.opentitan.org/hw/top_earlgrey/doc/

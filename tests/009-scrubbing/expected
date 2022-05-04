@@ -19,6 +19,7 @@ Unsafe connection with Incompatible intentions:
 Swap Good
 LOG : Parsing Complete
 LOG : Type Checking Complete
+LOG : Soundness Check Complete
 LOG : Synth-lification Complete
 LOG : Modularisation Complete
 LOG : Channelisation Complete
@@ -77,6 +78,7 @@ The port "clk" is already in use.
 Fanin Good
 LOG : Parsing Complete
 LOG : Type Checking Complete
+LOG : Soundness Check Complete
 LOG : Synth-lification Complete
 LOG : Modularisation Complete
 LOG : Channelisation Complete

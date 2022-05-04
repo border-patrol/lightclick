@@ -10,7 +10,7 @@ import public LightClick.Types.Direction
 import public LightClick.Types.Sensitivity
 import public LightClick.Types.Necessity
 import public LightClick.Types.WireType
-
+import public LightClick.Types.EndpointKind
 
 %default total
 
@@ -147,5 +147,17 @@ namespace Control
     mkDual (TyPort l d s w n t) | IN    = TyPort l OUT   s Control n t
     mkDual (TyPort l d s w n t) | OUT   = TyPort l IN    s Control n t
     mkDual (TyPort l d s w n t) | INOUT = TyPort l INOUT s Control n t
+
+namespace EndpointKind
+  export
+  fromType : Ty (PORT l) -> EndpointKind
+  fromType (TyPort l IN _ _ _ _)
+    = DRIVER
+
+  fromType (TyPort l OUT _ _ _ _)
+    = CATCHER
+
+  fromType (TyPort l INOUT _ _ _ _)
+    = BOTH
 
 -- [ EOF ]

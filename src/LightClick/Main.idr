@@ -13,6 +13,7 @@ import LightClick.Core
 import LightClick.Types
 import LightClick.Terms
 import LightClick.Build
+import LightClick.Soundness
 import LightClick.Synthlify
 import LightClick.Values
 
@@ -56,6 +57,10 @@ lightclick showTiming fname
                    "LOG : Type Checking Complete"
                    termBuilder
                    ast
+
+       prf <- isSound term
+
+       log "LOG : Soundness Check Complete"
 
        value <- try showTiming
                     "LOG : Synth-lification Complete"
