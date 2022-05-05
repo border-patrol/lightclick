@@ -1,3 +1,10 @@
+||| An intermediate representation of MicroSV in which the
+||| intermediate representation is only locally well-scoped.
+|||
+||| Module    : Intermediate.idr
+||| Copyright : (c) Jan de Muijnck-Hughes
+||| License   : see LICENSE
+|||
 module LightClick.IR.Channel.MicroSV.Intermediate
 
 import Data.List
@@ -25,6 +32,8 @@ import LightClick.IR.Channel.MicroSV.InterpTy
 import LightClick.IR.Channel.MicroSV.Error
 
 %default covering
+
+-- [ IR Definition ]
 
 public export
 data MicroSvIR : (lctxt : Context)
@@ -59,31 +68,39 @@ data MicroSvIR : (lctxt : Context)
     -- Decls
     DataLogic : MicroSvIR ctxt DATA
 
-    DataEnum : {n : Nat} -> (xs : Vect (S n) String)
-              -> MicroSvIR ctxt DATA
+    DataEnum : {n  : Nat}
+            -> (xs : Vect (S n) String)
+                   -> MicroSvIR ctxt DATA
 
 
-    DataArray : (type : MicroSvIR ctxt DATA) -> (size : Nat) -> MicroSvIR ctxt DATA
+    DataArray : (type : MicroSvIR ctxt DATA)
+             -> (size : Nat)
+                     -> MicroSvIR ctxt DATA
 
-    DataStruct : {n : Nat} -> (xs : Vect (S n) (Pair String (MicroSvIR ctxt DATA)))
-              -> MicroSvIR ctxt DATA
+    DataStruct : {n  : Nat}
+              -> (xs : Vect (S n) (Pair String (MicroSvIR ctxt DATA)))
+                    -> MicroSvIR ctxt DATA
 
-    DataUnion : {n : Nat} -> (xs : Vect (S n) (Pair String (MicroSvIR ctxt DATA)))
-             -> MicroSvIR ctxt DATA
+    DataUnion : {n  : Nat}
+             -> (xs : Vect (S n) (Pair String (MicroSvIR ctxt DATA)))
+                   -> MicroSvIR ctxt DATA
 
     Port : (label : String)
         -> (dir   : SystemVerilog.Direction.Direction)
         -> (type  : MicroSvIR ctxt DATA)
-        -> MicroSvIR ctxt (PORT label)
+                 -> MicroSvIR ctxt (PORT label)
 
-    MDecl : DList String (MicroSvIR ctxt . PORT) names
-         -> MicroSvIR ctxt (MODULE names)
+    MDecl : (ports : DList String (MicroSvIR ctxt . PORT) names)
+                  -> MicroSvIR ctxt (MODULE names)
 
     -- Ctors
     NoOp    : MicroSvIR ctxt CHAN
     NewChan : MicroSvIR ctxt CHAN
-    NewModule : DList String (\s => Pair (Label s) (MicroSvIR ctxt CHAN)) names
-             -> MicroSvIR ctxt (MINST names)
+
+    NewModule : (chans : DList String
+                               (\s => Pair (Label s) (MicroSvIR ctxt CHAN))
+                               names)
+                      -> MicroSvIR ctxt (MINST names)
 
     -- Gates
     Not : (out : MicroSvIR ctxt CHAN)
@@ -97,6 +114,8 @@ data MicroSvIR : (lctxt : Context)
                 -> MicroSvIR ctxt GINST
 
 
+-- [ Helper Functions ]
+
 export
 getType : {type : Ty} -> MicroSvIR ctxt type -> Ty
 getType {type} _ = type
@@ -108,7 +127,6 @@ data Decl : Ty -> Type where
 public export
 Decls : List Ty -> Type
 Decls = DList Ty Decl
--- Could turn into a triple/custom data type to collect proof that the `type` is valid for a declaration
 
 export
 lookup : String -> Decls ty -> Maybe Ty
@@ -117,12 +135,15 @@ lookup x (MkDecl y expr :: rest) with (decEq x y)
   lookup x (MkDecl x expr :: rest) | (Yes Refl) = Just $ getType expr
   lookup x (MkDecl y expr :: rest) | (No contra) = lookup x rest
 
+-- [ Specification Definition ]
+
 public export
 data MicroSvIrSpec : Type where
   MkMSVIRSpec : (decls : Decls types)
              -> (expr  : MicroSvIR Nil UNIT)
              -> MicroSvIrSpec
 
+-- [ Environment for Conversion ]
 
 data TEnv : (local : context) -> Type where
   MkTEnv : {types : List Ty}
@@ -139,6 +160,13 @@ data TRes : (local : Context) -> (type : TyIR) -> Type where
         -> (prf   : InterpTy tyIR type)
         -> TRes ctxt tyIR
 
+{- [ Sort ports and Channels ]
+
+We need a way to type-check module declarations against module instantiations.
+Ports are named, so lets sort in name order.
+
+-}
+
 Eq (ChannelIR PORT) where
   (==) (CPort x f n d) (CPort y g m e) = x == y
   (==) _ _ = False
@@ -147,8 +175,13 @@ Ord (ChannelIR PORT) where
   compare (CPort x f n d) (CPort y g m e) = compare x y
   compare _ _ = LT
 
+-- [ Conversion from ChannelIR to MicroSVIR ]
+
 
 mutual
+
+-- [ Helper Functions ]
+
   port : {local : _}
       -> (e : TEnv local)
       -> (p : ChannelIR PORT)
@@ -222,6 +255,8 @@ mutual
                -> LightClick (Vect n (String, MicroSvIR local DATA))
   kvpairs e = traverse (kvpair e)
 
+
+  ||| Do the conversion between representations.
   convert : {type : TyIR}
          -> {local : Context}
          -> (e : TEnv local)
@@ -330,7 +365,8 @@ mutual
 
   ---- [ This is the End ]
   convert e CEnd with (e)
-    convert e CEnd | (MkTEnv decls local) = pure (MkTRes decls End UU)
+    convert e CEnd | (MkTEnv decls local)
+      = pure (MkTRes decls End UU)
 
 
   -- [ Module Declarations ]
@@ -345,7 +381,8 @@ mutual
 
   -- [ Data Declarations ]
 
-  convert (MkTEnv decls local) CDataLogic = pure (MkTRes decls DataLogic DD)
+  convert (MkTEnv decls local) CDataLogic
+    = pure (MkTRes decls DataLogic DD)
 
   convert (MkTEnv decls local) (CDataEnum xs)
     = pure (MkTRes decls (DataEnum xs) DD)
@@ -402,6 +439,7 @@ mutual
 
   convert (MkTEnv ds l) CNoOp = pure (MkTRes ds NoOp CC)
 
+||| Convert ChannelIR instances to MicroSVIR instances.
 export
 systemVerilog : (c : ChannelIR UNIT) -> LightClick MicroSvIrSpec
 systemVerilog expr

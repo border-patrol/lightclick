@@ -1,7 +1,12 @@
 ||| The Core Computation Context.
 |||
-||| Borrowed from Idris2 `Rug` is the core computation context that
-||| brings the computations together.
+||| Module    : Core.idr
+||| Copyright : (c) Jan de Muijnck-Hughes
+||| License   : see LICENSE
+|||
+||| `TheRug` is defined in the toolkit. Here we establish the synonyms
+||| for LightClick.
+|||
 module LightClick.Core
 
 import        System

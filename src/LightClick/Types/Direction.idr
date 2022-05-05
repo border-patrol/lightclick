@@ -1,3 +1,9 @@
+||| Predicates and decision proceddures to capture direction compatability.
+|||
+||| Module    : Direction.idr
+||| Copyright : (c) Jan de Muijnck-Hughes
+||| License   : see LICENSE
+|||
 module LightClick.Types.Direction
 
 import Decidable.Equality
@@ -26,17 +32,32 @@ outNotInOut Refl impossible
 
 export
 DecEq Direction where
-  decEq IN IN = Yes Refl
-  decEq IN OUT = No inNotOut
-  decEq IN INOUT = No inNotInOut
+  decEq IN IN
+    = Yes Refl
 
-  decEq OUT IN = No (negEqSym inNotOut)
-  decEq OUT OUT = Yes Refl
-  decEq OUT INOUT = No outNotInOut
+  decEq IN OUT
+    = No inNotOut
 
-  decEq INOUT IN = No (negEqSym inNotInOut)
-  decEq INOUT OUT = No (negEqSym outNotInOut)
-  decEq INOUT INOUT = Yes Refl
+  decEq IN INOUT
+    = No inNotInOut
+
+  decEq OUT IN
+    = No (negEqSym inNotOut)
+
+  decEq OUT OUT
+    = Yes Refl
+
+  decEq OUT INOUT
+    = No outNotInOut
+
+  decEq INOUT IN
+    = No (negEqSym inNotInOut)
+
+  decEq INOUT OUT
+    = No (negEqSym outNotInOut)
+
+  decEq INOUT INOUT
+    = Yes Refl
 
 namespace Valid
 
@@ -49,39 +70,38 @@ namespace Valid
 
   dirIsLR : Valid IN dest -> Void
   dirIsLR VOI impossible
-  dirIsLR VBI impossible
-  dirIsLR VOB impossible
-  dirIsLR VBB impossible
 
   dirAreSame : Valid OUT OUT -> Void
   dirAreSame VOI impossible
-  dirAreSame VBI impossible
-  dirAreSame VOB impossible
-  dirAreSame VBB impossible
 
   dirIsLR' : Valid INOUT OUT -> Void
   dirIsLR' VOI impossible
-  dirIsLR' VBI impossible
-  dirIsLR' VOB impossible
-  dirIsLR' VBB impossible
 
   public export
   data Error = InputCannotSend | DirIsSame | OutputCannotReceive
 
-
   export
   valid : (src, dest : Direction)
                     -> DecInfo Direction.Valid.Error (Valid src dest)
-  valid IN dest = No InputCannotSend dirIsLR
+  valid IN dest
+    = No InputCannotSend dirIsLR
+
   valid OUT dest with (dest)
-    valid OUT dest | IN = Yes VOI
-    valid OUT dest | OUT = No DirIsSame dirAreSame
-    valid OUT dest | INOUT = Yes VOB
+    valid OUT dest | IN
+      = Yes VOI
+    valid OUT dest | OUT
+      = No DirIsSame dirAreSame
+    valid OUT dest | INOUT
+      = Yes VOB
 
   valid INOUT dest with (dest)
-    valid INOUT dest | IN = Yes VBI
-    valid INOUT dest | OUT = No OutputCannotReceive (dirIsLR')
-    valid INOUT dest | INOUT = Yes VBB
+    valid INOUT dest | IN
+      = Yes VBI
+    valid INOUT dest | OUT
+      = No OutputCannotReceive (dirIsLR')
+
+    valid INOUT dest | INOUT
+      = Yes VBB
 
 
 namespace Safe
@@ -94,23 +114,15 @@ namespace Safe
 
   safeDirCannotIn : Safe IN dest -> Void
   safeDirCannotIn SOI impossible
-  safeDirCannotIn SBI impossible
-  safeDirCannotIn SBB impossible
 
   safeDirNotOO : Safe OUT OUT -> Void
   safeDirNotOO SOI impossible
-  safeDirNotOO SBI impossible
-  safeDirNotOO SBB impossible
 
   safeDirNoFeedbackOO : Safe OUT INOUT -> Void
   safeDirNoFeedbackOO SOI impossible
-  safeDirNoFeedbackOO SBI impossible
-  safeDirNoFeedbackOO SBB impossible
 
   safeDirNoFeedbackBO : Safe INOUT OUT -> Void
   safeDirNoFeedbackBO SOI impossible
-  safeDirNoFeedbackBO SBI impossible
-  safeDirNoFeedbackBO SBB impossible
 
   public export
   data Error = VCError Direction.Valid.Error
@@ -118,14 +130,26 @@ namespace Safe
              | PossibleFeedbackFromSender
 
   export
-  safe : (src, dest : Direction) -> DecInfo Direction.Safe.Error (Safe src dest)
-  safe IN dest = No (VCError InputCannotSend) safeDirCannotIn
+  safe : (src, dest : Direction)
+                   -> DecInfo Direction.Safe.Error
+                              (Safe src dest)
+  safe IN dest
+    = No (VCError InputCannotSend) safeDirCannotIn
+
   safe OUT dest with (dest)
-    safe OUT dest | IN = Yes SOI
-    safe OUT dest | OUT = No (VCError DirIsSame) safeDirNotOO
-    safe OUT dest | INOUT = No PossibleFeedbackFromReceiver safeDirNoFeedbackOO
+    safe OUT dest | IN
+      = Yes SOI
+    safe OUT dest | OUT
+      = No (VCError DirIsSame) safeDirNotOO
+    safe OUT dest | INOUT
+      = No PossibleFeedbackFromReceiver safeDirNoFeedbackOO
 
   safe INOUT dest with (dest)
-    safe INOUT dest | IN = Yes SBI
-    safe INOUT dest | OUT = No PossibleFeedbackFromSender safeDirNoFeedbackBO
-    safe INOUT dest | INOUT = Yes SBB
+    safe INOUT dest | IN
+      = Yes SBI
+    safe INOUT dest | OUT
+      = No PossibleFeedbackFromSender safeDirNoFeedbackBO
+    safe INOUT dest | INOUT
+      = Yes SBB
+
+-- [ EOF ]

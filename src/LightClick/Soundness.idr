@@ -1,3 +1,16 @@
+||| A Soundness check to ensure the model has a 'normal form'.
+|||
+||| Module    : Soundness.idr
+||| Copyright : (c) Jan de Muijnck-Hughes
+||| License   : see LICENSE
+|||
+||| Our model is sound if we can compute a well-formed graph.
+|||
+||| We translate each construct in our model to nodes and vertices
+||| from a graph, and reason about the expected and actual degrees in
+||| the graph. The model is sound if the expected and actual degrees
+||| are the same.
+|||
 module LightClick.Soundness
 
 import Decidable.Equality
@@ -26,6 +39,9 @@ import LightClick.Terms
 
 %default total
 
+-- [ Helper constructs ]
+
+||| Need to associate a named port with the Vertex.
 data Thing : String -> Type where
   Vertex : Vertex String -> Thing x
 
@@ -39,6 +55,9 @@ toList : Things names -> List (Vertex String)
 toList [] = []
 toList ((Vertex x) :: rest) = x :: toList rest
 
+-- [ Interpretation of Types ]
+
+||| Interpret our types to constructs ina graph.
 public export
 Interp : {m : MTy} -> Ty m -> Type
 Interp {m = (PORT x)} _
@@ -59,6 +78,7 @@ Interp {m = DATA} _
 Interp {m = GATE} _
   = Unit
 
+-- [ Interpretation Environments and Result Validity ]
 
 data Value : Item -> Type where
   V : Erase i (m ** ty) -> (Interp ty) -> Value i
@@ -95,6 +115,8 @@ isValid (R counter env graph result) with (validGraph graph)
     = No (graph,msg)
          (\(D graph prf) => contra prf)
 
+||| Transform terms into a graph.
+|||
 interp : {old     : Context}
       -> (env     : Env old)
       -> (counter : Nat)
@@ -102,6 +124,7 @@ interp : {old     : Context}
       -> (term    : Term old type new)
                  -> (Result new type)
 
+-- [ Helper Functions to return the correct results ]
 
 data Fields : (ctxt : List Item)
 
@@ -251,12 +274,24 @@ getPort (HPN prf) (FREEMODULE env val)
     = let f = findPort prf val
       in (env, f)
 
--- [ Interpretation ]
 
+-- [ Interpretation Definition ]
+
+{- [ NOTE ]
+
+References get read from the interpretation environment.
+
+-}
 interp env c g (Ref fc l prf use)
   = let FREEVAR new val = read env prf use
     in R c new g val
 
+{- [ NOTE ]
+
+Let bindings merge the result of interpreting the bound term and the
+resulting scope.
+
+-}
 interp env c g (Let fc label this prf newI inThis)
 
   = let R c1 e1 g1 t = interp env c g this
@@ -264,10 +299,20 @@ interp env c g (Let fc label this prf newI inThis)
     in let g2 = merge g g1
     in interp e2 c1 g2 inThis
 
+{- [ NOTE ]
+
+Sequences pass the resulting graph into the next interpretation.
+
+-}
 interp env c g (Seq this prf that)
   = let R c1 e1 g1 x = interp env c g this
     in interp e1 c1 g1 that
 
+{- [ NOTE ]
+
+We ignore data type declarations.
+
+-}
 interp env c g (DataLogic fc)
   = R c env g MkUnit
 
@@ -286,6 +331,17 @@ interp env c g (DataUnion fc xs)
   = let FIELD c1 e1 g1 = fields env c g xs
     in R c1 e1 g1 MkUnit
 
+{- [ NOTE ]
+
+Ports, which only appear in module declarations, are leaf nodes in a graph.
+
+Specifically:
+
++ nodes marked OUT   have: IN degree 0, OUT degree 1;
++ nodes marked IN    have: IN degree 1, OUT degree 0;
++ nodes marked INOUT have: IN degree 1, OUT degree 1;
+
+-}
 interp env c g (Port fc l d s w n i)
     = let c1 = S c
 
@@ -307,7 +363,7 @@ interp env c g (Port fc l d s w n i)
 
 {- [ NOTE ]
 
-Modules are synthetic groupings of nodes...
+Modules are synthetic groupings of nodes.
 
 -}
 interp env c g (Module fc ps)
@@ -324,16 +380,16 @@ interp env c g (Index fc mref label prf use getP) with (readModule env prf use)
     interp env c g (Index fc mref label prf use getP) | p | (x, y)
       = R c x g y
 
-{-
+{- [ NOTE ]
 
-1. use mref to get the list of ports from the environment
-2. use use to update the environment
-3. use getP to get the report
-4. return the port and new environment.
+Noops support connecting to optional wires.
+
+We need to make sure the noop is constructed correctly.
+
+For IN/OUT nodes this is simple.
+For INOUT nodes we assume that the port is a catcher.
 
 -}
-
-
 interp env c g (NoOp fc dir term)
     = let c1 = S c
 
@@ -373,6 +429,11 @@ interp env c g (NoOp fc dir term)
 
 -- [ Connections ]
 
+{- [ NOTE ]
+
+Direct connections are edges.
+
+-}
 interp env c g (Connect fc left right prf)
 
   = let    R c2 e1 g1 vl = interp env c g left
@@ -382,6 +443,11 @@ interp env c g (Connect fc left right prf)
 
     in R c3 e2 g3 MkUnit
 
+{- [ NOTE ]
+
+Fanouts are an explicit split node whose IN degree is one, and out degree matches all the outputs.
+
+-}
 interp env c g (FanOut fc input fs prf)
   = let R c1 e1 g1 i = interp env c g input
 
@@ -399,6 +465,13 @@ interp env c g (FanOut fc input fs prf)
 
     in R c3 e2 g3 MkUnit
 
+{- [ NOTE ]
+
+Like fanouts, multiplexers require an explicit join node to connect all the wires together.
+
+The IN degree is one plus (for the control wire) the number of inputs, and the OUT degree is one.
+
+-}
 interp env c g (Mux fc fs ctrl output prf)
   = let FAN c1 e1 g1 fs = fan env c g fs
     in let R c2 e2 g2 c = interp e1 c1 g1 ctrl
@@ -420,6 +493,11 @@ interp env c g (Mux fc fs ctrl output prf)
 
     in R c4 e3 g4 MkUnit
 
+{- [ NOTE ]
+
+Not gates are analogous to direct connections.
+
+-}
 interp env c g (NOT fc left right prf)
 
   = let c1 = S c
@@ -434,6 +512,11 @@ interp env c g (NOT fc left right prf)
                           ]
     in R c3 e2 (merge g2 g3) MkUnit
 
+{- [ NOTE ]
+
+Like multiplexers and fanouts, n-ary gates require an explicit node with OUT degree 1, and IN degree the size of the inputs.
+
+-}
 interp env c g (GATE fc ty fs output prf)
 
   = let FAN c1 e1 g1 fs = fan env c g fs
@@ -453,12 +536,16 @@ interp env c g (GATE fc ty fs output prf)
 
     in R c4 e2 g4 MkUnit
 
+{- [ NOTE ]
+
+Stop.
+
+-}
 interp env c g (End fc x)
   = R c Nil g MkUnit
 
 
-
-
+||| Our model is sound if it is a valid edge bounded graph.
 public export
 data IsSound : (term : Term Nil TyUnit Nil)
                     -> Type
@@ -466,9 +553,25 @@ data IsSound : (term : Term Nil TyUnit Nil)
     IS : (prf : Valid (interp Nil Z (MkGraph Nil Nil) term))
               -> IsSound term
 
+-- [ Helper functions for better diagnostic output ]
+
+
 Show (Vertex String) where
-  show (Node d k j i) = show k <+> " [label=\"" <+> show (j,i) <+> " " <+> d <+> "\"];"
-  show (Leaf d x k j) = show k <+> " [label=\"" <+> withFlow x j <+> " " <+> d <+> "\"];"
+  show (Node d k j i)
+    = show k
+      <+> " [label=\""
+      <+> show (j,i)
+      <+> " "
+      <+> d
+      <+> "\"];"
+  show (Leaf d x k j)
+      = show k
+        <+> " [label=\""
+        <+> withFlow x j
+        <+> " "
+        <+> d
+        <+> "\"];"
+
     where withFlow : Flow -> Nat -> String
           withFlow f k = show f <+> "(" <+> show k <+>")"
 
@@ -478,7 +581,11 @@ showGraph (MkGraph nodes edges)
                 ++
                   map show nodes
                 ++
-                  map (\(x,y) => unwords ["\t" <+> show x, "->", show y <+> ";"]) edges
+                  map (\(x,y) => unwords [ "\t" <+> show x
+                                         , "->"
+                                         , show y <+> ";"
+                                         ])
+                      edges
                 ++
                 ["}"]
 
@@ -487,17 +594,24 @@ Show DegreeType where
   show I = "IN"
   show O = "OUT"
 
-
-showErr : (Graph String, HasExactDegree.Error String)  -> String
+showErr : (Graph String, HasExactDegree.Error String)
+        -> String
 showErr (g, MkError vertex kind (MkError vertexID k values))
  = unlines [showGraph g
            , "//because:"
            , "// Vertex " <+> show (ident vertex)
-           , "//  has expected degree " <+> show k <+> " " <+> show (values.expected)
-           , "//  but we found degree " <+> show k <+> " " <+> show (values.found)
+           , "//  has expected degree "
+             <+> show k
+             <+> " "
+             <+> show (values.expected)
+           , "//  but we found degree "
+             <+> show k
+             <+> " "
+             <+> show (values.found)
            ]
 
 
+||| Check to see if the model is sound.
 export
 isSound : (term : Term Nil TyUnit Nil)
                -> LightClick (IsSound term)
@@ -506,4 +620,6 @@ isSound term with (isValid $ interp Nil Z (MkGraph Nil Nil) term)
   isSound term | (No msg prfWhyNot)
     = let msg = showErr msg
       in throw (NotSupposedToHappen (Just $ unlines ["Soundness Error", msg]))
+
+
 -- [ EOF ]

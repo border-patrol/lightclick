@@ -1,3 +1,9 @@
+||| The Errors that occur during normalisation.
+|||
+||| Module    : Error.idr
+||| Copyright : (c) Jan de Muijnck-Hughes
+||| License   : see LICENSE
+|||
 module LightClick.IR.Channel.Normalise.Error
 
 import Data.String
@@ -10,7 +16,10 @@ namespace Normalise
 
   export
   Show Error where
-    show ModuleInlined     = "Normalisation Error: Module Inlined"
-    show NoModuleInstances = "Normalisation Error: No Module instances found"
+    show ModuleInlined
+      = "Normalisation Error: Module Inlined"
+
+    show NoModuleInstances
+      = "Normalisation Error: No Module instances found"
 
 -- [ EOF ]

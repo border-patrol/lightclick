@@ -1,3 +1,9 @@
+||| The Raw syntax tree definition and helper functions.
+|||
+||| Module    : AST.idr
+||| Copyright : (c) Jan de Muijnck-Hughes
+||| License   : see LICENSE
+|||
 module LightClick.DSL.AST
 
 import Data.Vect
@@ -13,103 +19,223 @@ import LightClick.Types.WireType
 
 %default total
 
+||| LightClicks raw syntax tree as read in by the parser.
+|||
+||| The shape of this tree mostly follows that of the core terms,
+||| albeit with two terms that are inserted during elaboration.
+|||
+||| `End'` is the false end that, once encountered, connects the
+||| optional ports to no-ops for linearity to hold.
+|||
 public export
 data AST : Type where
-  Ref  : FileContext -> String -> AST
-  Bind : FileContext -> String -> AST -> AST -> AST
-  Seq  : AST -> AST -> AST
+  Ref : (fc    : FileContext)
+     -> (label : String)
+              -> AST
 
-  DataLogic  : FileContext -> AST
-  DataArray  : FileContext -> AST -> Nat -> AST
-  DataEnum   : {n : Nat} -> FileContext -> Vect (S n) String -> AST
-  DataStruct : {n : Nat} -> FileContext -> (kvs : Vect (S n) (String, AST)) -> AST
-  DataUnion  : {n : Nat} -> FileContext -> (kvs : Vect (S n) (String, AST)) -> AST
+  Bind : (fc           : FileContext)
+      -> (name         : String)
+      -> (value, scope : AST)
+               -> AST
 
-  Port  : FileContext
-       -> (label : String)
-       -> (dir : Direction)
-       -> (sense: Sensitivity)
-       -> (wty : Wire)
-       -> (n    : Necessity)
-       -> (type : AST)
-       -> AST
+  Seq : (this, that : AST) -> AST
 
-  ModuleDef : {n : Nat} -> FileContext -> (kvs : Vect (S n) (AST)) -> AST
+  DataLogic : (fc : FileContext)
+                 -> AST
 
-  Index  : FileContext -> AST -> String -> AST
-  Connect : FileContext -> AST -> AST -> AST
-  FanOut : {n : Nat} -> FileContext -> AST -> (ps : Vect (S (S n)) (AST)) -> AST
-  Mux    : {n : Nat} -> FileContext -> (ps : Vect (S (S n)) (AST)) -> AST -> AST -> AST
+  DataArray : (fc   : FileContext)
+           -> (type : AST)
+           -> (size : Nat)
+                   -> AST
 
-  NOT  : FileContext -> AST -> AST -> AST
-  GATE : {n : Nat} -> FileContext -> (ty : TyGateComb) -> (ps : Vect (S (S n)) (AST)) -> AST -> AST
+  DataEnum : {n      : Nat}
+          -> (fc     : FileContext)
+          -> (labels : Vect (S n) String)
+                    -> AST
 
-  End : FileContext -> AST
+  DataStruct : {n      : Nat}
+            -> (fc     : FileContext)
+            -> (fields : Vect (S n) (String, AST))
+                      -> AST
 
-  NoOp : FileContext -> AST -> AST
-  End' : FileContext -> AST
+  DataUnion : {n      : Nat}
+           -> (fc     : FileContext)
+           -> (fields : Vect (S n) (String, AST))
+                     -> AST
+
+  Port : (fc    : FileContext)
+      -> (label : String)
+      -> (dir   : Direction)
+      -> (sense : Sensitivity)
+      -> (wty   : Wire)
+      -> (n     : Necessity)
+      -> (type  : AST)
+               -> AST
+
+  ModuleDef : {n   : Nat}
+           -> (fc  : FileContext)
+           -> (kvs : Vect (S n) AST)
+                  -> AST
+
+  Index  : (fc    : FileContext)
+        -> (mname : AST)
+        -> (label : String)
+                 -> AST
+
+  Connect : (fc        : FileContext)
+         -> (this,that : AST)
+                      -> AST
+  FanOut : {n    : Nat}
+        -> (fc   : FileContext)
+        -> (from : AST)
+        -> (tos  : Vect (S (S n)) AST)
+                -> AST
+
+  Mux : {n        : Nat}
+     -> (fc       : FileContext)
+     -> (froms    : Vect (S (S n)) (AST))
+     -> (ctrl, to : AST)
+                 -> AST
+
+  NOT : (fc       : FileContext)
+     -> (from, to : AST)
+                 -> AST
+
+  GATE : {n     : Nat}
+      -> (fc    : FileContext)
+      -> (ty    : TyGateComb)
+      -> (froms : Vect (S (S n)) AST)
+      -> (to    : AST)
+               -> AST
+
+  End : (fc : FileContext) -> AST
+
+  NoOp : (fc   : FileContext)
+      -> (this : AST)
+              -> AST
+
+  |||
+  End' : (fc : FileContext) -> AST
+
+{- [ Set filename ]
+
+The file name is not set during parsing and generation of the spans.
+
+Let's fix that.
+
+-}
 
 mutual
-  setKvsFS : String -> Vect n (String, AST) -> Vect n (String, AST)
+
+  {- Some helper functions to deal with totality.
+
+  -}
+
+  setKvsFS : String
+          -> Vect n (String, AST)
+          -> Vect n (String, AST)
   setKvsFS x [] = Nil
   setKvsFS x ((y, z) :: xs)
     = (y, setFileName x z) :: setKvsFS x xs
 
-  setFSs : String -> Vect n (AST) -> Vect n (AST)
+  setFSs : String
+        -> Vect n (AST)
+        -> Vect n (AST)
   setFSs x [] = []
   setFSs x (y :: xs) = (setFileName x y) :: setFSs x xs
 
+  ||| Update the AST with the new file name.
   export
-  setFileName : String -> AST -> AST
+  setFileName : (fname : String)
+             -> (ast   : AST)
+                      -> AST
   setFileName fn (Ref x y)
-    = Ref (setSource fn x) y
+    = Ref (setSource fn x)
+          y
 
   setFileName fn (Bind x y z w)
-    = Bind (setSource fn x) y (setFileName fn z) (setFileName fn w)
+    = Bind (setSource fn x)
+            y
+           (setFileName fn z)
+           (setFileName fn w)
 
   setFileName fn (Seq x y)
-    = Seq (setFileName fn x) (setFileName fn y)
+    = Seq (setFileName fn x)
+          (setFileName fn y)
 
   setFileName fn (DataLogic x)
     = DataLogic (setSource fn x)
 
   setFileName fn (DataEnum fc xs)
-    = DataEnum (setSource fn fc) xs
+    = DataEnum (setSource fn fc)
+               xs
 
   setFileName fn (DataArray x y k)
-    = DataArray (setSource fn x) (setFileName fn y) k
+    = DataArray (setSource fn x)
+                (setFileName fn y)
+                k
 
   setFileName fn (DataStruct x kvs)
-    = DataStruct (setSource fn x) (setKvsFS fn kvs)
+    = DataStruct (setSource fn x)
+                 (setKvsFS fn kvs)
 
   setFileName fn (DataUnion x kvs)
-    = DataUnion (setSource fn x) (setKvsFS fn kvs)
+    = DataUnion (setSource fn x)
+                (setKvsFS fn kvs)
 
   setFileName fn (Port x label dir sense wty n type)
-    = (Port (setSource fn x) label dir sense wty n (setFileName fn type))
+    = Port (setSource fn x)
+           label
+           dir
+           sense
+           wty
+           n
+           (setFileName fn type)
 
   setFileName fn (ModuleDef x kvs)
-    = ModuleDef (setSource fn x) (setFSs fn kvs)
+    = ModuleDef (setSource fn x)
+                (setFSs fn kvs)
 
   setFileName fn (Index x y z)
-    = Index (setSource fn x) (setFileName fn y) z
+    = Index (setSource fn x)
+            (setFileName fn y)
+            z
 
   setFileName fn (Connect x y z)
-    = Connect (setSource fn x) (setFileName fn y) (setFileName fn z)
+    = Connect (setSource fn x)
+              (setFileName fn y)
+              (setFileName fn z)
 
   setFileName fn (FanOut x y ps)
-    = FanOut (setSource fn x) (setFileName fn y) (setFSs fn ps)
+    = FanOut (setSource fn x)
+             (setFileName fn y)
+             (setFSs fn ps)
 
   setFileName fn (Mux x ps y z)
-    = Mux (setSource fn x) (setFSs fn ps) (setFileName fn y) (setFileName fn z)
+    = Mux (setSource fn x)
+          (setFSs fn ps)
+          (setFileName fn y)
+          (setFileName fn z)
 
   setFileName fn (NOT x y z)
-    = NOT (setSource fn x) (setFileName fn y) (setFileName fn z)
+    = NOT (setSource fn x)
+          (setFileName fn y)
+          (setFileName fn z)
 
   setFileName fn (GATE x ty ps y)
-    = GATE (setSource fn x) ty (setFSs fn ps) (setFileName fn y)
-  setFileName fn (End fc) = (End (setSource fn fc))
+    = GATE (setSource fn x)
+           ty
+           (setFSs fn ps)
+           (setFileName fn y)
 
-  setFileName fn (End' fc) = (End' (setSource fn fc))
-  setFileName fn (NoOp fc p) = NoOp (setSource fn fc) (setFileName fn p)
+  setFileName fn (End fc)
+    = End (setSource fn fc)
+
+  setFileName fn (End' fc)
+    = End' (setSource fn fc)
+
+  setFileName fn (NoOp fc p)
+    = NoOp (setSource fn fc)
+           (setFileName fn p)
+
 -- [ EOF ]

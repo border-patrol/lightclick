@@ -1,5 +1,11 @@
+||| Transform our model with fancy connection primitives into a
+||| simpler one with only modules, gates, and direct connections.
+|||
+||| Module    : Synthlify.idr
+||| Copyright : (c) Jan de Muijnck-Hughes
+||| License   : see LICENSE
+|||
 module LightClick.Synthlify
-
 
 import Data.List.Quantifiers
 import Data.Vect
@@ -10,7 +16,6 @@ import Toolkit.Data.DVect
 import Toolkit.Data.Location
 
 import Toolkit.DeBruijn.Environment
-
 
 import Language.SystemVerilog.Gates
 import Language.SystemVerilog.Utilities
@@ -27,22 +32,26 @@ import LightClick.Values
 
 %default total
 
+||| We need this to ensure the types are translated correctly.
 data Value : Item -> Type where
   V : Erase i (m ** ty) -> Value (interp m) -> Value i
 
+
+||| Interpretation environment.
 Env : List Item -> Type
 Env = Env Item Value
 
-
+||| Ensure the type-level context is used.
 useFV : (env : Env old)
      -> (prf : UseFreeVar old idx new)
             -> Env new
 useFV (V E elem :: rest) (UH prfU)
   = V E elem :: rest
+
 useFV (elem :: rest) (UT x)
   = elem :: useFV rest x
 
-
+||| Ensure the type-level context is used.
 useFP : (env : Env old)
      -> (prf : UseFreePort old idx new)
             -> Env new
@@ -51,6 +60,7 @@ useFP (V E elem :: rest) (UH x prfU)
 useFP (elem :: rest) (UT x)
   = elem :: useFP rest x
 
+||| Extract the port from the environment.
 getPort : (env : Env old)
        -> (prf : FreePort label i old)
               -> LightClick (Value (PORT label))
@@ -68,6 +78,7 @@ getPort (V E _ :: rest) (Here (IFP prf))
 
 getPort (elem :: rest) (There later)
   = getPort rest later
+
 
 -- [ Declarations ]
 
@@ -347,6 +358,8 @@ term env (GATE fc ty fs output prf)
 term env (End fc prf)
   = pure (R Nil VEnd)
 
+||| Transform our model with fancy connection primitives into a
+||| simpler one with only modules, gates, and direct connections.
 export
 synthlify : (term  : Term Nil TyUnit Nil)
                   -> LightClick (Value UNIT)

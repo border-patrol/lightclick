@@ -1,3 +1,9 @@
+||| Types in our SoC Orchestration Language.
+|||
+||| Module    : Types.idr
+||| Copyright : (c) Jan de Muijnck-Hughes
+||| License   : see LICENSE
+|||
 module LightClick.Types
 
 import public Data.Vect
@@ -17,10 +23,22 @@ import public LightClick.Types.EndpointKind
 public export
 data Ty : MTy -> Type where
   TyLogic : Ty DATA
-  TyEnum : {n : Nat} -> Vect (S n) String -> Ty DATA
-  TyArray : (type : Ty DATA) -> (length : Nat) -> Ty DATA
-  TyStruct : {n : Nat} -> (kvs : Vect (S n) (Pair String (Ty DATA))) -> Ty DATA
-  TyUnion  : {n : Nat} -> (kvs : Vect (S n) (Pair String (Ty DATA))) -> Ty DATA
+
+  TyEnum : {n      : Nat}
+        -> (labels : Vect (S n) String)
+                  -> Ty DATA
+
+  TyArray : (type   : Ty DATA)
+         -> (length : Nat)
+                   -> Ty DATA
+
+  TyStruct : {n   : Nat}
+          -> (kvs : Vect (S n) (Pair String (Ty DATA)))
+                 -> Ty DATA
+
+  TyUnion  : {n   : Nat}
+          -> (kvs : Vect (S n) (Pair String (Ty DATA)))
+                 -> Ty DATA
 
   TyUnit : Ty UNIT
   TyConn : Ty CONN
@@ -39,6 +57,8 @@ data Ty : MTy -> Type where
           -> {names : Vect (S n) String}
           -> DVect String (Ty . PORT) (S n) names
           -> Ty (MODULE names)
+
+-- [ Predicates over types ]
 
 public export
 data PortHasName : (label : String) -> (Ty (PORT str)) -> Type

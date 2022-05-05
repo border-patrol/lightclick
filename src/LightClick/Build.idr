@@ -1,3 +1,14 @@
+||| Elaborate raw syntax tree into the well-typed well-scoped term
+||| representation.
+|||
+||| Module    : Build.idr
+||| Copyright : (c) Jan de Muijnck-Hughes
+||| License   : see LICENSE
+|||
+||| We build upon a helper utility `DeBruin` that abstracts over the
+||| boiler plate required to type check raw asts into well-scoped
+||| well-typed terms. Use of DeBruijn reduces what we need to write.
+|||
 module LightClick.Build
 
 import Decidable.Equality
@@ -37,6 +48,11 @@ import LightClick.DSL.AST
 Context : List Item -> Type
 Context = Context Item
 
+{- [ Helper Structures ]
+
+Help make returning results easier.
+
+-}
 
 data Result : Context -> Type
   where
@@ -123,6 +139,10 @@ data ResultBind : (ctxt : Context) -> Type
       -> (prf    : Bindable m)
                 -> ResultBind old
 
+
+
+||| Helper predicates and decisions procedures to grab a module from
+||| the environment.
 namespace GetModule
 
   data LookupFail = NotFound | NotAModule
@@ -227,6 +247,7 @@ namespace GetModule
           = (IdentifierNotFound fc s)
 
 
+  ||| Is the raw syntax term a reference to a module...
   export
   moduleRef : {old : Context}
            -> (curr : Context old)
@@ -236,9 +257,15 @@ namespace GetModule
     = do prf <- embed id (lookup fc name ctxt)
          pure name
 
-  moduleRef ctxt _ = throw (NotSupposedToHappen (Just "Modules cannot be inlined."))
+  moduleRef _ _
+    = throw (NotSupposedToHappen
+              (Just "Modules cannot be inlined."))
 
 
+
+
+||| Helper predicates and decisions procedures to grab a free variable
+||| from the environment.
 namespace FreeVar
 
   data LookupFail = NotFound String | IsUsed String
@@ -327,6 +354,7 @@ namespace FreeVar
     = elem :: useVar rest x
 
 
+  ||| Does the reference point to a free variable?
   export
   freeVar : (fc   : FileContext)
          -> (s    : String)
@@ -340,6 +368,9 @@ namespace FreeVar
          let newE = useVar ctxt prf
          pure (UV _ _ newE idx prf)
 
+||| Helper predicates and decisions procedures to grab a free port
+||| from a module defined in the environment.
+|||
 namespace FreePort
   data LookupFail = NotFound | IsUsed String
 
@@ -416,6 +447,7 @@ namespace FreePort
       -> (ctxt   : Context new)
                 -> UsedPort label old
 
+  ||| Does the referenced port on a module point to a free port.
   export
   usedPort : (fc         : FileContext)
           -> (mref,label : String)
@@ -435,7 +467,7 @@ namespace FreePort
            _ => throw (Err fc "Should not happen.")
 
 
-
+||| Has all the items in the context been used.
 isUsed : (ctxt : Context curr)
               -> Dec (All IsUsed curr)
 isUsed []
@@ -451,6 +483,7 @@ isUsed ((I name item) :: rest) with (isUsed item)
   isUsed ((I name item) :: rest) | (No contra)
     = No (\(x::xs) => contra x)
 
+||| Have all the required ports been used?
 canStop : (ctxt : Context curr)
                -> Dec (All CanStop curr)
 canStop []
@@ -467,6 +500,8 @@ canStop ((I name item) :: rest) with (canStop item)
     = No (\(x::xs) => contra x)
 
 
+||| Helper functions to find all free ports in the
+||| model.
 namespace FindFree
 
   freeModulePorts : (p : DVect String (Ty    . PORT) n names)
@@ -496,6 +531,7 @@ namespace FindFree
 
   getFree (I x _) = Nil
 
+  ||| Find all free ports in the model.
   export
   findFree : (ctxt : Context curr)
                   -> List ((String, List String))
@@ -505,6 +541,8 @@ namespace FindFree
     findFree ((I name x) :: rest) | (y :: xs)
       = (name,(y::xs)) :: findFree rest
 
+||| Helper functions to fine all unused optional ports to insert
+||| noops.
 namespace FindNoOp
 
   freeModulePorts : (p : DVect String (Ty    . PORT) n names)
@@ -533,6 +571,7 @@ namespace FindNoOp
 
   getFree (I x _) = Nil
 
+  ||| Find all unused optional ports to insert noops.
   export
   findNoOps : (ctxt : Context curr)
                   -> List ((String, List String))
@@ -542,6 +581,7 @@ namespace FindNoOp
     findNoOps ((I name x) :: rest) | (y :: xs)
       = (name,(y::xs)) :: findNoOps rest
 
+||| Insert noops into the model from the given list of noops.
 noops : (fc   : FileContext)
      -> (ps   : List (String, List String))
              -> AST
@@ -557,7 +597,14 @@ noops fc ps
     noops' : List AST
     noops' = foldr (\p, acc => noop p ++ acc) Nil ps
 
+
+{- The main set of elaboration functions. -}
+
 mutual
+
+  {-
+     Helper functions.
+  -}
 
   datatype : {old   : Context}
           -> (ctxt  : Context old)
@@ -694,11 +741,20 @@ mutual
            MODULE ns => pure (RB type new term IsModule)
            _ => throw (Nest (Err (getFC term) "") (BindError))
 
+  {-
+
+      The main elaboration function.
+
+  -}
+
+  ||| Elaborate the raw syntax tree into its well-typed well-scoped
+  ||| form.
   build : {ctxt : Context}
        -> (curr : Context ctxt)
        -> (ast  : AST)
                -> LightClick (Result ctxt)
 
+  -- [ Binders & Sequencing ]
   build curr (Ref fc name)
     = do UV m ty new idx prf <- freeVar fc name curr
 
@@ -861,6 +917,7 @@ mutual
   build curr (NoOp fc p)
     = do (Rp l type new p) <- portRef curr p
          pure (R _ _ new (NoOp fc (fromType type) p))
+
   -- [ The End ]
 
   build curr (End fc) with (canStop curr)
@@ -879,15 +936,15 @@ mutual
     build curr (End' fc) | (No contra)
       = throw (UnusedPorts (findFree curr))
 
+||| Elaborate the raw syntax tree into its well-typed well-scoped
+||| form.
 export
 termBuilder : (ast : AST)
                   -> LightClick (Term Nil TyUnit Nil)
 termBuilder ast
-  = do R _ TyUnit res term <- build Nil ast
-         | R _ ty _ _ => throw (NotSupposedToHappen Nothing) -- @TODO fix
-       case res of
-         Nil => pure term
-         _ => throw (NotSupposedToHappen Nothing)
+  = do R _ TyUnit Nil term <- build Nil ast
+         | R _ ty _ _ => throw (NotSupposedToHappen Nothing)
 
+       pure term
 
 -- [ EOF ]

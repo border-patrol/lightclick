@@ -1,3 +1,10 @@
+||| How a wire is intended to be used, and what it means for these
+||| descriptions to be compatible.
+|||
+||| Module    : WireType.idr
+||| Copyright : (c) Jan de Muijnck-Hughes
+||| License   : see LICENSE
+|||
 module LightClick.Types.WireType
 
 import Decidable.Equality
@@ -16,6 +23,8 @@ data Wire : Type where
    Interrupt : Wire
    Control   : Wire
    General   : Wire
+
+-- [ Uninhabitants ]
 
 dataNotAddress : (Data = Address) -> Void
 dataNotAddress Refl impossible
@@ -174,6 +183,8 @@ DecEq Wire where
   decEq General Interrupt = No (negEqSym interruptNotGeneral)
   decEq General Control = No (negEqSym controlNotGeneral)
   decEq General General = Yes Refl
+
+-- [ Compatibility ]
 
 public export
 data Compatible : (l,r : Wire) -> Type

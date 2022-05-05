@@ -1,3 +1,9 @@
+||| How signals on ports change, and compatiblity between definitons.
+|||
+||| Module    : Sensitivity.idr
+||| Copyright : (c) Jan de Muijnck-Hughes
+||| License   : see LICENSE
+|||
 module LightClick.Types.Sensitivity
 
 import Decidable.Equality

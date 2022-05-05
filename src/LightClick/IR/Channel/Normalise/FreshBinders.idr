@@ -1,3 +1,9 @@
+||| Introduce fresh names for let bound things.
+|||
+||| Module    : FreshBinders.idr
+||| Copyright : (c) Jan de Muijnck-Hughes
+||| License   : see LICENSE
+|||
 module LightClick.IR.Channel.Normalise.FreshBinders
 
 import Data.List
@@ -17,10 +23,11 @@ import LightClick.IR.Channel.Normalise.LetFloat
 
 %default total
 
-createModuleBinders : (state : List String)
+||| Introduce binders for module/gate instanstiation.
+createModuleBinders : (state   : List String)
                    -> (counter : Nat)
-                   -> (expr  : ChannelIR type)
-                            -> ChannelIR type
+                   -> (expr    : ChannelIR type)
+                              -> ChannelIR type
 createModuleBinders state counter (CLet bind this inThis)
   = CLet bind this $ createModuleBinders (bind::state) counter inThis
 
@@ -43,8 +50,10 @@ createModuleBinders state counter (CSeq (CGate ty o ins) y)
 createModuleBinders state counter (CSeq x y)
   = CSeq (createModuleBinders state counter x) y
 
-createModuleBinders state counter expr = expr
+createModuleBinders state counter expr
+  = expr
 
+||| Find all unbound constructs and bind them to fresh names.
 export
 covering -- from Let float.
 freshBinders : (expr : ChannelIR type)

@@ -1,3 +1,9 @@
+||| MetaTyping definitions.
+|||
+||| Module    : Meta.idr
+||| Copyright : (c) Jan de Muijnck-Hughes
+||| License   : see LICENSE
+|||
 module LightClick.Types.Meta
 
 import Data.Vect
@@ -14,6 +20,8 @@ data MTy : Type where
   CONN : MTy
   DATA : MTy
   GATE : MTy
+
+-- [ Instances ]
 
 export
 Show MTy where
@@ -44,7 +52,7 @@ Eq MTy where
   (==) _ _ = False
 
 
-
+-- [ Uninhabitants ]
 
 portLabelMismatch : (contra : (x = y) -> Void)
                  -> (PORT x = PORT y)
@@ -104,6 +112,7 @@ noConnGate Refl impossible
 noDataGate : (DATA = GATE) -> Void
 noDataGate Refl impossible
 
+-- [ Decision Procedure ]
 
 export
 DecEq MTy where
@@ -163,4 +172,4 @@ DecEq MTy where
     decEq GATE x2 | GATE        = Yes Refl
 
 
--- --------------------------------------------------------------------- [ EOF ]
+-- [ EOF ]

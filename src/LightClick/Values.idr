@@ -1,3 +1,10 @@
+||| A simpler SoC Orchestration language with only modules, gates, and
+||| direct connections.
+|||
+||| Module    : Values.idr
+||| Copyright : (c) Jan de Muijnck-Hughes
+||| License   : see LICENSE
+|||
 module LightClick.Values
 
 import Data.List
@@ -20,6 +27,7 @@ import LightClick.Terms
 
 %default total
 
+||| Types.
 public export
 data TyValue : Type where
   PORT : (name : String) -> TyValue
@@ -114,10 +122,13 @@ data Value : TyValue -> Type where
 
   VNoOp : (kind : EndpointKind) -> Value (PORT p) -> Value CONN
 
+-- [ Helper Functions ]
+
 export
 getType : {type : TyValue} -> Value type -> TyValue
 getType {type} _ = type
 
+||| Interpret from metatype.
 public export
 interp : MTy -> TyValue
 interp (PORT x) = PORT x
@@ -130,6 +141,8 @@ interp GATE = GATE
 public export
 interpTy : {ty : MTy} -> Ty ty -> TyValue
 interpTy {ty} _ = interp ty
+
+-- [ Helper functions for constructing values ]
 
 export
 getData : Value (PORT s) -> LightClick (Value DATA)
@@ -376,4 +389,4 @@ namespace ConnBuilder
            rest <- newConn cname type m (i'::is) (o'::os)
            pure (VSeq xy rest)
 
--- --------------------------------------------------------------------- [ EOF ]
+-- [ EOF ]

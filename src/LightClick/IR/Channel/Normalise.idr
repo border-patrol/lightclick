@@ -1,3 +1,15 @@
+||| Normalise the Channelised terms.
+|||
+||| Module    : Normalise.idr
+||| Copyright : (c) Jan de Muijnck-Hughes
+||| License   : see LICENSE
+|||
+||| This will:
+|||
+||| 1. Float lets to the top.
+||| 2. Merge all module instantiations.
+||| 3. Generate fresh binders for bindable terms.
+|||
 module LightClick.IR.Channel.Normalise
 
 import Data.List
@@ -17,6 +29,13 @@ import LightClick.IR.Channel.Normalise.FreshBinders
 
 %default total
 
+||| Normalise channelised IR.
+|||
+||| This will:
+|||
+||| 1. Float lets to the top.
+||| 2. Merge all module instantiations.
+||| 3. Generate fresh binders for bindable terms.
 export
 covering -- comes from Merge runMerge not being total.
 normalise : ChannelIR UNIT

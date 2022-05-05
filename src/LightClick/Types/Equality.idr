@@ -1,3 +1,9 @@
+||| Type equality.
+|||
+||| Module    : Equality.idr
+||| Copyright : (c) Jan de Muijnck-Hughes
+||| License   : see LICENSE
+|||
 module LightClick.Types.Equality
 
 import public Toolkit.Decidable.Do

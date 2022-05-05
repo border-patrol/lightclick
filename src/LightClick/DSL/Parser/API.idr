@@ -1,3 +1,9 @@
+||| High-level API to make the parser easier to write.
+|||
+||| Module    : API.idr
+||| Copyright : (c) Jan de Muijnck-Hughes
+||| License   : see LICENSE
+|||
 module LightClick.DSL.Parser.API
 
 import        Data.Vect

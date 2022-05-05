@@ -1,3 +1,9 @@
+||| Are ports required or optional.
+|||
+||| Module    : Necessity.idr
+||| Copyright : (c) Jan de Muijnck-Hughes
+||| License   : see LICENSE
+|||
 module LightClick.Types.Necessity
 
 import Decidable.Equality

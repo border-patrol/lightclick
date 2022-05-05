@@ -1,3 +1,9 @@
+||| Predicates and decision procedures to capture equality of datatypes.
+|||
+||| Module    : Compatibility.idr
+||| Copyright : (c) Jan de Muijnck-Hughes
+||| License   : see LICENSE
+|||
 module LightClick.Types.Compatibility
 
 import public Toolkit.Decidable.Equality.Indexed
@@ -16,7 +22,6 @@ import LightClick.Types
 import LightClick.Types.Equality
 
 %default total
-
 
 namespace Data
 

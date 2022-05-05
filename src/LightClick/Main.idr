@@ -1,3 +1,9 @@
+||| Main entry point of the program.
+|||
+||| Module    : LightClick/Main.idr
+||| Copyright : (c) Jan de Muijnck-Hughes
+||| License   : see LICENSE
+|||
 module LightClick.Main
 
 import Data.String
@@ -31,20 +37,30 @@ import LightClick.DSL.Parser
 import Language.SystemVerilog.Micro
 import Language.SystemVerilog.Micro.Pretty
 
-
-processArgs : List String -> IO (Bool,String)
+||| We only process one model at a time, and optionally report timings.
+processArgs : List String
+           -> IO (Bool,String)
 processArgs xs
     = do Just (t,f) <- processArgs' xs
            | Nothing => do putStrLn "Invalid args."
                            exitFailure
          pure (t,f)
   where
-    processArgs' : List String -> IO $ Maybe (Bool, String)
-    processArgs' (x::"--timing"::z::xs) = pure $ Just (True, z)
-    processArgs' (x::y::xs) = pure $ Just (False, y)
-    processArgs' _          = pure $ Nothing
+    processArgs' : List String
+                -> IO (Maybe (Bool, String))
+    processArgs' (x::"--timing"::z::xs)
+      = pure $ Just (True, z)
+
+    processArgs' (x::y::xs)
+      = pure $ Just (False, y)
+
+    processArgs' _
+      = pure $ Nothing
 
 
+||| The main assembly line to take lightclick models from external
+||| file through various checks to display of the generated
+||| SystemVerilog.
 lightclick : (showTiming : Bool)
           -> (fname      : String)
                         -> LightClick ()
@@ -92,10 +108,11 @@ lightclick showTiming fname
                    systemVerilog
                    svi
 
-       putStrLn "LOG : Pretty Printing"
+       log "LOG : Pretty Printing"
        printLn (prettySpec msv)
 
-       putStrLn "LOG : BYE"
+       log "LOG : BYE"
+
 
 main : IO ()
 main = do

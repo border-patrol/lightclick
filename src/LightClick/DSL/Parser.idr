@@ -1,3 +1,9 @@
+||| Construct an raw syntax tree instance from a list of tokens.
+|||
+||| Module    : Parser.idr
+||| Copyright : (c) Jan de Muijnck-Hughes
+||| License   : see LICENSE
+|||
 module LightClick.DSL.Parser
 
 import        Data.Vect
@@ -32,7 +38,13 @@ import        LightClick.DSL.Parser.API
 
 %default total
 
-data TypeStyle = HASKELL | SYSV
+||| Denotes the two style of port delcarations.
+|||
+data TypeStyle
+  = ||| Label then type.
+    HASKELL
+  | ||| Type then label.
+    SYSV
 
 var : Rule AST
 var = do
@@ -262,7 +274,6 @@ types = do
   keyword "types"
   some (typeDef <* symbol ";")
 
-export
 design : Rule AST
 design = do
    ds <- optional (many doc)
@@ -286,6 +297,7 @@ design = do
    buildBind (fc, n,e) body = (Bind fc n e body)
 
 
+||| Construct an raw syntax tree instance from a list of tokens.
 export
 fromFile : (fname : String)
                  -> LightClick AST

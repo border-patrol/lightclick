@@ -1,3 +1,9 @@
+||| How to tokenise a model description.
+|||
+||| Module    : Lexer.idr
+||| Copyright : (c) Jan de Muijnck-Hughes
+||| License   : see LICENSE
+|||
 module LightClick.DSL.Lexer
 
 import Text.Lexer
@@ -5,7 +11,6 @@ import Text.Lexer
 import Toolkit.Text.Lexer.Run
 
 %default total
-
 
 symbols : List String
 symbols = ["->", "-", "[", "]", ";", "{", "}", ":", ",", "=", "?", "(", ")", ".", "#", "!", "&", "|", "+"]
@@ -55,7 +60,6 @@ namespace LightClick
     (==) EndInput EndInput = True
     (==) _ _ = False
 
-
   showToken : Show a => String -> a -> String
   showToken n a = "(" <+> n <+> " " <+> show a <+> ")"
 
@@ -84,8 +88,6 @@ namespace LightClick
       validIdent : Char -> Bool
       validIdent '_' = True
       validIdent x = isAlphaNum x
-
-
 
   export
   tokenMap : TokenMap LightClick.Token
@@ -116,12 +118,20 @@ keep (MkBounded t _ _)
 
 export
 LightClickLexer : Lexer Token
-LightClickLexer = MkLexer LightClick.tokenMap (keep) EndInput
+LightClickLexer
+  = MkLexer LightClick.tokenMap (keep) EndInput
 
 export
-lexClickStr : String -> Either LexError (List (WithBounds Token))
-lexClickStr = lexString LightClickLexer
+lexClickStr : String
+           -> Either LexError (List (WithBounds Token))
+lexClickStr
+  = lexString LightClickLexer
 
 export
-lexClickFile : String -> IO $ Either LexFail (List (WithBounds Token))
-lexClickFile = lexFile LightClickLexer
+lexClickFile : String
+            -> IO $ Either LexFail (List (WithBounds Token))
+lexClickFile
+  = lexFile LightClickLexer
+
+
+-- [ EOF ]

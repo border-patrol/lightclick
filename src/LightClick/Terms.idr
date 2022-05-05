@@ -1,3 +1,10 @@
+||| A modelling language for SoC Orchestration in which ports are used
+||| linearly.
+|||
+||| Module    : Terms.idr
+||| Copyright : (c) Jan de Muijnck-Hughes
+||| License   : see LICENSE
+|||
 module LightClick.Terms
 
 
@@ -18,6 +25,7 @@ import LightClick.Error
 
 %default total
 
+||| Capture what it means for a term to be used based on its type.
 namespace Usage
 
   public export
@@ -42,7 +50,10 @@ namespace Usage
     initModule (x :: (y :: xs)) | (TyModule z) = TyModule (TyPort FREE :: z)
 
 
+  ||| Reason about the usage of a term in it's entirety.
   namespace Whole
+
+    ||| Is the term completely free.
     namespace Free
       mutual
         public export
@@ -115,6 +126,7 @@ namespace Usage
         useM [] = []
         useM ((TyPort y) :: rest) = TyPort USED :: useM rest
 
+  ||| Has the term be completely used.
   namespace Used
     mutual
       public export
@@ -176,6 +188,7 @@ namespace Usage
         usedPorts (ex :: rest) | (No contra)
           = No (headIsFree contra)
 
+  ||| Has a term with n-ary usages been used at a specific index.
   namespace AtIndex
     public export
     data FreeAt : (ports : DVect String (Ty    . PORT) n names)
@@ -236,6 +249,7 @@ namespace Usage
       useAt (ex :: rest) (There later) | used
         = ex :: used
 
+||| Define our typing context and operations over the context.
 namespace Context
 
   public export
@@ -247,9 +261,10 @@ namespace Context
     E : {ty : Ty m} -> Erase (I ty u) (m ** ty)
 
 
-
   public export
-  initItem : (type : Ty mtype) -> (prf : Bindable mtype)-> Usage mtype
+  initItem : (type : Ty mtype)
+          -> (prf  : Bindable mtype)
+                  -> Usage mtype
   initItem type IsData
     = TyData
 
@@ -410,6 +425,7 @@ namespace Context
     use (i' :: is) (There rest) | (MkDPair fst snd)
       = MkDPair (i' :: fst) (UT snd)
 
+  ||| Is the port free to use.
   namespace FreePort
 
     public export
@@ -582,8 +598,11 @@ namespace Context
         = MkDPair (not_item :: fst) (UT snd)
 
 
+-- [ Term definitions ]
 
 mutual
+
+  ||| Fans are groupings of port references.
   namespace Fan
     public export
     data Fan : (old   : Context)
@@ -602,6 +621,7 @@ mutual
               -> (rest  : Fan  b n              types  c)
                        -> Fan  a (S n) (type :: types) c
 
+  ||| Fields are used in data structures to label types.
   namespace Fields
     public export
     data Fields : (old  : List Item)
@@ -619,6 +639,7 @@ mutual
               -> (rest : Fields b   n              types  c)
                       -> Fields a (S n) ((s,type)::types) c
 
+  ||| Ports in a module.
   namespace Ports
     public export
     data Ports : (old   : List Item)
@@ -636,6 +657,7 @@ mutual
               -> (later : Ports b    n           rest  c)
                        -> Ports a (S n) (type :: rest) c
 
+  ||| Terms in our SoC Orchestration language.
   public export
   data Term : (old  : Context)
            -> (item : Ty mtype)
@@ -816,6 +838,7 @@ mutual
 
        End : (fc : FileContext) -> All IsUsed ctxt -> Term ctxt TyUnit Nil
 
+||| Get a term's span from the source location.
 export
 getFC : Term old type new -> FileContext
 getFC (Ref fc l prf use)                = fc

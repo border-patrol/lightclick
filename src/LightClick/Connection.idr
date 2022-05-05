@@ -1,3 +1,15 @@
+||| Type-driven predicates to state valid connections.
+|||
+||| Module    : Connection.idr
+||| Copyright : (c) Jan de Muijnck-Hughes
+||| License   : see LICENSE
+|||
+||| For each connection type (direct, fanout, multiplexer) we ensure
+||| that the inputs and outputs are compatible.  We provide predicates
+||| that describe a valid connection, and error message returning
+||| decision procedures for use in the type-checker to build the
+||| predicates.
+|||
 module LightClick.Connection
 
 import Data.Vect
@@ -11,6 +23,7 @@ import LightClick.Types.Compatibility
 
 %default total
 
+||| Predicates, error definitions, and decision procedures for Ports.
 namespace Port
 
   public export
@@ -45,8 +58,10 @@ namespace Port
                      prfT <- try (compatible xt yt) InCompatDTypes      (\(IsSafe flow sens wtype dtype) => dtype)
                      pure (IsSafe prfD prfS prfW prfT)
 
+||| Predicates, error definitions, and decision procedures for Fanouts.
 namespace Fanout
 
+  ||| A single input is compatible with many outputs.
   namespace PortList
 
     public export
@@ -114,6 +129,8 @@ namespace Fanout
     compatible input (x::y::fan) | Yes prf = Yes (CompatFanout prf)
     compatible input (x::y::fan) | No msg contra = No msg (notCompatFanout contra)
 
+||| Predicates, error definitions, and decision procedures for
+||| multiplexers.
 namespace Mux
 
   public export
@@ -121,6 +138,7 @@ namespace Mux
              | MuxNotSafe (PortList.Error)
 
 
+  ||| A mux is many outputs connecting to a single one.
   namespace PortList
 
     public export
@@ -162,6 +180,7 @@ namespace Mux
           = No (PListError (S pos) y err) (restNotCompat contra)
       compatible (x :: xs) o | (No msg contra) = No (PListError Z x  msg) (headNotCompat contra)
 
+  ||| Wrap the fanin in an explicit structure.
   namespace Fanin
 
     public export
