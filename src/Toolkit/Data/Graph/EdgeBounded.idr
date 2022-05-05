@@ -23,8 +23,8 @@ namespace Vertex
 
   export
   Show Flow where
-    show SRC = "IN"
-    show SNK = "OUT"
+    show SRC = "SRC"
+    show SNK = "SNK"
     show BI = "INOUT"
 
   Uninhabited (SRC = SNK) where

@@ -359,7 +359,7 @@ interp env c g (Port fc l d s w n i)
       = (driver ("\{l} drives") k 1)
 
     buildVertex l INOUT k
-      = (both "\{l} both" k 1)
+      = (gateway "\{l} both" k 1)
 
 {- [ NOTE ]
 
@@ -406,13 +406,13 @@ interp env c g (NoOp fc dir term)
                -> Nat
                -> (Pair Nat (Vertex String))
     buildVertex DRIVER k
-      = MkPair (S k) (driver "drives" k 1)
+      = MkPair (S k) (driver "noop drives" k 1)
 
     buildVertex CATCHER k
-      = MkPair (S k) (catcher "catches" k 1)
+      = MkPair (S k) (catcher "noop catches" k 1)
 
     buildVertex BOTH k
-      = MkPair (S k) (catcher "both but drives" k 1)
+      = MkPair (S k) (catcher "noop both but drives" k 1)
 
     buildEdge : EndpointKind
              -> (noop : Vertex String)

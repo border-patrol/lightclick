@@ -766,8 +766,8 @@ mutual
               -> {typeA : Ty (PORT pa)}
               -> {typeB : Ty (PORT pb)}
               -> (fc    : FileContext)
-              -> (left  : Term a typeA b)
-              -> (right : Term b typeB c)
+              -> (from  : Term a typeA b)
+              -> (to    : Term b typeB c)
               -> (prf   : Compatible typeA typeB)
                        -> Term a TyConn c
 

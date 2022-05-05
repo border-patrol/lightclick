@@ -26,6 +26,7 @@ tests
         , "011-paper"
         , "012-tutorial"
         , "013-optional"
+        , "014-soundness"
         ]
 
 covering
