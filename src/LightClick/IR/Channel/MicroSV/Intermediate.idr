@@ -155,6 +155,7 @@ data TRes : (local : Context) -> (type : TyIR) -> Type where
   MkTRes : {type : Ty}
         -> {types : List Ty}
         -> {tyIR : TyIR}
+        -> {ctxt : _ }
         -> (decls : Decls types)
         -> (expr  : MicroSvIR ctxt type)
         -> (prf   : InterpTy tyIR type)
@@ -176,6 +177,7 @@ Ord (ChannelIR PORT) where
   compare _ _ = LT
 
 -- [ Conversion from ChannelIR to MicroSVIR ]
+
 
 
 mutual
@@ -264,29 +266,28 @@ mutual
               -> LightClick (TRes local type)
 
   -- [ References ]
-  convert e (CRef x type) with (e)
-    convert e (CRef x type) | (MkTEnv decls local) with (isIndex x local)
-      convert e (CRef x type) | (MkTEnv decls local) | (Yes (ty ** idx)) with (interpTy type ty)
-        convert e (CRef x type) | (MkTEnv decls local) | (Yes (ty ** idx)) | (Yes prf)
-          = pure (MkTRes decls (Local x idx) prf)
-        convert e (CRef x type) | (MkTEnv decls local) | (Yes (ty ** idx)) | (No contra)
-          = throw (MicroSVError (General (unwords ["Attempting to construct Local", show x])))
+  convert (MkTEnv decls local) (CRef x type) with (isIndex x local)
+    convert (MkTEnv decls local) (CRef x type) | (Yes (ty ** idx)) with (interpTy type ty)
+      convert (MkTEnv decls local) (CRef x type) | (Yes (ty ** idx)) | (Yes prf)
+        = pure (MkTRes decls (Local x idx) prf)
+      convert (MkTEnv decls local) (CRef x type) | (Yes (ty ** idx)) | (No contra)
+        = throw (MicroSVError (General (unwords ["Attempting to construct Local", show x])))
 
-      convert e (CRef x type) | (MkTEnv decls local) | (No contra) with (lookup x decls)
-        convert e (CRef x type) | (MkTEnv decls local) | (No contra) | Nothing
-          = throw (MicroSVError (General (unwords ["Attempting to construct global, identifier not found", show x])))
-        convert e (CRef x type) | (MkTEnv decls local) | (No contra) | Just ty with (interpTy type ty)
-          convert e (CRef x type) | (MkTEnv decls local) | (No contra) | Just ty | (Yes prf)
-            = pure (MkTRes decls (Global x ty) prf)
-          convert e (CRef x type) | (MkTEnv decls local) | (No contra) | Just ty | (No contra')
-            = throw (MicroSVError (General (unwords ["Attempting to construct Global type issue", show x])))
+    convert (MkTEnv decls local) (CRef x type) | (No contra) with (lookup x decls)
+      convert (MkTEnv decls local) (CRef x type) | (No contra) | Nothing
+        = throw (MicroSVError (General (unwords ["Attempting to construct global, identifier not found", show x])))
+      convert (MkTEnv decls local) (CRef x type)  | (No contra) | Just ty with (interpTy type ty)
+        convert (MkTEnv decls local) (CRef x type) | (No contra) | Just ty | (Yes prf)
+          = pure (MkTRes decls (Global x ty) prf)
+        convert (MkTEnv decls local) (CRef x type) | (No contra) | Just ty | (No contra')
+          = throw (MicroSVError (General (unwords ["Attempting to construct Global type issue", show x])))
 
   -- [ Structural Statements ]
 
   ---- [ Let Bindings ]
 
   ---- Is `this` bindable and if so then how
-  convert e (CLet bind this {term} inThis) with (isBindable term)
+  convert (MkTEnv decls local) (CLet bind this {term} inThis) with (isBindable term)
 
     {- [ Translate the Global Bindings]
 
@@ -294,68 +295,65 @@ mutual
       - Translate `inThis`
     -}
 
-    convert e (CLet bind this {term = term} inThis) | (IsDecl prfDecl) with (e)
-      convert e (CLet bind this {term = term} inThis) | (IsDecl prfDecl) | (MkTEnv decls local)
-        = do MkTRes rest expr prf <- convert (MkTEnv decls Nil) this
-             convert (MkTEnv (MkDecl bind expr::rest) local) inThis
+    convert (MkTEnv decls local) (CLet bind this {term = term} inThis) | (IsDecl prfDecl)
+      = do MkTRes rest expr prf <- convert (MkTEnv decls Nil) this
+           convert (MkTEnv (MkDecl bind expr::rest) local) inThis
 
 
     {- [ Translate the local bindings ]
 
       Convert the `this` and `inThis` before constructing the type of `this`.
     -}
-    convert e (CLet bind this {term = term} inThis) | (IsLet x) with (e)
-      convert e (CLet bind this {term = term} inThis) | (IsLet x) | (MkTEnv decls local)
-        = do MkTRes rest expr prf <- convert (MkTEnv decls local) this
-             MkTRes l' b pB <- convert (MkTEnv decls ((bind, getType expr) :: local)) inThis
-             -- MicroSV is typed, we need to introspect `this` again because we need to get the type.
-             case (x,this) of
-               {- [ Translating Module instantiations ]
+    convert (MkTEnv decls local) (CLet bind this {term = term} inThis) | (IsLet x)
+       = do MkTRes rest expr prf <- convert (MkTEnv decls local) this
+            MkTRes l' b pB <- convert (MkTEnv decls ((bind, getType expr) :: local)) inThis
+            -- MicroSV is typed, we need to introspect `this` again because we need to get the type.
+            case (x,this) of
+            {- [ Translating Module instantiations ]
 
-                 When MINST
-                   - the type is the name/ref to the module
-                   - the value is the result of translating `this`
-               -}
-               (IsInstM, (CModuleInst mtype _))
-                 => do MkTRes _ newMType _ <- convert e mtype
-                       pure (MkTRes l' (Let bind expr newMType b) pB)
+              When MINST
+                - the type is the name/ref to the module
+                - the value is the result of translating `this`
+            -}
+             (IsInstM, (CModuleInst mtype _))
+               => do MkTRes _ newMType _ <- convert (MkTEnv decls local) mtype
+                     pure (MkTRes l' (Let bind expr newMType b) pB)
 
-               (IsInstM, _) => throw $ MicroSVError $ General "Expected local let `this` to be CModuleInst, it wasn't"
+             (IsInstM, _) => throw $ MicroSVError $ General "Expected local let `this` to be CModuleInst, it wasn't"
 
-               {- [ Translating Channel terms ]
+             {- [ Translating Channel terms ]
 
-                 When CHAN
-                   - the type is var or inline data type
-                   - the value is `NewChan`
-               -}
+               When CHAN
+                 - the type is var or inline data type
+                 - the value is `NewChan`
+             -}
 
 
-               (IsInstC, (CChan dtype))
-                 => do MkTRes _ newDType _ <- convert e dtype
-                       pure (MkTRes l' (Let bind expr newDType b) pB)
+             (IsInstC, (CChan dtype))
+               => do MkTRes _ newDType _ <- convert (MkTEnv decls local) dtype
+                     pure (MkTRes l' (Let bind expr newDType b) pB)
 
-               (IsInstC, _) => throw $ MicroSVError $ General "Expected local let `this` to be CChan, it wasn't"
+             (IsInstC, _) => throw $ MicroSVError $ General "Expected local let `this` to be CChan, it wasn't"
 
-                {- [ Translating Gate terms ]
+              {- [ Translating Gate terms ]
 
-                  When GATE
-                    - the type is var or inline data type
-                    - the value is another gate.
-                -}
-               (IsInstG, (CNot o i))
-                 => do MkTRes _ newNot _ <- convert e (CNot o i)
-                       pure (MkTRes l' (Let bind expr GATE b) pB)
+                When GATE
+                  - the type is var or inline data type
+                  - the value is another gate.
+              -}
+             (IsInstG, (CNot o i))
+               => do MkTRes _ newNot _ <- convert (MkTEnv decls local) (CNot o i)
+                     pure (MkTRes l' (Let bind expr GATE b) pB)
 
-               (IsInstG, (CGate ty o ins))
-                 => do MkTRes _ newNot _ <- convert e (CGate ty o ins)
-                       pure (MkTRes l' (Let bind expr GATE b) pB)
+             (IsInstG, (CGate ty o ins))
+               => do MkTRes _ newNot _ <- convert (MkTEnv decls local) (CGate ty o ins)
+                     pure (MkTRes l' (Let bind expr GATE b) pB)
 
-               (IsInstG, _) => throw $ MicroSVError $ General "Expected local let `this` to be a Gate, it"
+             (IsInstG, _) => throw $ MicroSVError $ General "Expected local let `this` to be a Gate, it"
 
     -- Any other pattern here is unexpected.
-    convert e (CLet bind this {term = term} inThis) | Unbindable
+    convert (MkTEnv decls local) (CLet bind this {term = term} inThis) | Unbindable
       = throw $ MicroSVError $ General "We were given something unbindable"
-
 
   ---- [ Sequencing ]
   convert (MkTEnv decls local) (CSeq x y)
@@ -364,9 +362,8 @@ mutual
          pure (MkTRes dY (Seq x' y') pY)
 
   ---- [ This is the End ]
-  convert e CEnd with (e)
-    convert e CEnd | (MkTEnv decls local)
-      = pure (MkTRes decls End UU)
+  convert (MkTEnv decls local) CEnd
+    = pure (MkTRes decls End UU)
 
 
   -- [ Module Declarations ]
@@ -391,15 +388,13 @@ mutual
     = do MkTRes decls type' DD <- convert e type
          pure (MkTRes decls (DataArray type' k) DD)
 
-  convert e (CDataStruct xs) with (e)
-    convert e (CDataStruct xs) | (MkTEnv decls local)
-      = do xs' <- kvpairs e xs
-           pure (MkTRes decls (DataStruct xs') DD)
+  convert (MkTEnv decls local) (CDataStruct xs)
+    = do xs' <- kvpairs (MkTEnv decls local) xs
+         pure (MkTRes decls (DataStruct xs') DD)
 
-  convert e (CDataUnion xs) with (e)
-    convert e (CDataUnion xs) | (MkTEnv decls local)
-      = do xs' <- kvpairs e xs
-           pure (MkTRes decls (DataUnion xs') DD)
+  convert (MkTEnv decls local) (CDataUnion xs)
+    = do xs' <- kvpairs (MkTEnv decls local) xs
+         pure (MkTRes decls (DataUnion xs') DD)
 
 
   -- [ A Thing that should not exist in 'Our Normal Form' ]
@@ -408,14 +403,12 @@ mutual
     = throw $ MicroSVError $ Nested "IDX Not expected" MalformedExpr
 
   -- [ Constructors for Channels and Modules ]
-  convert e (CChan _) with (e)
-    convert e (CChan _) | (MkTEnv decls local)
-      = pure $ MkTRes decls NewChan CC
+  convert (MkTEnv decls local) (CChan _)
+    = pure $ MkTRes decls NewChan CC
 
-  convert e (CModuleInst _ kvs) with (e)
-    convert e (CModuleInst _ kvs) | (MkTEnv decls local)
-        = do (ns ** kvs) <- chans e kvsSorted
-             pure (MkTRes decls (NewModule kvs) (CM ns))
+  convert (MkTEnv decls local) (CModuleInst _ kvs)
+      = do (ns ** kvs) <- chans (MkTEnv decls local) kvsSorted
+           pure (MkTRes decls (NewModule kvs) (CM ns))
       where
         kvCompare : (x,y : (String, ChannelIR CHAN))
                         -> Ordering
@@ -425,17 +418,15 @@ mutual
         kvsSorted = sortBy kvCompare (toList kvs)
 
   -- [ Gates ]
-  convert e (CNot o i) with (e)
-    convert e (CNot o i) | (MkTEnv decls local)
-      = do o' <- chan' e o
-           i' <- chan' e i
-           pure (MkTRes decls (Not o' i') GG)
+  convert (MkTEnv decls local) (CNot o i)
+    = do o' <- chan' (MkTEnv decls local) o
+         i' <- chan' (MkTEnv decls local) i
+         pure (MkTRes decls (Not o' i') GG)
 
-  convert e (CGate ty o ins) with (e)
-    convert e (CGate ty o ins) | (MkTEnv decls local)
-      = do o'  <- chan' e o
-           is' <- chans' e ins
-           pure (MkTRes decls (Gate ty o' is') GG)
+  convert (MkTEnv decls local) (CGate ty o ins)
+     = do o'  <- chan' (MkTEnv decls local) o
+          is' <- chans' (MkTEnv decls local) ins
+          pure (MkTRes decls (Gate ty o' is') GG)
 
   convert (MkTEnv ds l) CNoOp = pure (MkTRes ds NoOp CC)
 

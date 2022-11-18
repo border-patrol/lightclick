@@ -122,24 +122,23 @@ mutual
   expr env (Local label x)
     = pure (Local label x)
 
-  expr env (Global label type) with (env)
-    expr env (Global label type) | (MkEnv global decls local) with (isElem (label,type) global)
-      expr env (Global label type) | (MkEnv global decls local) | (Yes prf)
-        = pure (Global label prf)
+  expr (MkEnv global decls local) (Global label type) with (isElem (label,type) global)
+    expr (MkEnv global decls local) (Global label type) | (Yes prf)
+      = pure (Global label prf)
 
-      expr env (Global label type) | (MkEnv global decls local) | (No contra)
-        = throw (MicroSVError (General $ unwords ["Attempting to generate Global ref failed:", show label]))
+    expr (MkEnv global decls local) (Global label type) | (No contra)
+      = throw (MicroSVError (General $ unwords ["Attempting to generate Global ref failed:", show label]))
 
   -- [ Structural Statements ]
 
-  expr env (Let this beThis {typeE} withType {ty} inThis) with (validLet typeE ty)
+  expr (MkEnv global decls local) (Let this beThis {typeE} withType {ty} inThis) with (validLet typeE ty)
     expr (MkEnv global decls local) (Let this beThis {typeE = typeE} withType {ty = ty} inThis) | (Yes prf)
       = do e <- expr (MkEnv global decls local) beThis
            t <- expr (MkEnv global decls local) withType
            b <- expr (MkEnv global decls ((this,typeE)::local)) inThis
            pure (Let this e t prf b)
 
-    expr env (Let this beThis {typeE = typeE} withType {ty = ty} inThis) | (No contra)
+    expr (MkEnv global decls local) (Let this beThis {typeE = typeE} withType {ty = ty} inThis) | (No contra)
       = throw (MicroSVError (General $ unwords ["Invalid Let:", show typeE, show ty]))
 
   expr env (Seq x y)
